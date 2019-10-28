@@ -3,12 +3,11 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-# Create your models here.
-
 
 class OrgUnit(models.Model):
     name = models.CharField(max_length=80)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True)
+    parent = models.ForeignKey(
+        'self', on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -16,15 +15,21 @@ class OrgUnit(models.Model):
 
 class TeamMember(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    orgunit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)
+    orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return f"{self.user} ({self.orgunit})"
 
 
-# https://simpleisbetterthancomplex.com/tutorial/2016/07/22/how-to-extend-django-user-model.html#onetoone
-@receiver(post_save, sender=User)
-def create_user_teammember(sender, instance, created, **kwargs):
-    if created:
-        TeamMember.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def save_user_teammember(sender, instance, **kwargs):
-    instance.teammember.save()
+class TimeRange(models.Model):
+    ABSENT = 'a'
+    PRESENT = 'p'
+    KIND_CHOICES = [
+        (ABSENT, 'absent'),
+        (PRESENT, 'present'),
+    ]
+    user = models.OneToOneField(TeamMember, on_delete=models.CASCADE)
+    orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
+    start = models.DateField()
+    end = models.DateField(blank=True)
+    kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT)
