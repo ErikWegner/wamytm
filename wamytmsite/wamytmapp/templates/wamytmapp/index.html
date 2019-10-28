@@ -1,5 +1,26 @@
+{% load bootstrap4 %}
+
 <h2>Diese Woche</h2>
 
-{% for tr in this_week %}
-        {{ tr }}
-{% endfor %}
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th scope="col">Person</th>
+            <th scope="col">Montag</th>
+            <th scope="col">Dienstag</th>
+            <th scope="col">Mittwoch</th>
+            <th scope="col">Donnerstag</th>
+            <th scope="col">Freitag</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in this_week %}
+        <tr>
+            <th scope="row">{{ item.user }}</th>
+            {% for day in item.days %}
+            <td class="kind-{{ day }}">{{ day }}</td>
+            {% endfor %}
+        </tr>        
+        {% endfor %}
+    </tbody>
+</table>

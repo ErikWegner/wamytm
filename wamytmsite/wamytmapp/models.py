@@ -52,3 +52,11 @@ class TimeRange(models.Model):
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT)
 
     objects = TimeRangeManager()
+
+    def save(self, *args, **kwargs):
+        if self.end == None:
+            self.end = self.start
+        super().save(*args, **kwargs)
+
+    def getDayCount(self):
+        return (self.end - self.start).days
