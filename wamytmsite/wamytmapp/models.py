@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -21,6 +22,22 @@ class TeamMember(models.Model):
         return f"{self.user} ({self.orgunit})"
 
 
+class TimeRangeManager(models.Manager):
+    def thisWeek(self):
+        """
+            Return all TimeRange objects that start during this week or
+            that end during this week.
+        """
+        today = datetime.date.today()
+        monday = today - datetime.timedelta(days=today.weekday())
+        friday = monday + datetime.timedelta(days=5)
+        return super().get_queryset().filter(
+            start__gte=monday,
+            start__lte=friday,
+            end__gte=monday,
+            end__lte=friday)
+
+
 class TimeRange(models.Model):
     ABSENT = 'a'
     PRESENT = 'p'
@@ -33,3 +50,5 @@ class TimeRange(models.Model):
     start = models.DateField()
     end = models.DateField(blank=True)
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT)
+
+    objects = TimeRangeManager()
