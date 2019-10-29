@@ -1,16 +1,23 @@
 {% load bootstrap4 %}
 
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/style.css' %}">
+
+<a href="{% url 'wamytmapp:add' %}" class="btn btn-primary">Neuer Eintrag</a> | Gesamter Monat
+
 <h2>Diese Woche</h2>
 
-<table class="table table-sm">
+<table class="table table-sm presence">
     <thead>
         <tr>
             <th scope="col">Person</th>
-            <th scope="col">Montag</th>
-            <th scope="col">Dienstag</th>
-            <th scope="col">Mittwoch</th>
-            <th scope="col">Donnerstag</th>
-            <th scope="col">Freitag</th>
+            {% for day in days %}
+            <th scope="col">{{ day }}</th>
+            {% endfor %}
         </tr>
     </thead>
     <tbody>
@@ -18,7 +25,11 @@
         <tr>
             <th scope="row">{{ item.user }}</th>
             {% for day in item.days %}
+            {% if day == 0%}
+            <td class="empty"></td>
+            {% else %}
             <td class="kind-{{ day }}">{{ day }}</td>
+            {% endif %}
             {% endfor %}
         </tr>        
         {% endfor %}

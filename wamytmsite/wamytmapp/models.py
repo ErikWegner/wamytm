@@ -31,11 +31,19 @@ class TimeRangeManager(models.Manager):
         today = datetime.date.today()
         monday = today - datetime.timedelta(days=today.weekday())
         friday = monday + datetime.timedelta(days=5)
+        return self.eventsInRange(monday, friday)
+
+
+    def eventsInRange(self, start: datetime.date, end: datetime.date):
+        """
+            Return all TimeRange objects that overlap with the
+            start and end date
+        """
         return super().get_queryset().filter(
-            start__gte=monday,
-            start__lte=friday,
-            end__gte=monday,
-            end__lte=friday)
+            start__gte=start,
+            start__lte=end,
+            end__gte=start,
+            end__lte=end)
 
 
 class TimeRange(models.Model):
@@ -60,3 +68,6 @@ class TimeRange(models.Model):
 
     def getDayCount(self):
         return (self.end - self.start).days
+
+    def __str__(self):
+        return f"TimeRange({self.start}, {self.end})"

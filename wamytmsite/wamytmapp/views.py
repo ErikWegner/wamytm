@@ -1,5 +1,5 @@
-from django.http import HttpResponse
-from django.template import loader
+import datetime
+from django.shortcuts import render
 from typing import List
 
 from .models import TimeRange
@@ -16,10 +16,9 @@ def _prepareWeekdata(weekdata: List[TimeRange]):
     collector = {}
     for item in weekdata:
         if item.user not in collector:
-            daysinit = TimeRange.ABSENT if item.kind == TimeRange.PRESENT else TimeRange.PRESENT
             days = []
             for _ in range(5):
-                days.append(daysinit) 
+                days.append(0) 
             collector[item.user] = {"days": days, "kind": item.kind}
         for d in range(item.start.weekday(), 1 + item.end.weekday()):
             collector[item.user]["days"][d] = item.kind
@@ -30,9 +29,18 @@ def _prepareWeekdata(weekdata: List[TimeRange]):
 
 
 def index(request):
+    today = datetime.date.today()
+    monday = today - datetime.timedelta(days=today.weekday())
+    days = []
+    for weekday in range(5):
+        days.append(monday + datetime.timedelta(days=weekday))
     timeranges_thisweek = _prepareWeekdata(TimeRange.objects.thisWeek())
-    template = loader.get_template('wamytmapp/index.html')
     context = {
         'this_week': timeranges_thisweek,
+        'days': days 
     }
-    return HttpResponse(template.render(context, request))
+    return render(request, 'wamytmapp/index.html', context)
+
+
+def add(request):
+    return render(request, 'wamytmapp/add.html')
