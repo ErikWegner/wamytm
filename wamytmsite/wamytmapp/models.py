@@ -3,6 +3,14 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from typing import List
+
+
+class OrgUnitManager(models.Manager):
+    def selectListItems(self):
+        all_org_units = super().all()
+        toplevel = get_children(all_org_units, 0)
+        return toplevel
 
 
 class OrgUnit(models.Model):
@@ -10,12 +18,15 @@ class OrgUnit(models.Model):
     parent = models.ForeignKey(
         'self', on_delete=models.CASCADE, blank=True, null=True)
 
+    objects = OrgUnitManager()
+
     def __str__(self):
         return self.name
 
 
 class TeamMember(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, primary_key=True,)
     orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
@@ -33,7 +44,6 @@ class TimeRangeManager(models.Manager):
         friday = monday + datetime.timedelta(days=5)
         return self.eventsInRange(monday, friday)
 
-
     def eventsInRange(self, start: datetime.date, end: datetime.date):
         """
             Return all TimeRange objects that overlap with the
@@ -49,11 +59,13 @@ class TimeRangeManager(models.Manager):
 class TimeRange(models.Model):
     ABSENT = 'a'
     PRESENT = 'p'
+    MOBILE = 'm'
     KIND_CHOICES = [
         (ABSENT, 'absent'),
         (PRESENT, 'present'),
+        (MOBILE, 'mobile'),
     ]
-    user = models.OneToOneField(TeamMember, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
     start = models.DateField()
     end = models.DateField(blank=True)
@@ -71,3 +83,20 @@ class TimeRange(models.Model):
 
     def __str__(self):
         return f"TimeRange({self.start}, {self.end})"
+
+
+def get_children(org_units: List[OrgUnit], parent_id=0, level=0):
+    if level > 1:
+        return []
+    r = []
+    for org_unit in org_units:
+        if (parent_id == 0 and org_unit.parent is None and level == 0) or parent_id == org_unit.parent_id:
+            children = get_children(
+                org_units, parent_id=org_unit.id, level=level+1)
+            # Does element has children?
+            if len(children) > 0:
+                children.insert(0, (org_unit.id, org_unit.name))
+                r.append((org_unit.name, tuple(children)))
+            else:
+                r.append((org_unit.id, org_unit.name))
+    return r

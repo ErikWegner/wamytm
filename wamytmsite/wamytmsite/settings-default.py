@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'd=obs7er4hiwg2tayz0rff*p4oy()few!zd1u^+ep2usv3gp!#'
+SECRET_KEY = 'totally-random-data-here-to-encrypt-sensitive-data'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'wamytmapp.apps.WamytmappConfig',
     'bootstrap4',
+    'social_django',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,6 +52,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'social_core.backends.keycloak.KeycloakOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 ROOT_URLCONF = 'wamytmsite.urls'
 
 TEMPLATES = [
@@ -64,10 +70,26 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
 ]
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'social_core.pipeline.social_auth.associate_by_email',
+)
+
+SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
 
 WSGI_APPLICATION = 'wamytmsite.wsgi.application'
 
@@ -120,3 +142,21 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LOGIN_URL = "/login/keycloak"
+
+# Clients > Client ID
+SOCIAL_AUTH_KEYCLOAK_KEY = "client-id"
+
+# Clients > Client > Credentials > Secret
+SOCIAL_AUTH_KEYCLOAK_SECRET = "479bb2c4-91e1-4fea-8de7-f32e1070c235"
+
+# Realm Settings > Keys > Public key
+SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6y3OlNRUTxC8/KlOijET1ZZH0/hBWclxEWsrP7tsYP5DlP0nO5dCrRYXlyogNd+LOFn5ccbNQTqqdtmbonOKNvuwWtncelJSuHlCc/iqyPe9fe5favUBmNr0kwFY0A8yjqxpJRwuQihbxz2PTRgOsTDNfvUo/sVLlmLSZe9wSdZ/h9kEqzXyolySxe3tJxMdalzaVh/4D01XWjj3ofEZwG0hAgNhUely2q424xc0IuWaqUEKNIO8ts8FyiM4UtgQPJloHxWfkxWFbGVoY1fiDIhH+f5GlPZZZB9munplF1QREWVT2JPy/DbQYQBkKx+s+QP1np94SiApJpUtp/c46wIDAQAB"
+
+SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = 'https://keycloakserver:port/auth/realms/<realm>/protocol/openid-connect/auth'
+SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = 'https://keycloakserver:port/auth/realms/<realm>/protocol/openid-connect/token'
+SOCIAL_AUTH_KEYCLOAK_ID_KEY = "username"
+
+# Can be set to False for development
+VERIFY_SSL = True

@@ -1,12 +1,6 @@
-{% load bootstrap4 %}
+{% extends 'wamytmapp/base.html' %}
 
-{# Load CSS and JavaScript #}
-{% bootstrap_css %}
-{% bootstrap_javascript jquery='full' %}
-
-{% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/style.css' %}">
-
+{% block content %}
 <a href="{% url 'wamytmapp:add' %}" class="btn btn-primary">Neuer Eintrag</a> | Gesamter Monat
 
 <h2>Diese Woche</h2>
@@ -35,3 +29,4 @@
         {% endfor %}
     </tbody>
 </table>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% load bootstrap4 %}
+{% load static %}
+<html>
+
+<head>
+    <title>Korporator</title>
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery='full' %}
+    <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/style.css' %}">
+</head>
+
+<body>
+    <div class="content container">
+            <nav class="navbar navbar-light bg-light navbar-expand">
+                <a class="navbar-brand" href="{% url 'wamytmapp:index' %}">Korporator</a>
+            </nav>
+        <div class="row">
+            <div class="col-md-12">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
