@@ -1,8 +1,10 @@
 import datetime
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.translation import gettext_lazy as _
 from typing import List
 
 
@@ -90,6 +92,11 @@ class TimeRange(models.Model):
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT)
 
     objects = TimeRangeManager()
+
+    def clean(self):
+        print('clean')
+        if self.end is not None and self.end < self.start:
+            raise ValidationError({'end': _('End date may not be before start date.')})
 
     def save(self, *args, **kwargs):
         if self.end == None:

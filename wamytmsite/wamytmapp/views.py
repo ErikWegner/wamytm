@@ -1,4 +1,5 @@
 import datetime
+from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic import FormView
 from django.shortcuts import render
@@ -78,8 +79,17 @@ def add(request):
         form = AddTimeRangeForm(data=request.POST, user=request.user)
         if form.is_valid():
             time_range = form.get_time_range()
-            time_range.save()
-            return HttpResponseRedirect(reverse('wamytmapp:index'))
+            try:
+                time_range.full_clean()
+                time_range.save()
+                return HttpResponseRedirect(reverse('wamytmapp:index'))
+            except ValidationError as e:
+                for field in e.message_dict.keys():
+                    for error in e.message_dict[field]:
+                        form.add_error(field, error)
+                # Do something based on the errors contained in e.message_dict.
+                # Display them to a user, or handle them programmatically.
+                pass
     else:
         form = AddTimeRangeForm(user=request.user)
 
