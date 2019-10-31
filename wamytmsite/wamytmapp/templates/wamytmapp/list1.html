@@ -1,0 +1,33 @@
+{% extends 'wamytmapp/base.html' %}
+
+{% block content %}
+
+<table class="table table-sm presence">
+    {% for line in lines %}
+    {% if forloop.counter0|divisibleby:14 %}
+    <thead>
+        <tr>
+            <th scope="col">Datum</th>
+            {% for user in users %}
+            <th scope="col">{{ user }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+    {% endif %}
+        <tr>
+            <th scope="row">{{ line.day }}</th>
+            {% for col in line.cols %}
+            {% if col %}
+            <td class="kind-{{ col.kind }}">X</td>
+            {% else %}
+            <td></td>
+            {% endif %}
+            {% endfor %}
+        </tr>
+    {% if forloop.counter0|divisibleby:14 %}
+    </tbody>
+    {% endif %}
+    {% endfor %}
+</table>
+{% endblock %}

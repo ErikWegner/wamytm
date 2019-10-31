@@ -45,6 +45,13 @@ def save_teammember(sender, instance, **kwargs):
 
 
 class TimeRangeManager(models.Manager):
+    def list1(self, start, end):
+        if start is None:
+            start = datetime.date.today()
+        if end is None or end < start:
+            end = start + datetime.timedelta(days=100)
+        return (self.eventsInRange(start, end), start, end)
+
     def thisWeek(self):
         """
             Return all TimeRange objects that start during this week or

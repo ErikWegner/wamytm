@@ -1,7 +1,11 @@
 .presence .kind-a {
-    background-color: brown;
+    background-color: #d66262;
 }
 
 .presence .kind-p {
-    background-color: darkseagreen;
+    background-color: #8fbc8f;
+}
+
+.presence .kind-m {
+    background-color: #8292ee;
 }
