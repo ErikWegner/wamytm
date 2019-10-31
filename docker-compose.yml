@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD:PEqmZ9dt
+      - POSTGRES_USER:postgres
+    volumes: 
+      - wamytm-db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  keycloak:
+    image: jboss/keycloak
+    environment: 
+      - KEYCLOAK_USER=k-admin
+      - KEYCLOAK_PASSWORD=s3c4stroNG
+    ports:
+      - 8443:8443
+
+volumes:
+  wamytm-db:
+    driver: local

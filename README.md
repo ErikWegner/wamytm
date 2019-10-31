@@ -30,6 +30,23 @@
 
 ## Development
 
-### Run Keycloak container
+- Run keycloak and postgres: `docker-compose up -d`
+- Check logs: `docker-compose logs -f`
 
-    docker run -d -e KEYCLOAK_USER=k-admin -e KEYCLOAK_PASSWORD=s3c4stroNG -P jboss/keycloak
+- Setup database:
+
+    docker exec -it wamytm_db_1 psql -U postgres
+        create user wamytm with encrypted password 'Stw9nUvm';
+        alter role wamytm set client_encoding to 'utf8';
+        alter role wamytm set default_transaction_isolation to 'read committed';
+        alter role wamytm set timezone to 'UTC';
+        create database wamytmdb;
+        revoke CONNECT on DATABASE wamytmdb from public;
+        grant all on DATABASE wamytmdb to wamytm;
+        alter database wamytmdb owner to wamytm;
+        \c wamytmdb
+        alter schema public owner to wamytm;
+        \q
+
+- Example users:
+  user1:3itsvxks, user2:Fq5vnMfj

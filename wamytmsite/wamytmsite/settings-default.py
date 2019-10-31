@@ -98,9 +98,21 @@ WSGI_APPLICATION = 'wamytmsite.wsgi.application'
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
+
+# SQLite
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#    }
+
+# Postgres
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'wamytmdb',
+        'USER': 'wamytm',
+        'PASSWORD': 'Stw9nUvm',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
 
@@ -146,17 +158,17 @@ STATIC_URL = '/static/'
 LOGIN_URL = "/login/keycloak"
 
 # Clients > Client ID
-SOCIAL_AUTH_KEYCLOAK_KEY = "client-id"
+SOCIAL_AUTH_KEYCLOAK_KEY = "wamytm"
 
 # Clients > Client > Credentials > Secret
-SOCIAL_AUTH_KEYCLOAK_SECRET = "479bb2c4-91e1-4fea-8de7-f32e1070c235"
+SOCIAL_AUTH_KEYCLOAK_SECRET = "435b767e-27c0-42a7-9aac-3606a243fe61"
 
 # Realm Settings > Keys > Public key
-SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6y3OlNRUTxC8/KlOijET1ZZH0/hBWclxEWsrP7tsYP5DlP0nO5dCrRYXlyogNd+LOFn5ccbNQTqqdtmbonOKNvuwWtncelJSuHlCc/iqyPe9fe5favUBmNr0kwFY0A8yjqxpJRwuQihbxz2PTRgOsTDNfvUo/sVLlmLSZe9wSdZ/h9kEqzXyolySxe3tJxMdalzaVh/4D01XWjj3ofEZwG0hAgNhUely2q424xc0IuWaqUEKNIO8ts8FyiM4UtgQPJloHxWfkxWFbGVoY1fiDIhH+f5GlPZZZB9munplF1QREWVT2JPy/DbQYQBkKx+s+QP1np94SiApJpUtp/c46wIDAQAB"
+SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgEp4ZxJ5hIEFxUZ4q3EIPsu1H81MdKv/F3phNijPQq9rS8IPTr06Yd/RxlSMvOUk0NYEmcbbHn+4/igXLSLRZcZYcom2c2r3lbkaUCGZy9MtQO1pDVcKMMEKiBl9Xhd1YjhyjTUuzX0C4vJEKwqAq8cz0O42bgdVLHtgz98G7XxsyPpgaUyyYkTqmZw9UNz0QCAervOgYYbdJi3CH6LqX1EcsT7pv3B4XvYNbpjxvMsCUjEUzntMTbpYlbsXYFcpeA6fjbpM/F6xBwWfkK/gC52acV87xbSWjbISJnpaFVM9EOI1Lp4KEiYiv5/0FpdKDdRMZJNTCOTE+UpQGbVfuwIDAQAB"
 
-SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = 'https://keycloakserver:port/auth/realms/<realm>/protocol/openid-connect/auth'
-SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = 'https://keycloakserver:port/auth/realms/<realm>/protocol/openid-connect/token'
+SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = 'https://localhost:8443/auth/realms/wamytmdev/protocol/openid-connect/auth'
+SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = 'https://localhost:8443/auth/realms/wamytmdev/protocol/openid-connect/token'
 SOCIAL_AUTH_KEYCLOAK_ID_KEY = "username"
 
 # Can be set to False for development
-VERIFY_SSL = True
+VERIFY_SSL = False

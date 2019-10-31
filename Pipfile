@@ -12,6 +12,7 @@ django = "*"
 django-bootstrap4 = "*"
 social-auth-app-django = "*"
 social-auth-core = {extras = ["openidconnect"],version = "*"}
+psycopg2 = "*"
 
 [requires]
 python_version = "3.7"

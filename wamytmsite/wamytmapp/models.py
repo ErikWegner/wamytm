@@ -33,6 +33,17 @@ class TeamMember(models.Model):
         return f"{self.user} ({self.orgunit})"
 
 
+@receiver(post_save, sender=User)
+def create_teammember(sender, instance, created, **kwargs):
+    if created:
+        TeamMember.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_teammember(sender, instance, **kwargs):
+    instance.teammember.save()
+
+
 class TimeRangeManager(models.Manager):
     def thisWeek(self):
         """
