@@ -1,6 +1,11 @@
 {% extends 'wamytmapp/base.html' %}
+{% load bootstrap4 %}
 
 {% block content %}
+
+<form action="{% url 'wamytmapp:list1' %}" method="get" role="form" id="filterform">
+    {% bootstrap_form ouselect %}
+</form>
 
 <table class="table table-sm presence">
     {% for line in lines %}
@@ -15,8 +20,8 @@
     </thead>
     <tbody>
     {% endif %}
-        <tr>
-            <th scope="row">{{ line.day }}</th>
+        <tr{% if line.start_of_week %} class="start-of-week"{% endif %}>
+            <th scope="row">{{ line.day | date:"d. M (D)" }}</th>
             {% for col in line.cols %}
             {% if col %}
             <td class="kind-{{ col.kind }}">X</td>

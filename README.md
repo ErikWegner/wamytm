@@ -6,11 +6,16 @@
 - Configure `settings.py`
   
   | `settings.py`| Description |
-  +--------------+--------------+
+  |--------------|--------------|
   | `SECRET_KEY` | a random value |
   | `DEBUG`      | set it to `False` in production |
   | `DATABASES`  | see https://docs.djangoproject.com/en/2.2/ref/settings/#databases |
 - Configure Keycloak
+- Run `pipenv shell` to enter a Python virtual environment
+- Run `pipenv install` to install dependencies
+- Run `cd wamytmsite && python manage.py migrate` to initialize database
+- Run `cd wamytmsite && python manage.py createsuperuser` to create backend admin
+- Run `cd wamytmsite && python manage.py runserver` to start the application
 
 ## Keycloak-Login
 

@@ -47,3 +47,26 @@ class CreateSelectListItemsFromOrgUnitsTest(TestCase):
             ("B", (
                 (7, "B"), (10, "Ba"), (12, "Bb")
             ))])
+
+    def test_structure3(self):
+        """
+        A structure with child elements
+        """
+        # Arrange
+        org_units = []
+        a = OrgUnit(name="A", id=3)
+        b = OrgUnit(name="B", id=7)
+        org_units.append(a)
+        org_units.append(OrgUnit(name="Aa", id=4, parent=a))
+        org_units.append(OrgUnit(name="Ab", id=5, parent=a))
+        org_units.append(OrgUnit(name="Ba", id=10, parent=b))
+        org_units.append(OrgUnit(name="C", id=8))
+        org_units.append(OrgUnit(name="Bb", id=12, parent=b))
+        org_units.append(b)
+
+        # Act
+        result = get_children(org_units, a.id)
+
+        # Assert
+        self.assertEquals(result, [
+            (4, "Aa"), (5, "Ab")])

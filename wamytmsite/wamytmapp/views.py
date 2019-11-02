@@ -8,7 +8,7 @@ from django.urls import reverse
 from typing import List
 
 from .models import TimeRange
-from .forms import AddTimeRangeForm
+from .forms import AddTimeRangeForm, OrgUnitFilterForm
 
 
 def _prepareWeekdata(weekdata: List[TimeRange]):
@@ -34,12 +34,17 @@ def _prepareWeekdata(weekdata: List[TimeRange]):
     return result
 
 
-def _prepareList1Data(events: List[TimeRange], start, end):
+def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True):
     lines = []
     users = []
-    for day in range((end - start).days):
+    for day_delta in range((end - start).days):
+        day = start + datetime.timedelta(days=day_delta)
+        weekday = day.weekday()
+        if businessDaysOnly and (weekday > 4):
+            continue
         lines.append({
-            'day': start + datetime.timedelta(days=day)
+            'day': day,
+            'start_of_week': weekday == 0
         })
     for event in events:
         for day in range((event.end - event.start).days + 1):
@@ -99,6 +104,10 @@ def add(request):
 def list1(request):
     start = request.GET.get('from')
     end = request.GET.get('to')
-    events, start, end = TimeRange.objects.list1(start, end)
+    orgunitparamvalue = request.GET.get('orgunit')
+    orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
+    events, start, end = TimeRange.objects.list1(start, end, orgunit)
     viewdata = _prepareList1Data(events, start, end)
+    viewdata['ouselect'] = OrgUnitFilterForm(data=request.GET)
+
     return render(request, 'wamytmapp/list1.html', viewdata)

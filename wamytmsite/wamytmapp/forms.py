@@ -30,8 +30,9 @@ class AddTimeRangeForm(forms.Form):
         self.user = kwargs.pop('user', None)
         super(AddTimeRangeForm, self).__init__(*args, **kwargs)
         self.fields['user'].initial = self.user.username
-        self.fields['orgunit_id'].choices=OrgUnit.objects.selectListItems()
-        self.fields['orgunit_id'].initial=TeamMember.objects.get(pk=self.user.id).orgunit_id
+        self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
+        self.fields['orgunit_id'].initial = TeamMember.objects.get(
+            pk=self.user.id).orgunit_id
 
     def get_time_range(self):
         if self.is_valid() == False:
@@ -42,3 +43,13 @@ class AddTimeRangeForm(forms.Form):
         del(cleaned_data['user'])
 
         return TimeRange(**cleaned_data)
+
+
+class OrgUnitFilterForm(forms.Form):
+    orgunit = forms.ChoiceField(
+        required=False,
+        choices=OrgUnit.objects.selectListItemsWithAllChoice(),
+        widget=forms.Select(
+            attrs={'onchange': 'filterform.submit();'}
+        ),
+        label='Organizational unit')

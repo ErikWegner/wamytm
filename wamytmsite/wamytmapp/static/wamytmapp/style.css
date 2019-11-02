@@ -9,3 +9,7 @@
 .presence .kind-m {
     background-color: #8292ee;
 }
+
+tr.start-of-week {
+    border-top: #000000 3px solid;
+}

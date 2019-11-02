@@ -14,6 +14,19 @@ class OrgUnitManager(models.Manager):
         toplevel = get_children(all_org_units, 0)
         return toplevel
 
+    def selectListItemsWithAllChoice(self):
+        all_org_units = super().all()
+        toplevel = get_children(all_org_units, 0)
+        toplevel.insert(0, ("", "All"))
+        return toplevel
+
+    def listDescendants(self, parent_id):
+        all_org_units = super().all()
+        descendants = get_children(all_org_units, parent_id)
+        descendants = [d[0] for d in descendants]
+        descendants.insert(0, parent_id)
+        return descendants
+
 
 class OrgUnit(models.Model):
     name = models.CharField(max_length=80)
@@ -47,12 +60,14 @@ def save_teammember(sender, instance, **kwargs):
 
 
 class TimeRangeManager(models.Manager):
-    def list1(self, start, end):
+    def list1(self, start, end, orgunit=None):
         if start is None:
             start = datetime.date.today()
         if end is None or end < start:
             end = start + datetime.timedelta(days=100)
-        return (self.eventsInRange(start, end), start, end)
+        orgunits = OrgUnit.objects.listDescendants(
+            orgunit) if orgunit is not None else None
+        return (self.eventsInRange(start, end, orgunits), start, end)
 
     def thisWeek(self):
         """
@@ -64,16 +79,19 @@ class TimeRangeManager(models.Manager):
         friday = monday + datetime.timedelta(days=5)
         return self.eventsInRange(monday, friday)
 
-    def eventsInRange(self, start: datetime.date, end: datetime.date):
+    def eventsInRange(self, start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):
         """
             Return all TimeRange objects that overlap with the
             start and end date
         """
-        return super().get_queryset().filter(
+        query = super().get_queryset().filter(
             start__gte=start,
             start__lte=end,
             end__gte=start,
             end__lte=end)
+        if orgunits is not None:
+            query = query.filter(orgunit__in=orgunits)
+        return query
 
 
 class TimeRange(models.Model):
@@ -96,7 +114,8 @@ class TimeRange(models.Model):
     def clean(self):
         print('clean')
         if self.end is not None and self.end < self.start:
-            raise ValidationError({'end': _('End date may not be before start date.')})
+            raise ValidationError(
+                {'end': _('End date may not be before start date.')})
 
     def save(self, *args, **kwargs):
         if self.end == None:
@@ -111,8 +130,6 @@ class TimeRange(models.Model):
 
 
 def get_children(org_units: List[OrgUnit], parent_id=0, level=0):
-    if level > 1:
-        return []
     r = []
     for org_unit in org_units:
         if (parent_id == 0 and org_unit.parent is None and level == 0) or parent_id == org_unit.parent_id:
