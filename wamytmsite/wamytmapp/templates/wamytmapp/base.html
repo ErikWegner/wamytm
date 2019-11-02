@@ -7,13 +7,38 @@
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/style.css' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'wamytmapp/favicon/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'wamytmapp/favicon/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'wamytmapp/favicon/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'wamytmapp/favicon/site.webmanifest' %}">
+    <link rel="mask-icon" href="{% static 'wamytmapp/favicon/safari-pinned-tab.svg' %}" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
 </head>
 
 <body>
     <div class="content container">
-            <nav class="navbar navbar-light bg-light navbar-expand">
-                <a class="navbar-brand" href="{% url 'wamytmapp:index' %}">Korporator</a>
-            </nav>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="{% url 'wamytmapp:index' %}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20">
+                    <path d="M0 0h20v20H0z" fill="#ccc" fill-opacity=".992" paint-order="fill markers stroke" />
+                    <path
+                        d="M15.127 1.763l-2.102.025c-3.27 2.907-5.45 4.68-8.75 7.546l-1.283 9.95h3.86l-.05-4.22 5.885 4.197 4.325.028-10.16-8.737v-.057zM4.274.813v5.603L6.85 4.182V.376z"
+                        fill="#00ab00" fill-opacity=".992" paint-order="fill markers stroke" /></svg>
+                Korporator</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a class="nav-item nav-link" href="{% url 'wamytmapp:index' %}">Startseite</a>
+                    <a class="nav-item nav-link" href="{% url 'wamytmapp:add' %}">Neuer Eintrag</a>
+                    <a class="nav-item nav-link" href="{% url 'wamytmapp:list1' %}">3-Monats-Vorschau</a>
+                    <a class="nav-item nav-link" href="{% url 'wamytmapp:profile' %}">Profil</a>
+                </div>
+            </div>
+        </nav>
         <div class="row">
             <div class="col-md-12">
                 {% block content %}

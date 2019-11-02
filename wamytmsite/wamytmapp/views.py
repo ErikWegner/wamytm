@@ -7,8 +7,8 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from typing import List
 
-from .models import TimeRange
-from .forms import AddTimeRangeForm, OrgUnitFilterForm
+from .models import TimeRange, TeamMember
+from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm
 
 
 def _prepareWeekdata(weekdata: List[TimeRange]):
@@ -103,9 +103,11 @@ def add(request):
 
 def list1(request):
     startparamvalue = request.GET.get('from')
-    start = datetime.datetime.strptime(startparamvalue, "%Y-%m-%d") if startparamvalue else None
+    start = datetime.datetime.strptime(
+        startparamvalue, "%Y-%m-%d") if startparamvalue else None
     endparamvalue = request.GET.get('to')
-    end = datetime.datetime.strptime(endparamvalue, "%Y-%m-%d") if endparamvalue else None
+    end = datetime.datetime.strptime(
+        endparamvalue, "%Y-%m-%d") if endparamvalue else None
     orgunitparamvalue = request.GET.get('orgunit')
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
     events, start, end = TimeRange.objects.list1(start, end, orgunit)
@@ -113,3 +115,27 @@ def list1(request):
     viewdata['ouselect'] = OrgUnitFilterForm(data=request.GET)
 
     return render(request, 'wamytmapp/list1.html', viewdata)
+
+
+@login_required
+def profile(request):
+    if request.method == 'POST':
+        form = ProfileForm(data=request.POST, user=request.user)
+        if form.is_valid():
+            orgunit_id = form.cleaned_data['orgunit']
+            try:
+                teammember = TeamMember.objects.get(pk=request.user.id)
+                teammember.orgunit_id = orgunit_id
+                teammember.save()
+                return HttpResponseRedirect(reverse('wamytmapp:index'))
+            except ValidationError as e:
+                for field in e.message_dict.keys():
+                    for error in e.message_dict[field]:
+                        form.add_error(field, error)
+                # Do something based on the errors contained in e.message_dict.
+                # Display them to a user, or handle them programmatically.
+                pass
+    else:
+        form = ProfileForm(user=request.user)
+
+    return render(request, 'wamytmapp/profile.html', {'form': form})

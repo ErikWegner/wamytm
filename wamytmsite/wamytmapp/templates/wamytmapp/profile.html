@@ -1,0 +1,20 @@
+{% extends 'wamytmapp/base.html' %}
+{% load bootstrap4 %}
+
+{% block content %}
+
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+        <h1 class="display-4">Profil</h1>
+        <p class="lead">Einstellungen zum Anmeldekonto.</p>
+    </div>
+</div>
+
+{% bootstrap_form_errors form layout='inline' %}
+<form action="{% url 'wamytmapp:profile' %}" method="post" role="form">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons submit='OK' reset="Cancel" %}{% endbuttons %}
+</form>
+
+{% endblock %}
