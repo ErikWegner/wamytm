@@ -102,8 +102,10 @@ def add(request):
 
 
 def list1(request):
-    start = request.GET.get('from')
-    end = request.GET.get('to')
+    startparamvalue = request.GET.get('from')
+    start = datetime.datetime.strptime(startparamvalue, "%Y-%m-%d") if startparamvalue else None
+    endparamvalue = request.GET.get('to')
+    end = datetime.datetime.strptime(endparamvalue, "%Y-%m-%d") if endparamvalue else None
     orgunitparamvalue = request.GET.get('orgunit')
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
     events, start, end = TimeRange.objects.list1(start, end, orgunit)
