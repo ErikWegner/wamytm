@@ -11,11 +11,15 @@ class TimeRangeManagerTestQueries(TestCase):
         
         # An object inside the boundaries
         self.inside = self.hasTimeRangeObject('2019-11-05', '2019-11-05')
+        # An object overlapping to the left
+        self.leftOverlap = self.hasTimeRangeObject('2019-11-01', '2019-11-04')
+        # An object overlapping to the right
+        self.rightOverlap = self.hasTimeRangeObject('2019-11-09', '2019-11-15')
         # An object totally outside the boundaries (earlier)
         self.outsideLeft = self.hasTimeRangeObject('2019-11-01', '2019-11-01')
         # An object totally outside the boundaries (later)
         self.outsideRight = self.hasTimeRangeObject('2019-11-11', '2019-11-11')
-
+        
         # Monday (left boundary)
         self.queryStart = self.d('2019-11-04')
         # Sunday (right boundary)
@@ -24,8 +28,17 @@ class TimeRangeManagerTestQueries(TestCase):
         # Filter events
         self.result = TimeRange.objects.eventsInRange(self.queryStart, self.queryEnd)
 
+    def test_expectedNumOfDates(self):
+        self.assertEqual(len(self.result), 3)
+
     def test_dateWithinRange(self):
-        self.assertEqual(len(self.result), 1)
+        self.assertTrue(self.inside in self.result)
+
+    def test_dateOverlapLeft(self):
+        self.assertTrue(self.leftOverlap in self.result)
+
+    def test_dateOverlapRight(self):
+        self.assertTrue(self.rightOverlap in self.result)
 
     def hasTimeRangeObject(self, start: str, end: str):
         startDate = self.d(start)
