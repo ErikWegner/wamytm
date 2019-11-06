@@ -55,3 +55,5 @@
 
 - Example users:
   user1:3itsvxks, user2:Fq5vnMfj
+
+- Run tests: `DJANGO_SETTINGS_MODULE=wamytmsite.settings.test python manage.py test`

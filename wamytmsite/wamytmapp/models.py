@@ -1,7 +1,8 @@
 import datetime
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.contrib.auth.models import User
+from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
@@ -85,10 +86,11 @@ class TimeRangeManager(models.Manager):
             start and end date
         """
         query = super().get_queryset().filter(
-            start__gte=start,
-            start__lte=end,
-            end__gte=start,
-            end__lte=end)
+            Q(start__gte=start,
+              start__lte=end,
+              ) | Q(end__gte=start,
+                    end__lte=end)
+        )
         if orgunits is not None:
             query = query.filter(orgunit__in=orgunits)
         return query
