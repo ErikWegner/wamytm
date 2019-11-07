@@ -15,7 +15,7 @@
     <tbody>
         {% for item in this_week %}
         <tr>
-            <th scope="row">{{ item.user }}</th>
+            <th scope="row">{{ item.user.last_name }}, {{ item.user.first_name }}</th>
             {% for day in item.days %}
             {% if day == 0%}
             <td class="empty"></td>

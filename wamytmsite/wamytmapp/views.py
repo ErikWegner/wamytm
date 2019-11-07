@@ -25,8 +25,8 @@ def _prepareWeekdata(weekdata: List[TimeRange]):
             days = []
             for _ in range(5):
                 days.append(0)
-            collector[item.user] = {"days": days, "kind": item.kind}
-        for d in range(item.start.weekday(), 1 + item.end.weekday()):
+            collector[item.user] = {"days": days}
+        for d in range(item.start_trim.weekday(), 1 + item.end_trim.weekday()):
             collector[item.user]["days"][d] = item.kind
     result = []
     for user in collector:

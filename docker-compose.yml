@@ -19,6 +19,13 @@ services:
     ports:
       - 8443:8443
 
+
+  django:
+    build: .
+    image: a:1
+    ports:
+      - 8000:8000
+
 volumes:
   wamytm-db:
     driver: local

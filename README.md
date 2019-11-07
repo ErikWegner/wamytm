@@ -40,7 +40,8 @@
 
 - Setup database:
 
-    docker exec -it wamytm_db_1 psql -U postgres
+        docker exec -it wamytm_db_1 psql -U postgres
+
         create user wamytm with encrypted password 'Stw9nUvm';
         alter role wamytm set client_encoding to 'utf8';
         alter role wamytm set default_transaction_isolation to 'read committed';
@@ -56,4 +57,9 @@
 - Example users:
   user1:3itsvxks, user2:Fq5vnMfj
 
-- Run tests: `DJANGO_SETTINGS_MODULE=wamytmsite.settings.test python manage.py test`
+- Run tests:
+  - Bash: `DJANGO_SETTINGS_MODULE=wamytmsite.settings.test python manage.py test`
+  - PowerShell: 
+
+        [System.Environment]::SetEnvironmentVariable('DJANGO_SETTINGS_MODULE', "wamytmsite.settings.test")
+        python manage.py test

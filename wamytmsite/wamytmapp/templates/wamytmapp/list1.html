@@ -11,10 +11,10 @@
     {% for line in lines %}
     {% if forloop.counter0|divisibleby:14 %}
     <thead>
-        <tr>
+        <tr class="bg-light">
             <th scope="col">Datum</th>
             {% for user in users %}
-            <th scope="col">{{ user }}</th>
+            <th scope="col">{{ user.last_name }}, {{ user.first_name }}</th>
             {% endfor %}
         </tr>
     </thead>

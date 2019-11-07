@@ -2,7 +2,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
+from django.db.models.functions import Greatest, Least
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
@@ -77,7 +77,7 @@ class TimeRangeManager(models.Manager):
         """
         today = datetime.date.today()
         monday = today - datetime.timedelta(days=today.weekday())
-        friday = monday + datetime.timedelta(days=5)
+        friday = monday + datetime.timedelta(days=4)
         return self.eventsInRange(monday, friday)
 
     def eventsInRange(self, start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):
@@ -86,13 +86,15 @@ class TimeRangeManager(models.Manager):
             start and end date
         """
         query = super().get_queryset().filter(
-            Q(start__gte=start,
-              start__lte=end,
-              ) | Q(end__gte=start,
-                    end__lte=end)
+            start__lte=end,
+            end__gte=start).annotate(
+                start_trim=Greatest('start', start),
+                end_trim=Least('end', end)
         )
+
         if orgunits is not None:
             query = query.filter(orgunit__in=orgunits)
+
         return query
 
 
