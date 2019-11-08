@@ -12,19 +12,18 @@ from typing import List
 class OrgUnitManager(models.Manager):
     def selectListItems(self):
         all_org_units = super().all()
-        toplevel = get_children(all_org_units, 0)
+        toplevel = get_children(all_org_units)
         return toplevel
 
     def selectListItemsWithAllChoice(self):
         all_org_units = super().all()
-        toplevel = get_children(all_org_units, 0)
+        toplevel = get_children(all_org_units)
         toplevel.insert(0, ("", "All"))
         return toplevel
 
     def listDescendants(self, parent_id):
         all_org_units = super().all()
-        descendants = get_children(all_org_units, parent_id)
-        descendants = [d[0] for d in descendants]
+        descendants = collect_descendents(all_org_units, parent_id)
         descendants.insert(0, parent_id)
         return descendants
 
@@ -132,17 +131,39 @@ class TimeRange(models.Model):
     def __str__(self):
         return f"TimeRange({self.start}, {self.end})"
 
+def collect_descendents(org_units: List[OrgUnit], parent_id: int):
+    collected_ids = []
+    ids_to_check = [parent_id]
+    while True:
+        pid = ids_to_check.pop(0)
+        for org_unit in org_units:
+            if org_unit.parent_id == pid:
+                collected_ids.append(org_unit.id)
+        if len(ids_to_check) == 0:
+            break
+    return collected_ids
 
-def get_children(org_units: List[OrgUnit], parent_id=0, level=0):
-    r = []
+def get_children(org_units: List[OrgUnit]):
+    z = []
+    c = {}
     for org_unit in org_units:
-        if (parent_id == 0 and org_unit.parent is None and level == 0) or parent_id == org_unit.parent_id:
-            children = get_children(
-                org_units, parent_id=org_unit.id, level=level+1)
-            # Does element has children?
-            if len(children) > 0:
-                children.insert(0, (org_unit.id, org_unit.name))
-                r.append((org_unit.name, tuple(children)))
-            else:
-                r.append((org_unit.id, org_unit.name))
+        if org_unit.parent is None:
+            if org_unit.id not in c.keys():
+                z.append(org_unit)
+                c[org_unit.id] = []
+        else:
+            if org_unit.parent_id not in c.keys():
+                z.append(org_unit.parent)
+                c[org_unit.parent_id] = []
+            c[org_unit.parent_id].append(org_unit)
+
+    r = []
+    for org_unit in z:
+        if org_unit.parent is None:
+            r.append((org_unit.id, org_unit.name))
+        if org_unit.id in c and len(c[org_unit.id]) > 0:
+            charr = []
+            for child_org_unit in c[org_unit.id]:
+                charr.append((child_org_unit.id, child_org_unit.name))
+            r.append((org_unit.name, tuple(charr)))
     return r
