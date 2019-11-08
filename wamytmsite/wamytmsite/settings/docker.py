@@ -111,7 +111,7 @@ DATABASES = {
         'NAME': 'wamytmdb',
         'USER': 'wamytm',
         'PASSWORD': 'Stw9nUvm',
-        'HOST': 'localhost',
+        'HOST': '192.168.99.104',
         'PORT': '',
     }
 }
@@ -161,13 +161,13 @@ LOGIN_URL = "/login/keycloak"
 SOCIAL_AUTH_KEYCLOAK_KEY = "wamytm"
 
 # Clients > Client > Credentials > Secret
-SOCIAL_AUTH_KEYCLOAK_SECRET = "435b767e-27c0-42a7-9aac-3606a243fe61"
+SOCIAL_AUTH_KEYCLOAK_SECRET = "6fd1a212-deed-450c-b28d-3170a0c6102c"
 
 # Realm Settings > Keys > Public key
-SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgEp4ZxJ5hIEFxUZ4q3EIPsu1H81MdKv/F3phNijPQq9rS8IPTr06Yd/RxlSMvOUk0NYEmcbbHn+4/igXLSLRZcZYcom2c2r3lbkaUCGZy9MtQO1pDVcKMMEKiBl9Xhd1YjhyjTUuzX0C4vJEKwqAq8cz0O42bgdVLHtgz98G7XxsyPpgaUyyYkTqmZw9UNz0QCAervOgYYbdJi3CH6LqX1EcsT7pv3B4XvYNbpjxvMsCUjEUzntMTbpYlbsXYFcpeA6fjbpM/F6xBwWfkK/gC52acV87xbSWjbISJnpaFVM9EOI1Lp4KEiYiv5/0FpdKDdRMZJNTCOTE+UpQGbVfuwIDAQAB"
+SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAi+kqpBNvyrNIEmOecvYajaLj8jzBbfpYvzP5sPrDAI3itFs4NEK17KlOJec/qGWiwW3fABdofHJIxY/SmX2NufPHDRrIIsS19J0GmzmfTrUtn1LF0B/xJnehdLHDDf5ehNLmgaPLheVreP3AEZNwczHFEU/Uw1SQLLSDpj3yBHLhu+V5gwiAYZCuMhQU/+AVR14JGSxUMN/gUKc6aPfRRnvxz9Dl3Z/N3pWxtN3gr0Uprk0hw7pBTZlFvio/W8gEGFZMClPaXhYk5B7uHLHKJJXNpoOAS07xNyAwPivy1tiFWotKTl90TElpzgiWPnPoCwJWGvxKrWB0M5qAFDOtYwIDAQAB"
 
-SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = 'https://localhost:8443/auth/realms/wamytmdev/protocol/openid-connect/auth'
-SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = 'https://localhost:8443/auth/realms/wamytmdev/protocol/openid-connect/token'
+SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = 'https://192.168.99.104:8443/auth/realms/wamytmdev/protocol/openid-connect/auth'
+SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = 'https://192.168.99.104:8443/auth/realms/wamytmdev/protocol/openid-connect/token'
 SOCIAL_AUTH_KEYCLOAK_ID_KEY = "username"
 
 # Can be set to False for development
