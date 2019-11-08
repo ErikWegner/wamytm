@@ -37,18 +37,25 @@ def _prepareWeekdata(weekdata: List[TimeRange]):
 def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True):
     lines = []
     users = []
+    week_is_even = True
+    four_week_counter = 0
     for day_delta in range((end - start).days):
         day = start + datetime.timedelta(days=day_delta)
         weekday = day.weekday()
+        if weekday == 0:
+            four_week_counter = (four_week_counter + 1) % 4
+            week_is_even = not week_is_even
         if businessDaysOnly and (weekday > 4):
             continue
         lines.append({
             'day': day,
+            'week_is_even': week_is_even,
+            'four_week_counter': four_week_counter,
             'start_of_week': weekday == 0
         })
     for event in events:
-        for day in range((event.end - event.start).days + 1):
-            line_index = (event.start - start).days + day
+        for day in range((event.end_trim - event.start_trim).days + 1):
+            line_index = (event.start_trim - start).days + day
             if event.user not in users:
                 users.append(event.user)
             lines[line_index][event.user] = event
@@ -102,17 +109,23 @@ def add(request):
 
 
 def list1(request):
-    startparamvalue = request.GET.get('from')
-    start = datetime.datetime.strptime(
-        startparamvalue, "%Y-%m-%d") if startparamvalue else None
-    endparamvalue = request.GET.get('to')
-    end = datetime.datetime.strptime(
-        endparamvalue, "%Y-%m-%d") if endparamvalue else None
-    orgunitparamvalue = request.GET.get('orgunit')
+    filterform = OrgUnitFilterForm(data=request.GET)
+    orgunitparamvalue = None
+    start = None
+    end = None
+    orgunit = None
+    if filterform.is_valid():
+        startparamvalue = filterform.cleaned_data['fd']
+        start = datetime.datetime.strptime(
+            startparamvalue, "%Y-%m-%d") if startparamvalue else None
+        endparamvalue = filterform.cleaned_data['td']
+        end = datetime.datetime.strptime(
+            endparamvalue, "%Y-%m-%d") if endparamvalue else None
+        orgunitparamvalue = filterform.cleaned_data['orgunit']
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
     events, start, end = TimeRange.objects.list1(start, end, orgunit)
     viewdata = _prepareList1Data(events, start, end)
-    viewdata['ouselect'] = OrgUnitFilterForm(data=request.GET)
+    viewdata['ouselect'] = filterform
 
     return render(request, 'wamytmapp/list1.html', viewdata)
 

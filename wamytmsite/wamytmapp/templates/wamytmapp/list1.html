@@ -9,9 +9,9 @@
 
 <table class="table table-sm presence">
     {% for line in lines %}
-    {% if forloop.counter0|divisibleby:14 %}
+    {% if forloop.counter0 == 0 or forloop.counter0 > 8 and line.start_of_week and line.four_week_counter == 1  %}
     <thead>
-        <tr class="bg-light">
+        <tr class="bg-secondary">
             <th scope="col">Datum</th>
             {% for user in users %}
             <th scope="col">{{ user.last_name }}, {{ user.first_name }}</th>
@@ -20,7 +20,7 @@
     </thead>
     <tbody>
     {% endif %}
-        <tr{% if line.start_of_week %} class="start-of-week"{% endif %}>
+        <tr class="{% if line.week_is_even %}bg-light {% endif %}{% if line.start_of_week %}start-of-week {% endif %}">
             <th scope="row">{{ line.day | date:"d. M (D)" }}</th>
             {% for col in line.cols %}
             {% if col %}

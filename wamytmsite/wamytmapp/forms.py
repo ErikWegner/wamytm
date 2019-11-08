@@ -30,7 +30,7 @@ class AddTimeRangeForm(forms.Form):
         self.user = kwargs.pop('user', None)
         super(AddTimeRangeForm, self).__init__(*args, **kwargs)
         self.fields['user'].initial = self.user.username
-        self.fields['orgunit_id'].choices=OrgUnit.objects.selectListItems()
+        self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit_id'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id
 
@@ -46,6 +46,8 @@ class AddTimeRangeForm(forms.Form):
 
 
 class OrgUnitFilterForm(forms.Form):
+    fd = forms.CharField(required=False, widget=forms.HiddenInput())
+    td = forms.CharField(required=False, widget=forms.HiddenInput())
     orgunit = forms.ChoiceField(
         required=False,
         widget=forms.Select(
@@ -55,7 +57,7 @@ class OrgUnitFilterForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['orgunit'].choices=OrgUnit.objects.selectListItemsWithAllChoice()
+        self.fields['orgunit'].choices = OrgUnit.objects.selectListItemsWithAllChoice()
 
 
 class ProfileForm(forms.Form):
@@ -66,6 +68,6 @@ class ProfileForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        self.fields['orgunit'].choices=OrgUnit.objects.selectListItems()
+        self.fields['orgunit'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id
