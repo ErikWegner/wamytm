@@ -14,7 +14,12 @@
 <form action="{% url 'wamytmapp:add' %}" method="post" role="form">
     {% csrf_token %}
     {% bootstrap_form form %}
-    {% buttons submit='OK' reset="Cancel" %}{% endbuttons %}
+    {% buttons %}
+    <button type="submit" class="btn btn-primary">
+        Submit
+    </button>
+    <a href="{% url 'wamytmapp:index' %}" class="btn btn-secondary">Cancel</a>
+    {% endbuttons %}
 </form>
 
 {% endblock %}
