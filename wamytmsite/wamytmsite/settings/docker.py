@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -51,6 +52,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 AUTHENTICATION_BACKENDS = [
     'social_core.backends.keycloak.KeycloakOAuth2',
@@ -111,7 +114,7 @@ DATABASES = {
         'NAME': 'wamytmdb',
         'USER': 'wamytm',
         'PASSWORD': 'Stw9nUvm',
-        'HOST': '192.168.99.104',
+        'HOST': '127.0.0.1',
         'PORT': '',
     }
 }
@@ -164,10 +167,10 @@ SOCIAL_AUTH_KEYCLOAK_KEY = "wamytm"
 SOCIAL_AUTH_KEYCLOAK_SECRET = "6fd1a212-deed-450c-b28d-3170a0c6102c"
 
 # Realm Settings > Keys > Public key
-SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAi+kqpBNvyrNIEmOecvYajaLj8jzBbfpYvzP5sPrDAI3itFs4NEK17KlOJec/qGWiwW3fABdofHJIxY/SmX2NufPHDRrIIsS19J0GmzmfTrUtn1LF0B/xJnehdLHDDf5ehNLmgaPLheVreP3AEZNwczHFEU/Uw1SQLLSDpj3yBHLhu+V5gwiAYZCuMhQU/+AVR14JGSxUMN/gUKc6aPfRRnvxz9Dl3Z/N3pWxtN3gr0Uprk0hw7pBTZlFvio/W8gEGFZMClPaXhYk5B7uHLHKJJXNpoOAS07xNyAwPivy1tiFWotKTl90TElpzgiWPnPoCwJWGvxKrWB0M5qAFDOtYwIDAQAB"
+SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkLtT0iHeSbvf02GDKlnCO7ftuS6U7tefBIW2oA9tzzdF2neJ9qvG3RrKVa4ozxl1ODZLSQuNIRFDLerK2WUcLpoZVBXEMb9KENMytJDmt5sPKayK2UE3ZMT8lIMKEAqLEfIEOmQy7S1gsAXGXmhGg0sZStObr8s3krwFFtBOr3HeubEr0csKHWdy6iT8cVpwFg1and/uT9djhac0YcZZF+ZYndjjfEl8PLwCct8ypvX9n2iaszgUxiBW02qHYXZ4D/u8k8FbTIjRgW98/RgLefb1n1EK/0icGDxNVujkxIJMrrOsYGMrsHs+0spdQv7Z0Vg/79djUYfsJmRzoIAlpQIDAQAB"
 
-SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = 'https://192.168.99.104:8443/auth/realms/wamytmdev/protocol/openid-connect/auth'
-SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = 'https://192.168.99.104:8443/auth/realms/wamytmdev/protocol/openid-connect/token'
+SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = 'https://127.0.0.1:8443/auth/realms/wamytmdev/protocol/openid-connect/auth'
+SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = 'https://127.0.0.1:8443/auth/realms/wamytmdev/protocol/openid-connect/token'
 SOCIAL_AUTH_KEYCLOAK_ID_KEY = "username"
 
 # Can be set to False for development

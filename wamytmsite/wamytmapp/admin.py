@@ -26,6 +26,7 @@ admin.site.register(User, UserAdmin)
 
 class BasicAdminSite(admin.AdminSite):
     site_header = "Korporator"
+    index_title = "Korporator administration area"
 
     def has_permission(self, request):
         return True
@@ -42,7 +43,7 @@ class TimeRangeBasicAdmin(admin.ModelAdmin):
         return True
 
     def has_add_permission(self, request):
-        return True
+        return False
 
     def has_view_permission(self, request, obj = None):
         if obj is None:

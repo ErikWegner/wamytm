@@ -106,7 +106,11 @@ def add(request):
 
 
 def list1(request):
-    filterform = OrgUnitFilterForm(data=request.GET)
+    filterformvalues = request.GET.copy()
+    if request.user is not None and 'orgunit' not in filterformvalues:
+        filterformvalues['orgunit'] = TeamMember.objects.get(
+                pk=request.user.id).orgunit_id
+    filterform = OrgUnitFilterForm(filterformvalues)
     orgunitparamvalue = None
     start = None
     end = None
