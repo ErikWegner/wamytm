@@ -2,7 +2,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
+from django.db.models.functions import Greatest, Least
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
@@ -12,19 +12,18 @@ from typing import List
 class OrgUnitManager(models.Manager):
     def selectListItems(self):
         all_org_units = super().all()
-        toplevel = get_children(all_org_units, 0)
+        toplevel = get_children(all_org_units)
         return toplevel
 
     def selectListItemsWithAllChoice(self):
         all_org_units = super().all()
-        toplevel = get_children(all_org_units, 0)
+        toplevel = get_children(all_org_units)
         toplevel.insert(0, ("", "All"))
         return toplevel
 
     def listDescendants(self, parent_id):
         all_org_units = super().all()
-        descendants = get_children(all_org_units, parent_id)
-        descendants = [d[0] for d in descendants]
+        descendants = collect_descendents(all_org_units, parent_id)
         descendants.insert(0, parent_id)
         return descendants
 
@@ -77,7 +76,7 @@ class TimeRangeManager(models.Manager):
         """
         today = datetime.date.today()
         monday = today - datetime.timedelta(days=today.weekday())
-        friday = monday + datetime.timedelta(days=5)
+        friday = monday + datetime.timedelta(days=4)
         return self.eventsInRange(monday, friday)
 
     def eventsInRange(self, start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):
@@ -86,13 +85,15 @@ class TimeRangeManager(models.Manager):
             start and end date
         """
         query = super().get_queryset().filter(
-            Q(start__gte=start,
-              start__lte=end,
-              ) | Q(end__gte=start,
-                    end__lte=end)
+            start__lte=end,
+            end__gte=start).annotate(
+                start_trim=Greatest('start', start),
+                end_trim=Least('end', end)
         )
+
         if orgunits is not None:
             query = query.filter(orgunit__in=orgunits)
+
         return query
 
 
@@ -130,17 +131,39 @@ class TimeRange(models.Model):
     def __str__(self):
         return f"TimeRange({self.start}, {self.end})"
 
+def collect_descendents(org_units: List[OrgUnit], parent_id: int):
+    collected_ids = []
+    ids_to_check = [parent_id]
+    while True:
+        pid = ids_to_check.pop(0)
+        for org_unit in org_units:
+            if org_unit.parent_id == pid:
+                collected_ids.append(org_unit.id)
+        if len(ids_to_check) == 0:
+            break
+    return collected_ids
 
-def get_children(org_units: List[OrgUnit], parent_id=0, level=0):
-    r = []
+def get_children(org_units: List[OrgUnit]):
+    z = []
+    c = {}
     for org_unit in org_units:
-        if (parent_id == 0 and org_unit.parent is None and level == 0) or parent_id == org_unit.parent_id:
-            children = get_children(
-                org_units, parent_id=org_unit.id, level=level+1)
-            # Does element has children?
-            if len(children) > 0:
-                children.insert(0, (org_unit.id, org_unit.name))
-                r.append((org_unit.name, tuple(children)))
-            else:
-                r.append((org_unit.id, org_unit.name))
+        if org_unit.parent is None:
+            if org_unit.id not in c.keys():
+                z.append(org_unit)
+                c[org_unit.id] = []
+        else:
+            if org_unit.parent_id not in c.keys():
+                z.append(org_unit.parent)
+                c[org_unit.parent_id] = []
+            c[org_unit.parent_id].append(org_unit)
+
+    r = []
+    for org_unit in z:
+        if org_unit.parent is None:
+            r.append((org_unit.id, org_unit.name))
+        if org_unit.id in c and len(c[org_unit.id]) > 0:
+            charr = []
+            for child_org_unit in c[org_unit.id]:
+                charr.append((child_org_unit.id, child_org_unit.name))
+            r.append((org_unit.name, tuple(charr)))
     return r

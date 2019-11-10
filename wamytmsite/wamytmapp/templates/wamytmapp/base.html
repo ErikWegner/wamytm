@@ -1,11 +1,11 @@
-{% load bootstrap4 %}
 {% load static %}
 <html>
 
 <head>
     <title>Korporator</title>
-    {% bootstrap_css %}
-    {% bootstrap_javascript jquery='full' %}
+    <script src="{% static 'wamytmapp/jquery-3.4.1.slim.min.js' %}"></script>
+    <script src="{% static 'wamytmapp/bootstrap.bundle.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/bootstrap.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/style.css' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'wamytmapp/favicon/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'wamytmapp/favicon/favicon-32x32.png' %}">
@@ -36,6 +36,7 @@
                     <a class="nav-item nav-link" href="{% url 'wamytmapp:add' %}">Neuer Eintrag</a>
                     <a class="nav-item nav-link" href="{% url 'wamytmapp:list1' %}">3-Monats-Vorschau</a>
                     <a class="nav-item nav-link" href="{% url 'wamytmapp:profile' %}">Profil</a>
+                    <a class="nav-item nav-link" href="{% url 'ka:index' %}">Verwaltung</a>
                 </div>
             </div>
         </nav>
@@ -46,6 +47,9 @@
             </div>
         </div>
     </div>
+
+{% include 'wamytmapp/footer.html' %}
+
 </body>
 
 </html>

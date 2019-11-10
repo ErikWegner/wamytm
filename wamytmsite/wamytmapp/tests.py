@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import OrgUnit, get_children
+from .models import OrgUnit, collect_descendents, get_children
 
 
 class CreateSelectListItemsFromOrgUnitsTest(TestCase):
@@ -40,13 +40,16 @@ class CreateSelectListItemsFromOrgUnitsTest(TestCase):
 
         # Assert
         self.assertEquals(result, [
+            (3, "A"),
             ("A", (
-                (3, "A"), (4, "Aa"), (5, "Ab")
+                (4, "Aa"), (5, "Ab")
+            )),
+            (7, "B"),
+            ("B", (
+                (10, "Ba"), (12, "Bb")
             )),
             (8, "C"),
-            ("B", (
-                (7, "B"), (10, "Ba"), (12, "Bb")
-            ))])
+        ])
 
     def test_structure3(self):
         """
@@ -65,8 +68,51 @@ class CreateSelectListItemsFromOrgUnitsTest(TestCase):
         org_units.append(b)
 
         # Act
-        result = get_children(org_units, a.id)
+        result = collect_descendents(org_units, a.id)
 
         # Assert
-        self.assertEquals(result, [
-            (4, "Aa"), (5, "Ab")])
+        self.assertEquals(result, [4, 5])
+
+    def test_nestedlevels(self):
+        """
+        A structure with sublevels of children
+        """
+        # Arrange
+        org_units = []
+
+        def adder(name, id, parent):
+            ou = OrgUnit(name=name, id=id, parent=parent)
+            org_units.append(ou)
+            return ou
+
+        # Top level
+        t = adder("top", 1, None)
+        # Second level
+        ou1 = adder("l1-ou1", 10, t)
+        ou2 = adder("l1-ou2", 20, t)
+        # Third level
+        adder("l2-ou1", 11, ou1)
+        ou3 = adder("l2-ou2", 12, ou1)
+        ou4 = adder("l2-ou3", 21, ou2)
+        adder("l2-ou4", 22, ou2)
+        # Fourth level
+        adder("l3-ou1", 121, ou3)
+        adder("l3-ou2", 122, ou3)
+        adder("l3-ou3", 211, ou4)
+        adder("l3-ou4", 212, ou4)
+
+        # Act
+        result = get_children(org_units)
+
+        # Assert
+        self.assertSequenceEqual(result, [
+            (1, 'top'),
+
+            ('top', ((10, 'l1-ou1'), (20, 'l1-ou2'))),
+
+            ('l1-ou1', ((11, 'l2-ou1'), (12, 'l2-ou2'))),
+            ('l1-ou2', ((21, 'l2-ou3'), (22, 'l2-ou4'))),
+
+            ('l2-ou2', ((121, 'l3-ou1'), (122, 'l3-ou2'))),
+            ('l2-ou3', ((211, 'l3-ou3'), (212, 'l3-ou4'))),
+        ])
