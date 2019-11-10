@@ -18,9 +18,12 @@ from django.urls import include, path
 from django.conf.urls import url
 from django.shortcuts import redirect
 
+from wamytmapp.admin import korporator_admin
+
 urlpatterns = [
     path('cal/', include('wamytmapp.urls')),
     path('admin/', admin.site.urls),
+    path('ka/', korporator_admin.urls, name="ka"),
     url('', include('social_django.urls', namespace='social')),
     url(r'^$', lambda request: redirect('cal/', permanent=False)),
 ]

@@ -99,9 +99,6 @@ def add(request):
                 for field in e.message_dict.keys():
                     for error in e.message_dict[field]:
                         form.add_error(field, error)
-                # Do something based on the errors contained in e.message_dict.
-                # Display them to a user, or handle them programmatically.
-                pass
     else:
         form = AddTimeRangeForm(user=request.user)
 

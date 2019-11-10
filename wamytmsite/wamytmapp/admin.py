@@ -23,3 +23,45 @@ class UserAdmin(BaseUserAdmin):
 # Re-register UserAdmin
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+
+class BasicAdminSite(admin.AdminSite):
+    site_header = "Korporator"
+
+    def has_permission(self, request):
+        return True
+
+korporator_admin = BasicAdminSite(name="ka")
+
+class TimeRangeBasicAdmin(admin.ModelAdmin):
+    readonly_fields = ('user',)
+    view_on_site = False
+    list_display = ('start', 'end', 'kind')
+    list_filter = ('start', 'kind')
+
+    def has_module_permission(self, request):
+        return True
+
+    def has_add_permission(self, request):
+        return True
+
+    def has_view_permission(self, request, obj = None):
+        if obj is None:
+            return True #False will be interpreted as meaning that the current user is not permitted to view any object of this type
+        return self._isOwner(request, obj)
+
+    def has_change_permission(self, request, obj = None):
+        return self._isOwner(request, obj)
+
+    def has_delete_permission(self, request, obj = None):
+        return self._isOwner(request, obj)
+
+    def _isOwner(self, request, obj = None):
+        if obj is None:
+            return False
+        return obj.user_id == request.user.id
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(user=request.user)
+
+korporator_admin.register(TimeRange, TimeRangeBasicAdmin)
