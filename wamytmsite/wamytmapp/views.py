@@ -39,6 +39,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
     users = []
     week_is_even = True
     four_week_counter = 0
+    # prepare all rows
     for day_delta in range((end - start).days):
         day = start + datetime.timedelta(days=day_delta)
         weekday = day.weekday()
@@ -54,16 +55,24 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
             'start_of_week': weekday == 0
         })
     for event in events:
-        for day in range((event.end_trim - event.start_trim).days + 1):
-            line_index = (event.start_trim - start).days + day
+        for line in lines:
+            day = line['day']
+            # check if the day of the row is in the duration of the event
+            if day < event.start or day > event.end:
+                continue
+            # record any user with an event
             if event.user not in users:
                 users.append(event.user)
-            lines[line_index][event.user] = event
+            # and the event to the row
+            line[event.user] = event
     for line in lines:
+        # prepare columns for every recorded user
         cols = []
         for user in users:
             if user in line:
+                # append the event to the columns of the row
                 cols.append(line[user])
+                # remove unnecessary data from the final view data
                 del(line[user])
             else:
                 cols.append([])
@@ -107,7 +116,7 @@ def add(request):
 
 def list1(request):
     filterformvalues = request.GET.copy()
-    if request.user is not None and 'orgunit' not in filterformvalues:
+    if request.user is not None and request.user.is_authenticated and 'orgunit' not in filterformvalues:
         filterformvalues['orgunit'] = TeamMember.objects.get(
                 pk=request.user.id).orgunit_id
     filterform = OrgUnitFilterForm(filterformvalues)

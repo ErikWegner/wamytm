@@ -29,7 +29,7 @@ class BasicAdminSite(admin.AdminSite):
     index_title = "Korporator administration area"
 
     def has_permission(self, request):
-        return True
+        return request.user is not None and request.user.is_authenticated
 
 korporator_admin = BasicAdminSite(name="ka")
 

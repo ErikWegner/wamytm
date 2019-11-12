@@ -2,7 +2,7 @@ import datetime
 from django.test import TestCase
 from django.contrib.auth.models import User
 from .models import TimeRange, OrgUnit
-from .views import _prepareWeekdata
+from .views import _prepareWeekdata, _prepareList1Data
 
 
 class ViewsTests(TestCase):
@@ -14,6 +14,42 @@ class ViewsTests(TestCase):
         self.org_unit = OrgUnit(name='unittestou')
         self.org_unit.save()
 
+    def test_prepareList1Data(self):
+        # Arrange
+        today = datetime.date.today()
+        monday = today - datetime.timedelta(days=today.weekday())
+        next_monday = monday + datetime.timedelta(days=7)
+        friday_2weeks = next_monday + datetime.timedelta(days=(4+7))
+
+        self.hasTimeRangeObject(next_monday, friday_2weeks, self.users[4])
+
+        range_start = monday
+        range_end = range_start + datetime.timedelta(days=27)
+
+        # Act
+        queryResult = TimeRange.objects.eventsInRange(range_start, range_end)
+        result = _prepareList1Data(queryResult, range_start, range_end)
+
+        # Assert
+        self.assertEqual(range_start.weekday(), 0, "Starts on Monday")
+        self.assertEqual(range_end.weekday(), 6, "Ends on Sunday")
+        self.assertEqual(len(result['lines']), 20,
+                         "output is 4 weeks with 5 days a week")
+        for i, line in enumerate(result['lines']):
+            line_date = line['day']
+            self.assertEqual(line['start_of_week'], line_date.weekday(
+            ) == 0, F"start_of_week failed on ${line_date}")
+            if i <= 4:
+                self.assertEqual(
+                    result['lines'][i]['cols'], [[]], F"Any day in the first week has no item, but day {line_date} ({i}) has")
+            elif i <= 14:
+                self.assertNotEqual(
+                    result['lines'][i]['cols'], [[]], F"Any day in the 2nd and 3rd week has an item, but day {line_date} ({i}) has none")
+            else:
+                self.assertEqual(
+                    result['lines'][i]['cols'], [[]], F"Any day in the last week has no item, but day {line_date} ({i}) has")
+
+    def test_prepareWeekData(self):
         today = datetime.date.today()
         monday = today - datetime.timedelta(days=today.weekday())
         wednesday = monday + datetime.timedelta(days=2)
@@ -36,7 +72,6 @@ class ViewsTests(TestCase):
         self.outsideRight = self.hasTimeRangeObject(
             monday + datetime.timedelta(days=9), monday + datetime.timedelta(days=12), self.users[0])
 
-    def test_prepareWeekData(self):
         # Act
         queryResult = TimeRange.objects.thisWeek()
         result = _prepareWeekdata(queryResult)
