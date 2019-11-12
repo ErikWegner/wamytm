@@ -11,6 +11,8 @@ COPY wamytmsite/ .
 
 RUN mkdir -p /usr/src/app/wamytmsite/staticfiles/
 
+RUN DATABASE="" SECRET_KEY="1" DJANGO_SETTINGS_MODULE=wamytmsite.settings.docker ./manage.py collectstatic
+
 EXPOSE 8000
 
 ENV DJANGO_SETTINGS_MODULE wamytmsite.settings.docker
