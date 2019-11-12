@@ -22,7 +22,7 @@ services:
 
   django:
     build: .
-    image: a:1
+    image: wamytm:1
     ports:
       - 8000:8000
 

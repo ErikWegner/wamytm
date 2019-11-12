@@ -9,6 +9,10 @@ RUN pip install --no-cache-dir pipenv && pipenv install --system --deploy
 
 COPY wamytmsite/ .
 
+RUN mkdir -p /usr/src/app/wamytmsite/staticfiles/
+
 EXPOSE 8000
 
-CMD [ "python", "./manage.py", "runserver", "0.0.0.0:8000", "--noreload" ]
+ENV DJANGO_SETTINGS_MODULE wamytmsite.settings.docker
+
+CMD [ "gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "wamytmsite.wsgi" ]
