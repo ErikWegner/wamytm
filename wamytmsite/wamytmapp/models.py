@@ -139,6 +139,7 @@ def collect_descendents(org_units: List[OrgUnit], parent_id: int):
         for org_unit in org_units:
             if org_unit.parent_id == pid:
                 collected_ids.append(org_unit.id)
+                ids_to_check.append(org_unit.id)
         if len(ids_to_check) == 0:
             break
     return collected_ids
