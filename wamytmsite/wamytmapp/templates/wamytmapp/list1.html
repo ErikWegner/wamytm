@@ -26,7 +26,7 @@
             {% if col %}
             <td class="kind-{{ col.kind }}">X</td>
             {% else %}
-            <td></td>
+            <td>{{ trc[col.kind] }}</td>
             {% endif %}
             {% endfor %}
         </tr>

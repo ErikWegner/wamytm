@@ -29,7 +29,7 @@ class AddTimeRangeForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super(AddTimeRangeForm, self).__init__(*args, **kwargs)
-        self.fields['user'].initial = self.user.username
+        self.fields['user'].initial = self.user.first_name + " " + self.user.last_name
         self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit_id'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id
