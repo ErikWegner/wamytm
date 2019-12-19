@@ -90,7 +90,7 @@ def index(request):
     context = {
         'this_week': timeranges_thisweek,
         'days': days,
-        'trc': TimeRange.KIND_CHOICES
+        'trc': TimeRange.VIEWS_LEGEND
     }
     return render(request, 'wamytmapp/index.html', context)
 
@@ -137,7 +137,7 @@ def list1(request):
     events, start, end = TimeRange.objects.list1(start, end, orgunit)
     viewdata = _prepareList1Data(events, start, end)
     viewdata['ouselect'] = filterform
-    viewdata['trc'] = TimeRange.KIND_CHOICES
+    viewdata['trc'] = TimeRange.VIEWS_LEGEND
 
     return render(request, 'wamytmapp/list1.html', viewdata)
 

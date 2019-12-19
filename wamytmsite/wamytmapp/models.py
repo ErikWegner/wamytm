@@ -106,6 +106,11 @@ class TimeRange(models.Model):
         (PRESENT, 'present'),
         (MOBILE, 'mobile'),
     ]
+    VIEWS_LEGEND = {
+        ABSENT: 'absent',
+        PRESENT: 'present',
+        MOBILE: 'mobile'
+    }
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
     start = models.DateField()
@@ -130,6 +135,20 @@ class TimeRange(models.Model):
 
     def __str__(self):
         return f"TimeRange({self.start}, {self.end})"
+
+class AllDayEventsManager(models.Manager):
+    pass
+
+# TODO: Migration
+# TODO: Permission to add/edit/delete
+class AllDayEvent(models.Model):
+    description = models.TextField(max_length=100)
+    day = models.DateField()
+
+    objects = AllDayEventsManager()
+
+    def __str__(self):
+        return f"All day event on {self.day}: {self.description}"
 
 def collect_descendents(org_units: List[OrgUnit], parent_id: int):
     collected_ids = []

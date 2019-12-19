@@ -1,4 +1,5 @@
 {% extends 'wamytmapp/base.html' %}
+{% load get_value_from_dict %}
 
 {% block content %}
 <h2>Diese Woche</h2>
@@ -20,7 +21,7 @@
             {% if day == 0%}
             <td class="empty"></td>
             {% else %}
-            <td class="kind-{{ day }}">{{ trc[day] }}</td>
+            <td class="kind-{{ day }}">{{ trc|get_value_from_dict:day }}</td>
             {% endif %}
             {% endfor %}
         </tr>        

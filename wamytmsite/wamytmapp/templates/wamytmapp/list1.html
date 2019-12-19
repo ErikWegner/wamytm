@@ -1,5 +1,6 @@
 {% extends 'wamytmapp/base.html' %}
 {% load bootstrap4 %}
+{% load get_value_from_dict %}
 
 {% block content %}
 
@@ -24,9 +25,9 @@
             <th scope="row">{{ line.day | date:"d. M (D)" }}</th>
             {% for col in line.cols %}
             {% if col %}
-            <td class="kind-{{ col.kind }}">X</td>
+            <td class="kind-{{ col.kind }}">{% with col.kind as k %}{{ trc|get_value_from_dict:k }}{% endwith %}</td>
             {% else %}
-            <td>{{ trc[col.kind] }}</td>
+            <td></td>
             {% endif %}
             {% endfor %}
         </tr>
