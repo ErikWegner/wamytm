@@ -106,6 +106,11 @@ class TimeRange(models.Model):
         (PRESENT, 'present'),
         (MOBILE, 'mobile'),
     ]
+    VIEWS_LEGEND = {
+        ABSENT: 'absent',
+        PRESENT: 'present',
+        MOBILE: 'mobile'
+    }
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
     start = models.DateField()
@@ -131,6 +136,59 @@ class TimeRange(models.Model):
     def __str__(self):
         return f"TimeRange({self.start}, {self.end})"
 
+
+class AllDayEventsManager(models.Manager):
+    def eventsInRange(self, start: datetime.date, end: datetime.date):
+        """
+            Return all TimeRange objects that overlap with the
+            start and end date
+        """
+        query = super().get_queryset().filter(
+            day__lte=end,
+            day__gte=start)
+
+        return query
+
+
+# TODO: Migration
+# TODO: Permission to add/edit/delete
+class AllDayEvent(models.Model):
+    description = models.TextField(max_length=100)
+    day = models.DateField()
+
+    objects = AllDayEventsManager()
+
+    def __str__(self):
+        return f"All day event on {self.day}: {self.description}"
+
+
+def query_events_timeranges(start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):
+    alldayevents = AllDayEvent.objects.eventsInRange(start, end)
+    timeranges = TimeRange.objects.eventsInRange(start, end, orgunits)
+    return timeranges, alldayevents
+
+
+def query_events_timeranges_in_week(day_of_week: datetime.date = None, orgunits: List[OrgUnit] = None):
+    """
+        Return all TimeRange objects that start during this week or
+        that end during this week.
+    """
+    today = datetime.date.today() if day_of_week is None else day_of_week
+    monday = today - datetime.timedelta(days=today.weekday())
+    friday = monday + datetime.timedelta(days=4)
+    return query_events_timeranges(monday, friday)
+
+
+def query_events_list1(start, end, orgunit=None):
+    if start is None:
+        start = datetime.date.today()
+    if end is None or end < start:
+        end = start + datetime.timedelta(days=100)
+    orgunits = OrgUnit.objects.listDescendants(
+        orgunit) if orgunit is not None else None
+    return (query_events_timeranges(start, end, orgunits), start, end)
+
+
 def collect_descendents(org_units: List[OrgUnit], parent_id: int):
     collected_ids = []
     ids_to_check = [parent_id]
@@ -139,9 +197,11 @@ def collect_descendents(org_units: List[OrgUnit], parent_id: int):
         for org_unit in org_units:
             if org_unit.parent_id == pid:
                 collected_ids.append(org_unit.id)
+                ids_to_check.append(org_unit.id)
         if len(ids_to_check) == 0:
             break
     return collected_ids
+
 
 def get_children(org_units: List[OrgUnit]):
     z = []

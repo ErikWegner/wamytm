@@ -7,9 +7,14 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from typing import List
 
-from .models import TimeRange, TeamMember
+from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm
 
+class DayHeader:
+    def __init__(self, day: datetime.date):
+        self.day = day
+        self.allday = False
+        pass
 
 def _prepareWeekdata(weekdata: List[TimeRange]):
     """
@@ -39,6 +44,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
     users = []
     week_is_even = True
     four_week_counter = 0
+    # prepare all rows
     for day_delta in range((end - start).days):
         day = start + datetime.timedelta(days=day_delta)
         weekday = day.weekday()
@@ -48,22 +54,31 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
         if businessDaysOnly and (weekday > 4):
             continue
         lines.append({
-            'day': day,
+            'day': DayHeader(day),
             'week_is_even': week_is_even,
             'four_week_counter': four_week_counter,
             'start_of_week': weekday == 0
         })
     for event in events:
-        for day in range((event.end_trim - event.start_trim).days + 1):
-            line_index = (event.start_trim - start).days + day
+        for line in lines:
+            dh = line['day']
+            day = dh.day
+            # check if the day of the row is in the duration of the event
+            if day < event.start or day > event.end:
+                continue
+            # record any user with an event
             if event.user not in users:
                 users.append(event.user)
-            lines[line_index][event.user] = event
+            # and the event to the row
+            line[event.user] = event
     for line in lines:
+        # prepare columns for every recorded user
         cols = []
         for user in users:
             if user in line:
+                # append the event to the columns of the row
                 cols.append(line[user])
+                # remove unnecessary data from the final view data
                 del(line[user])
             else:
                 cols.append([])
@@ -72,15 +87,24 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 
 
 def index(request):
+    weekdelta = int(request.GET['weekdelta']) if "weekdelta" in request.GET else 0
     today = datetime.date.today()
-    monday = today - datetime.timedelta(days=today.weekday())
+    monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
     days = []
     for weekday in range(5):
-        days.append(monday + datetime.timedelta(days=weekday))
-    timeranges_thisweek = _prepareWeekdata(TimeRange.objects.thisWeek())
+        dh = DayHeader(monday + datetime.timedelta(days=weekday))
+        days.append(dh)
+    timeranges, alldayevents = query_events_timeranges_in_week(monday)
+    for alldayevent in alldayevents:
+        for dh in days:
+            if dh.day == alldayevent.day:
+                dh.allday = alldayevent
+    timeranges_thisweek = _prepareWeekdata(timeranges)
     context = {
         'this_week': timeranges_thisweek,
         'days': days,
+        'trc': TimeRange.VIEWS_LEGEND,
+        'weekdelta': weekdelta
     }
     return render(request, 'wamytmapp/index.html', context)
 
@@ -107,7 +131,7 @@ def add(request):
 
 def list1(request):
     filterformvalues = request.GET.copy()
-    if request.user is not None and 'orgunit' not in filterformvalues:
+    if request.user is not None and request.user.is_authenticated and 'orgunit' not in filterformvalues:
         filterformvalues['orgunit'] = TeamMember.objects.get(
                 pk=request.user.id).orgunit_id
     filterform = OrgUnitFilterForm(filterformvalues)
@@ -124,9 +148,15 @@ def list1(request):
             endparamvalue, "%Y-%m-%d") if endparamvalue else None
         orgunitparamvalue = filterform.cleaned_data['orgunit']
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
-    events, start, end = TimeRange.objects.list1(start, end, orgunit)
+    (events, alldayevents), start, end = query_events_list1(start, end, orgunit)
     viewdata = _prepareList1Data(events, start, end)
+    for alldayevent in alldayevents:
+        for line in viewdata['lines']:
+            dh = line['day']
+            if dh.day == alldayevent.day:
+                dh.allday = alldayevent
     viewdata['ouselect'] = filterform
+    viewdata['trc'] = TimeRange.VIEWS_LEGEND
 
     return render(request, 'wamytmapp/list1.html', viewdata)
 

@@ -4,10 +4,11 @@ from django.contrib.auth.models import User
 
 # Register your models here.
 
-from .models import OrgUnit, TeamMember, TimeRange
+from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent
 
 admin.site.register(OrgUnit)
 admin.site.register(TimeRange)
+admin.site.register(AllDayEvent)
 
 # Define an inline admin descriptor for TeamMember model
 # which acts a bit like a singleton
@@ -29,7 +30,7 @@ class BasicAdminSite(admin.AdminSite):
     index_title = "Korporator administration area"
 
     def has_permission(self, request):
-        return True
+        return request.user is not None and request.user.is_authenticated
 
 korporator_admin = BasicAdminSite(name="ka")
 

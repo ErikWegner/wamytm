@@ -22,7 +22,12 @@ services:
 
   django:
     build: .
-    image: a:1
+    image: wamytm:1
+    volumes:
+      - ./wamytmsite/wamytmsite/settings:/usr/src/app/wamytmsite/settings
+    environment: 
+      - SECRET_KEY=dfkjdhf8743hfsdhfksjh932
+      - DJANGO_SETTINGS_MODULE=wamytmsite.settings.dockercompose
     ports:
       - 8000:8000
 
