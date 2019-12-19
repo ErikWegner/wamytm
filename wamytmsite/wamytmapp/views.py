@@ -87,13 +87,14 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 
 
 def index(request):
+    weekdelta = int(request.GET['weekdelta']) if "weekdelta" in request.GET else 0
     today = datetime.date.today()
-    monday = today - datetime.timedelta(days=today.weekday())
+    monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
     days = []
     for weekday in range(5):
         dh = DayHeader(monday + datetime.timedelta(days=weekday))
         days.append(dh)
-    timeranges, alldayevents = query_events_timeranges_in_week()
+    timeranges, alldayevents = query_events_timeranges_in_week(monday)
     for alldayevent in alldayevents:
         for dh in days:
             if dh.day == alldayevent.day:
@@ -102,7 +103,8 @@ def index(request):
     context = {
         'this_week': timeranges_thisweek,
         'days': days,
-        'trc': TimeRange.VIEWS_LEGEND
+        'trc': TimeRange.VIEWS_LEGEND,
+        'weekdelta': weekdelta
     }
     return render(request, 'wamytmapp/index.html', context)
 

@@ -4,7 +4,12 @@
 {% block content %}
 <h2>Diese Woche</h2>
 
-<table class="table table-sm presence">
+<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"-1"}}" role="button">Eine Woche zurück</a>
+<a class="btn btn-light" href="{% url 'wamytmapp:index' %}" role="button">aktuelle Woche</a>
+<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"1"}}" role="button">Eine Woche vor</a>
+
+
+<table class="table table-sm presence mt-3">
     <thead>
         <tr>
             <th scope="col">Person</th>
