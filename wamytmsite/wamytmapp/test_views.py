@@ -1,7 +1,7 @@
 import datetime
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import TimeRange, OrgUnit
+from .models import TimeRange, OrgUnit, AllDayEvent, query_events_timeranges_in_week
 from .views import _prepareWeekdata, _prepareList1Data
 
 
@@ -71,9 +71,13 @@ class ViewsTests(TestCase):
         # An object totally outside the boundaries (later)
         self.outsideRight = self.hasTimeRangeObject(
             monday + datetime.timedelta(days=9), monday + datetime.timedelta(days=12), self.users[0])
+        # An all day event on tuesday
+        self.hasAllDayEvent(description = "ruby tue", day = monday + datetime.timedelta(days=1))
+        # An all day event on friday
+        self.hasAllDayEvent(description = "frik", day = monday + datetime.timedelta(days=4))
 
         # Act
-        queryResult = TimeRange.objects.thisWeek()
+        queryResult, allDayEventsResult = query_events_timeranges_in_week()
         result = _prepareWeekdata(queryResult)
 
         # Assert
@@ -83,12 +87,18 @@ class ViewsTests(TestCase):
                 {'days': ['a', 0, 0, 0, 0], 'user': self.users[2]},
                 {'days': [0, 0, 'a', 'a', 'a'], 'user': self.users[1]}
             ])
+        self.assertEqual(allDayEventsResult[0].description, "ruby tue")
+        self.assertEqual(allDayEventsResult[1].description, "frik")
 
     def hasTimeRangeObject(self, start: datetime.date, end: datetime.date, user: User):
         timeRange = TimeRange(start=start, end=end,
                               user=user, orgunit=self.org_unit, kind=TimeRange.ABSENT)
         timeRange.save()
         return timeRange
+
+    def hasAllDayEvent(self, day: datetime.date, description: str):
+        allDayEvent = AllDayEvent(description=description, day=day)
+        allDayEvent.save()
 
     def d(self, s: str):
         return datetime.datetime.strptime(s, "%Y-%m-%d")

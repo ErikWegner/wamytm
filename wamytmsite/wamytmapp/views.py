@@ -7,9 +7,14 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from typing import List
 
-from .models import TimeRange, TeamMember
+from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm
 
+class DayHeader:
+    def __init__(self, day: datetime.date):
+        self.day = day
+        self.allday = False
+        pass
 
 def _prepareWeekdata(weekdata: List[TimeRange]):
     """
@@ -49,14 +54,15 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
         if businessDaysOnly and (weekday > 4):
             continue
         lines.append({
-            'day': day,
+            'day': DayHeader(day),
             'week_is_even': week_is_even,
             'four_week_counter': four_week_counter,
             'start_of_week': weekday == 0
         })
     for event in events:
         for line in lines:
-            day = line['day']
+            dh = line['day']
+            day = dh.day
             # check if the day of the row is in the duration of the event
             if day < event.start or day > event.end:
                 continue
@@ -85,8 +91,14 @@ def index(request):
     monday = today - datetime.timedelta(days=today.weekday())
     days = []
     for weekday in range(5):
-        days.append(monday + datetime.timedelta(days=weekday))
-    timeranges_thisweek = _prepareWeekdata(TimeRange.objects.thisWeek())
+        dh = DayHeader(monday + datetime.timedelta(days=weekday))
+        days.append(dh)
+    timeranges, alldayevents = query_events_timeranges_in_week()
+    for alldayevent in alldayevents:
+        for dh in days:
+            if dh.day == alldayevent.day:
+                dh.allday = alldayevent
+    timeranges_thisweek = _prepareWeekdata(timeranges)
     context = {
         'this_week': timeranges_thisweek,
         'days': days,
@@ -134,8 +146,13 @@ def list1(request):
             endparamvalue, "%Y-%m-%d") if endparamvalue else None
         orgunitparamvalue = filterform.cleaned_data['orgunit']
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
-    events, start, end = TimeRange.objects.list1(start, end, orgunit)
+    (events, alldayevents), start, end = query_events_list1(start, end, orgunit)
     viewdata = _prepareList1Data(events, start, end)
+    for alldayevent in alldayevents:
+        for line in viewdata['lines']:
+            dh = line['day']
+            if dh.day == alldayevent.day:
+                dh.allday = alldayevent
     viewdata['ouselect'] = filterform
     viewdata['trc'] = TimeRange.VIEWS_LEGEND
 

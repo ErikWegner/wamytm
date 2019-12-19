@@ -9,7 +9,7 @@
         <tr>
             <th scope="col">Person</th>
             {% for day in days %}
-            <th scope="col">{{ day }}</th>
+            <th scope="col"{% if day.allday %} class="allday"{% endif %}>{% if day.allday %}{{ day.allday.description }}<br>{% endif %}{{ day.day }}</th>
             {% endfor %}
         </tr>
     </thead>

@@ -14,6 +14,9 @@ tr.start-of-week {
     border-top: #000000 3px solid;
 }
 
+.presence th.allday {
+    background-color: #999;
+}
 
 /* https://github.com/philipwalton/solved-by-flexbox/blob/master/assets/css/components/site.css */
 body {
