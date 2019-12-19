@@ -16,9 +16,13 @@ class AddTimeRangeForm(forms.Form):
     start = forms.DateField(
         required=True, widget=forms.widgets.DateInput(attrs={'type': 'date'}))
     end = forms.DateField(
-        required=False, widget=forms.widgets.DateInput(attrs={'type': 'date'}))
+        required=False,
+        help_text="If left blank, it will be set to start date",
+        widget=forms.widgets.DateInput(attrs={'type': 'date'})
+    )
     orgunit_id = forms.ChoiceField(
         required=True,
+        help_text="Entry will be visible to this and all organizational units above",
         label='Organizational unit')
     kind = forms.ChoiceField(
         required=True,
@@ -63,6 +67,7 @@ class OrgUnitFilterForm(forms.Form):
 class ProfileForm(forms.Form):
     orgunit = forms.ChoiceField(
         required=True,
+        help_text="Default value when adding new entries and for filter",
         label='Organizational unit')
 
     def __init__(self, *args, **kwargs):
