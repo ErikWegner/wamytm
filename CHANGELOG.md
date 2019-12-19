@@ -1,4 +1,4 @@
-# Next release
+# Version 2
 
   * Show first and last name when adding new time ranges
   * Show kind of time
