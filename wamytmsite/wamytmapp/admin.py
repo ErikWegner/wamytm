@@ -39,6 +39,8 @@ class TimeRangeBasicAdmin(admin.ModelAdmin):
     view_on_site = False
     list_display = ('start', 'end', 'kind')
     list_filter = ('start', 'kind')
+    date_hierarchy = 'start'
+    ordering = ['-start']
 
     def has_module_permission(self, request):
         return True
@@ -67,3 +69,12 @@ class TimeRangeBasicAdmin(admin.ModelAdmin):
         return qs.filter(user=request.user)
 
 korporator_admin.register(TimeRange, TimeRangeBasicAdmin)
+
+class AllDayEventAdmin(admin.ModelAdmin):
+    date_hierarchy = 'day'
+    list_display = ('day', 'description')
+    list_filter = ('description',)
+    ordering = ['-day']
+    search_fields = ['description']
+
+korporator_admin.register(AllDayEvent, AllDayEventAdmin)
