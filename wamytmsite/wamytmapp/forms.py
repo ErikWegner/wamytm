@@ -1,5 +1,6 @@
 from django import forms
 from .models import OrgUnit, TimeRange, TeamMember
+from django.utils.translation import pgettext_lazy
 
 
 class DateInput(forms.DateInput):
@@ -11,29 +12,35 @@ class AddTimeRangeForm(forms.Form):
         A form to add a new time range entry.
     """
     user = forms.CharField(
+        label=pgettext_lazy('AddTimeRangeForm', 'User'),
         disabled=True
     )
     start = forms.DateField(
-        required=True, widget=forms.widgets.DateInput(attrs={'type': 'date'}))
+        label=pgettext_lazy('AddTimeRangeForm', 'Start'),
+        required=True,
+        widget=forms.widgets.DateInput(attrs={'type': 'date'}))
     end = forms.DateField(
+        label=pgettext_lazy('AddTimeRangeForm', 'End'),
         required=False,
-        help_text="If left blank, it will be set to start date",
+        help_text=pgettext_lazy('AddTimeRangeForm',
+                    'If left blank, it will be set to start date'),
         widget=forms.widgets.DateInput(attrs={'type': 'date'})
     )
     orgunit_id = forms.ChoiceField(
         required=True,
-        help_text="Entry will be visible to this and all organizational units above",
-        label='Organizational unit')
+        help_text=pgettext_lazy('AddTimeRangeForm', 'Entry will be visible to this and all organizational units above'),
+        label=pgettext_lazy('AddTimeRangeForm', 'Organizational unit'))
     kind = forms.ChoiceField(
         required=True,
-        label='Kind of time range',
+        label=pgettext_lazy('AddTimeRangeForm', 'Kind of time range'),
         choices=TimeRange.KIND_CHOICES
     )
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super(AddTimeRangeForm, self).__init__(*args, **kwargs)
-        self.fields['user'].initial = self.user.first_name + " " + self.user.last_name
+        self.fields['user'].initial = self.user.first_name + \
+            " " + self.user.last_name
         self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit_id'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id

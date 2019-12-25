@@ -1,0 +1,101 @@
+# Translations for the Wamytm app.
+# Copyright (C) 2019 Erik Wegner
+# This file is distributed under the same license as the Wamytm app.
+# Erik Wegner <e_wegner@web.de>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1\n"
+"Report-Msgid-Bugs-To: e_wegner@web.de\n"
+"POT-Creation-Date: 2019-12-25 23:36+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Erik Wegner <e_wegner@web.de>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: wamytmapp/forms.py:15
+msgctxt "AddTimeRangeForm"
+msgid "User"
+msgstr "Benutzer"
+
+#: wamytmapp/forms.py:19
+msgctxt "AddTimeRangeForm"
+msgid "Start"
+msgstr "Anfang"
+
+#: wamytmapp/forms.py:23
+msgctxt "AddTimeRangeForm"
+msgid "End"
+msgstr "Ende"
+
+#: wamytmapp/forms.py:26
+msgctxt "AddTimeRangeForm"
+msgid "If left blank, it will be set to start date"
+msgstr ""
+"Wird das Feld leer gelassen, wird automatisch das Anfangs-Datum verwendet"
+
+#: wamytmapp/forms.py:31
+msgctxt "AddTimeRangeForm"
+msgid "Entry will be visible to this and all organizational units above"
+msgstr ""
+"Eintrag ist sichtbar für diese und alle darüber liegenden "
+"Organisationseinheiten"
+
+#: wamytmapp/forms.py:32
+msgctxt "AddTimeRangeForm"
+msgid "Organizational unit"
+msgstr "Organisationseinheit"
+
+#: wamytmapp/forms.py:35
+msgctxt "AddTimeRangeForm"
+msgid "Kind of time range"
+msgstr "Art des Zeiteintrags"
+
+#: wamytmapp/models.py:39
+msgctxt "Models"
+msgid "Organizational unit"
+msgstr "Organisationseinheit"
+
+#: wamytmapp/models.py:40
+msgctxt "Models"
+msgid "Organizational units"
+msgstr "Organisationseinheiten"
+
+#: wamytmapp/models.py:109
+msgctxt "TimeRangeChoice"
+msgid "absent"
+msgstr "abwesend"
+
+#: wamytmapp/models.py:110
+msgctxt "TimeRangeChoice"
+msgid "present"
+msgstr "im Büro"
+
+#: wamytmapp/models.py:111
+msgctxt "TimeRangeChoice"
+msgid "mobile"
+msgstr "Mobiles Arbeiten"
+
+#: wamytmapp/templates/wamytmapp/add.html:9
+msgctxt "AddTimeRangeForm"
+msgid "New entry"
+msgstr "Neuer Eintrag"
+
+#: wamytmapp/templates/wamytmapp/add.html:10
+msgctxt "AddTimeRangeForm"
+msgid "A new date can be added."
+msgstr "Ein neuer Kalendereintrag wird erfasst."
+
+#: wamytmapp/templates/wamytmapp/add.html:20
+msgctxt "AddTimeRangeForm"
+msgid "Submit"
+msgstr "Absenden"
+
+#: wamytmapp/templates/wamytmapp/add.html:22
+msgctxt "AddTimeRangeForm"
+msgid "Cancel"
+msgstr "Abbruch"

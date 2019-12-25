@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models.functions import Greatest, Least
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import pgettext_lazy
 from typing import List
 
 
@@ -34,6 +34,10 @@ class OrgUnit(models.Model):
         'self', on_delete=models.CASCADE, blank=True, null=True)
 
     objects = OrgUnitManager()
+
+    class Meta:
+        verbose_name = pgettext_lazy('Models', 'Organizational unit')
+        verbose_name_plural = pgettext_lazy('Models', 'Organizational units')
 
     def __str__(self):
         return self.name
@@ -102,9 +106,9 @@ class TimeRange(models.Model):
     PRESENT = 'p'
     MOBILE = 'm'
     KIND_CHOICES = [
-        (ABSENT, 'absent'),
-        (PRESENT, 'present'),
-        (MOBILE, 'mobile'),
+        (ABSENT, pgettext_lazy('TimeRangeChoice', 'absent')),
+        (PRESENT, pgettext_lazy('TimeRangeChoice', 'present')),
+        (MOBILE, pgettext_lazy('TimeRangeChoice', 'mobile')),
     ]
     VIEWS_LEGEND = {
         ABSENT: 'absent',
@@ -123,7 +127,7 @@ class TimeRange(models.Model):
         print('clean')
         if self.end is not None and self.end < self.start:
             raise ValidationError(
-                {'end': _('End date may not be before start date.')})
+                {'end': pg('Models', 'End date may not be before start date.')})
 
     def save(self, *args, **kwargs):
         if self.end == None:
