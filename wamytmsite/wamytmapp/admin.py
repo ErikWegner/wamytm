@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-
-# Register your models here.
+from django.utils.translation import pgettext_lazy
 
 from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent
 
@@ -27,7 +26,7 @@ admin.site.register(User, UserAdmin)
 
 class BasicAdminSite(admin.AdminSite):
     site_header = "Korporator"
-    index_title = "Korporator administration area"
+    index_title = pgettext_lazy("Admin site", "Korporator administration area")
 
     def has_permission(self, request):
         return request.user is not None and request.user.is_authenticated

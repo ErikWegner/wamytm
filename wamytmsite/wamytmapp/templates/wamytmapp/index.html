@@ -1,18 +1,19 @@
 {% extends 'wamytmapp/base.html' %}
 {% load get_value_from_dict %}
+{% load i18n %}
 
 {% block content %}
-<h2>Diese Woche</h2>
+<h2>{% trans "Week view" context "IndexTemplate" %}</h2>
 
-<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"-1"}}" role="button">Eine Woche zurück</a>
-<a class="btn btn-light" href="{% url 'wamytmapp:index' %}" role="button">aktuelle Woche</a>
-<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"1"}}" role="button">Eine Woche vor</a>
+<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"-1"}}" role="button">{% trans "Previous week" context "IndexTemplate" %}</a>
+<a class="btn btn-light" href="{% url 'wamytmapp:index' %}" role="button">{% trans "Current week" context "IndexTemplate" %}</a>
+<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"1"}}" role="button">{% trans "Next week" context "IndexTemplate" %}</a>
 
 
 <table class="table table-sm presence mt-3">
     <thead>
         <tr>
-            <th scope="col">Person</th>
+            <th scope="col">{% trans "Person" context "IndexTemplate" %}</th>
             {% for day in days %}
             <th scope="col"{% if day.allday %} class="allday"{% endif %}>{% if day.allday %}{{ day.allday.description }}<br>{% endif %}{{ day.day }}</th>
             {% endfor %}
@@ -21,7 +22,7 @@
     <tbody>
         {% for item in this_week %}
         <tr>
-            <th scope="row">{{ item.user.last_name }}, {{ item.user.first_name }}</th>
+            <th scope="row">{{ item.username }}</th>
             {% for day in item.days %}
             {% if day == 0%}
             <td class="empty"></td>

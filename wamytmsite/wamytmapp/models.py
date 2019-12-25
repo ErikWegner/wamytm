@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models.functions import Greatest, Least
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.text import format_lazy
 from django.utils.translation import pgettext_lazy
 from typing import List
 
@@ -18,7 +19,7 @@ class OrgUnitManager(models.Manager):
     def selectListItemsWithAllChoice(self):
         all_org_units = super().all()
         toplevel = get_children(all_org_units)
-        toplevel.insert(0, ("", "All"))
+        toplevel.insert(0, ("", pgettext_lazy('OrgUnitManager', "All")))
         return toplevel
 
     def listDescendants(self, parent_id):
@@ -111,23 +112,30 @@ class TimeRange(models.Model):
         (MOBILE, pgettext_lazy('TimeRangeChoice', 'mobile')),
     ]
     VIEWS_LEGEND = {
-        ABSENT: 'absent',
-        PRESENT: 'present',
-        MOBILE: 'mobile'
+        ABSENT: pgettext_lazy('TimeRangeChoice', 'absent'),
+        PRESENT: pgettext_lazy('TimeRangeChoice', 'present'),
+        MOBILE: pgettext_lazy('TimeRangeChoice', 'mobile')
     }
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
-    start = models.DateField()
-    end = models.DateField(blank=True)
-    kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT)
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             verbose_name=pgettext_lazy('TimeRange', 'User'))
+    orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE,
+                                verbose_name=pgettext_lazy('TimeRange', 'Organizational unit'))
+    start = models.DateField(verbose_name=pgettext_lazy('TimeRange', 'Start'))
+    end = models.DateField(
+        blank=True, verbose_name=pgettext_lazy('TimeRange', 'End'))
+    kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT,
+                            verbose_name=pgettext_lazy('TimeRange', 'Kind of time range'))
 
     objects = TimeRangeManager()
 
+    class Meta:
+        verbose_name = pgettext_lazy('Models', 'time range')
+        verbose_name_plural = pgettext_lazy('Models', 'time ranges')
+
     def clean(self):
-        print('clean')
         if self.end is not None and self.end < self.start:
             raise ValidationError(
-                {'end': pg('Models', 'End date may not be before start date.')})
+                {'end': pgettext_lazy('Models', 'End date may not be before start date.')})
 
     def save(self, *args, **kwargs):
         if self.end == None:
@@ -138,7 +146,8 @@ class TimeRange(models.Model):
         return (self.end - self.start).days
 
     def __str__(self):
-        return f"TimeRange({self.start}, {self.end})"
+        s = pgettext_lazy('TimeRangeStr', "TimeRange")
+        return str(format_lazy('{s}({start}, {end})', s=s, start=self.start, end=self.end))
 
 
 class AllDayEventsManager(models.Manager):
@@ -154,13 +163,20 @@ class AllDayEventsManager(models.Manager):
         return query
 
 
-# TODO: Migration
-# TODO: Permission to add/edit/delete
 class AllDayEvent(models.Model):
-    description = models.TextField(max_length=100)
-    day = models.DateField()
+    description = models.TextField(
+        max_length=100,
+        verbose_name=pgettext_lazy('AllDayEvent', 'description')
+    )
+    day = models.DateField(
+        verbose_name=pgettext_lazy('AllDayEvent', 'day')
+    )
 
     objects = AllDayEventsManager()
+
+    class Meta:
+        verbose_name = pgettext_lazy('Models', 'all day event')
+        verbose_name_plural = pgettext_lazy('Models', 'all day events')
 
     def __str__(self):
         return f"All day event on {self.day}: {self.description}"
@@ -231,3 +247,7 @@ def get_children(org_units: List[OrgUnit]):
                 charr.append((child_org_unit.id, child_org_unit.name))
             r.append((org_unit.name, tuple(charr)))
     return r
+
+def user_display_name(user):
+    full_name = user.get_full_name()
+    return full_name if full_name is not "" else user.username

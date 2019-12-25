@@ -1,5 +1,5 @@
 from django import forms
-from .models import OrgUnit, TimeRange, TeamMember
+from .models import OrgUnit, TimeRange, TeamMember, user_display_name
 from django.utils.translation import pgettext_lazy
 
 
@@ -13,7 +13,8 @@ class AddTimeRangeForm(forms.Form):
     """
     user = forms.CharField(
         label=pgettext_lazy('AddTimeRangeForm', 'User'),
-        disabled=True
+        disabled=True,
+        required=False,
     )
     start = forms.DateField(
         label=pgettext_lazy('AddTimeRangeForm', 'Start'),
@@ -39,8 +40,7 @@ class AddTimeRangeForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super(AddTimeRangeForm, self).__init__(*args, **kwargs)
-        self.fields['user'].initial = self.user.first_name + \
-            " " + self.user.last_name
+        self.fields['user'].initial = user_display_name(self.user)
         self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit_id'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id
@@ -64,7 +64,7 @@ class OrgUnitFilterForm(forms.Form):
         widget=forms.Select(
             attrs={'onchange': 'filterform.submit();'}
         ),
-        label='Organizational unit')
+        label=pgettext_lazy('OrgUnitFilterForm', 'Organizational unit'))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -74,8 +74,8 @@ class OrgUnitFilterForm(forms.Form):
 class ProfileForm(forms.Form):
     orgunit = forms.ChoiceField(
         required=True,
-        help_text="Default value when adding new entries and for filter",
-        label='Organizational unit')
+        help_text=pgettext_lazy('ProfileForm', 'Default value when adding new entries and for filter'),
+        label=pgettext_lazy('ProfileForm', 'Organizational unit'))
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
