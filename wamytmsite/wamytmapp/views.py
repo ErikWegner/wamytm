@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from typing import List
 
-from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1
+from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm
 
 class DayHeader:
@@ -35,7 +35,10 @@ def _prepareWeekdata(weekdata: List[TimeRange]):
             collector[item.user]["days"][d] = item.kind
     result = []
     for user in collector:
-        result.append({"user": user, "days": collector[user]["days"]})
+        result.append({
+            "user": user,
+            "username": user_display_name(user),
+            "days": collector[user]["days"]})
     return result
 
 
@@ -69,6 +72,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
             # record any user with an event
             if event.user not in users:
                 users.append(event.user)
+                event.user.display_name = user_display_name(event.user)
             # and the event to the row
             line[event.user] = event
     for line in lines:

@@ -1,12 +1,13 @@
 {% extends 'wamytmapp/base.html' %}
+{% load i18n %}
 {% load bootstrap4 %}
 
 {% block content %}
 
 <div class="jumbotron jumbotron-fluid">
     <div class="container">
-        <h1 class="display-4">Neuer Eintrag</h1>
-        <p class="lead">Ein neuer Kalendereintrag wird erfasst.</p>
+        <h1 class="display-4">{% trans "New entry" context "AddTimeRangeForm" %}</h1>
+        <p class="lead">{% trans "A new date can be added." context "AddTimeRangeForm" %}</p>
     </div>
 </div>
 
@@ -16,9 +17,9 @@
     {% bootstrap_form form %}
     {% buttons %}
     <button type="submit" class="btn btn-primary">
-        Submit
+        {% trans "Submit" context "AddTimeRangeForm" %}
     </button>
-    <a href="{% url 'wamytmapp:index' %}" class="btn btn-secondary">Cancel</a>
+    <a href="{% url 'wamytmapp:index' %}" class="btn btn-secondary">{% trans "Cancel" context "AddTimeRangeForm" %}</a>
     {% endbuttons %}
 </form>
 

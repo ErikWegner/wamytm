@@ -1,12 +1,13 @@
 {% extends 'wamytmapp/base.html' %}
 {% load bootstrap4 %}
+{% load i18n %}
 
 {% block content %}
 
 <div class="jumbotron jumbotron-fluid">
     <div class="container">
-        <h1 class="display-4">Profil</h1>
-        <p class="lead">Einstellungen zum Anmeldekonto.</p>
+        <h1 class="display-4">{% trans "Profile" context "ProfileTemplate" %}</h1>
+        <p class="lead">{% trans "Account settings." context "ProfileTemplate" %}</p>
     </div>
 </div>
 
@@ -16,9 +17,9 @@
     {% bootstrap_form form %}
     {% buttons %}
     <button type="submit" class="btn btn-primary">
-        Submit
+        {% trans "Submit" context "ProfileTemplate" %}
     </button>
-    <a href="{% url 'wamytmapp:index' %}" class="btn btn-secondary">Cancel</a>
+    <a href="{% url 'wamytmapp:index' %}" class="btn btn-secondary">{% trans "Cancel" context "ProfileTemplate" %}</a>
     {% endbuttons %}
 </form>
 

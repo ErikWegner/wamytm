@@ -1,6 +1,7 @@
 {% extends 'wamytmapp/base.html' %}
 {% load bootstrap4 %}
 {% load get_value_from_dict %}
+{% load i18n %}
 
 {% block content %}
 
@@ -13,9 +14,9 @@
     {% if forloop.counter0 == 0 or forloop.counter0 > 8 and line.start_of_week and line.four_week_counter == 1  %}
     <thead>
         <tr class="bg-secondary">
-            <th scope="col">Datum</th>
+            <th scope="col">{% trans "Date" context "List1Template" %}</th>
             {% for user in users %}
-            <th scope="col">{{ user.last_name }}, {{ user.first_name }}</th>
+            <th scope="col">{{ user.display_name }}</th>
             {% endfor %}
         </tr>
     </thead>

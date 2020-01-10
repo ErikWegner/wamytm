@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 pylint = "*"
 autopep8 = "*"
+rope = "*"
 
 [packages]
 django = "*"
@@ -18,4 +19,4 @@ gunicorn = "*"
 whitenoise = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"

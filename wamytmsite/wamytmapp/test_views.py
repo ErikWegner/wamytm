@@ -1,7 +1,7 @@
 import datetime
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import TimeRange, OrgUnit, AllDayEvent, query_events_timeranges_in_week
+from .models import TimeRange, OrgUnit, AllDayEvent, query_events_timeranges_in_week, user_display_name
 from .views import _prepareWeekdata, _prepareList1Data
 
 
@@ -16,6 +16,8 @@ class ViewsTests(TestCase):
 
     def test_prepareList1Data(self):
         # Arrange
+        for user in self.users:
+            user.display_name = user_display_name(user)
         today = datetime.date.today()
         monday = today - datetime.timedelta(days=today.weekday())
         next_monday = monday + datetime.timedelta(days=7)
@@ -37,7 +39,7 @@ class ViewsTests(TestCase):
                          "output is 4 weeks with 5 days a week")
         for i, line in enumerate(result['lines']):
             line_date = line['day']
-            self.assertEqual(line['start_of_week'], line_date.weekday(
+            self.assertEqual(line['start_of_week'], line_date.day.weekday(
             ) == 0, F"start_of_week failed on ${line_date}")
             if i <= 4:
                 self.assertEqual(
@@ -83,9 +85,9 @@ class ViewsTests(TestCase):
         # Assert
         self.assertSequenceEqual(
             result, [
-                {'days': [0, 0, 'a', 0, 0], 'user': self.users[4]},
-                {'days': ['a', 0, 0, 0, 0], 'user': self.users[2]},
-                {'days': [0, 0, 'a', 'a', 'a'], 'user': self.users[1]}
+                {'days': [0, 0, 'a', 0, 0], 'user': self.users[4], 'username': user_display_name(self.users[4])},
+                {'days': ['a', 0, 0, 0, 0], 'user': self.users[2], 'username': user_display_name(self.users[2])},
+                {'days': [0, 0, 'a', 'a', 'a'], 'user': self.users[1], 'username': user_display_name(self.users[1])}
             ])
         self.assertEqual(allDayEventsResult[0].description, "ruby tue")
         self.assertEqual(allDayEventsResult[1].description, "frik")
