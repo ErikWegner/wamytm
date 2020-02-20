@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -46,6 +46,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -167,7 +168,7 @@ SOCIAL_AUTH_KEYCLOAK_KEY = "wamytm"
 SOCIAL_AUTH_KEYCLOAK_SECRET = "6fd1a212-deed-450c-b28d-3170a0c6102c"
 
 # Realm Settings > Keys > Public key
-SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkLtT0iHeSbvf02GDKlnCO7ftuS6U7tefBIW2oA9tzzdF2neJ9qvG3RrKVa4ozxl1ODZLSQuNIRFDLerK2WUcLpoZVBXEMb9KENMytJDmt5sPKayK2UE3ZMT8lIMKEAqLEfIEOmQy7S1gsAXGXmhGg0sZStObr8s3krwFFtBOr3HeubEr0csKHWdy6iT8cVpwFg1and/uT9djhac0YcZZF+ZYndjjfEl8PLwCct8ypvX9n2iaszgUxiBW02qHYXZ4D/u8k8FbTIjRgW98/RgLefb1n1EK/0icGDxNVujkxIJMrrOsYGMrsHs+0spdQv7Z0Vg/79djUYfsJmRzoIAlpQIDAQAB"
+SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkVyZd2f6tgcpk/kwhEb6oObL4QM4B1ilB3eycTvOPcuPkPOXsLxxRNnwMYvFDPr6d6FhlYwkTTi6ne9gOk2MeJkCx3vlmneseOSrfLwkd1h8V0764eWRvGmZW0LpscCO1kV1JxZ5YlyLW6nJFaRyAgkFxLcbHdaLfSRm7cEQLMSKiBTrDbTnPterKnjh9Xd8nUa0puw1DGt7nPBA2tRKo9ZS+QVyziJLd6pkHXfDrV0ygVjGC4HqN+J9RBTakUg5nRmp37JO1I9qUaxtKFufKKu+IpU9+O6iwGfxVxbsQOEnRpW2O+bDPmvWxTOOCY638lP3kCYVFDz6ALjHYm7BMwIDAQAB"
 
 SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = 'https://127.0.0.1:8443/auth/realms/wamytmdev/protocol/openid-connect/auth'
 SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = 'https://127.0.0.1:8443/auth/realms/wamytmdev/protocol/openid-connect/token'
@@ -178,3 +179,7 @@ VERIFY_SSL = False
 
 # Enable temporary logging (see https://stackoverflow.com/a/51462712)
 # LOGGING = { 'version': 1, 'disable_existing_loggers': False, 'handlers': { 'file': { 'level': 'DEBUG', 'class': 'logging.FileHandler', 'filename': '/tmp/debug.log', }, }, 'loggers': { 'django': { 'handlers': ['file'], 'level': 'DEBUG', 'propagate': True, }, }, }
+# LOCALE_PATHS = [
+#     os.path.join(BASE_DIR, "locale"),
+#     os.path.join(BASE_DIR, "wamytmapp/locale"), 
+# ]

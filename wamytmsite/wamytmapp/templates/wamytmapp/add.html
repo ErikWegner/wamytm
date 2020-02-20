@@ -14,7 +14,17 @@
 {% bootstrap_form_errors form layout='inline' %}
 <form action="{% url 'wamytmapp:add' %}" method="post" role="form">
     {% csrf_token %}
-    {% bootstrap_form form %}
+    <div class="row">
+        <div class="col-md-7">
+            {% bootstrap_field form.start %}
+            {% bootstrap_field form.end %}
+            {% bootstrap_field form.kind %}
+        </div>
+        <div class="col-md-5">
+            {% bootstrap_field form.user %}
+            {% bootstrap_field form.orgunit_id %}
+        </div>
+    </div>
     {% buttons %}
     <button type="submit" class="btn btn-primary">
         {% trans "Submit" context "AddTimeRangeForm" %}

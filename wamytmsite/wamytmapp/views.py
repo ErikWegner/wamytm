@@ -48,7 +48,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
     week_is_even = True
     four_week_counter = 0
     # prepare all rows
-    for day_delta in range((end - start).days):
+    for day_delta in range((end - start).days + 1):
         day = start + datetime.timedelta(days=day_delta)
         weekday = day.weekday()
         if weekday == 0:
