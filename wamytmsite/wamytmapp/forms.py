@@ -11,6 +11,14 @@ class AddTimeRangeForm(forms.Form):
     """
         A form to add a new time range entry.
     """
+    dateInputAttrs = {
+        'data-provide':'datepicker',
+        'data-date-calendar-weeks': 'true',
+        'data-date-format': 'yyyy-mm-dd',
+        'data-date-today-highlight': 'true',
+        'data-date-week-start': '1',
+        'data-date-today-btn': 'true'
+    }
     user = forms.CharField(
         label=pgettext_lazy('AddTimeRangeForm', 'User'),
         disabled=True,
@@ -19,13 +27,13 @@ class AddTimeRangeForm(forms.Form):
     start = forms.DateField(
         label=pgettext_lazy('AddTimeRangeForm', 'Start'),
         required=True,
-        widget=forms.widgets.DateInput(attrs={'type': 'date'}))
+        widget=forms.widgets.DateInput(attrs=dateInputAttrs))
     end = forms.DateField(
         label=pgettext_lazy('AddTimeRangeForm', 'End'),
         required=False,
         help_text=pgettext_lazy('AddTimeRangeForm',
                     'If left blank, it will be set to start date'),
-        widget=forms.widgets.DateInput(attrs={'type': 'date'})
+        widget=forms.widgets.DateInput(attrs=dateInputAttrs)
     )
     orgunit_id = forms.ChoiceField(
         required=True,

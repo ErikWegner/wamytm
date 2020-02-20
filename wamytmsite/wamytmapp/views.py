@@ -5,6 +5,7 @@ from django.views.generic import FormView
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from django.utils.translation import get_language_from_request
 from typing import List
 
 from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name
@@ -129,6 +130,10 @@ def add(request):
                         form.add_error(field, error)
     else:
         form = AddTimeRangeForm(user=request.user)
+    language = get_language_from_request(request)
+    if language is not None and language.startswith("de"):
+        form.fields['start'].widget.attrs['data-date-language'] = 'de'
+        form.fields['end'].widget.attrs['data-date-language'] = 'de'
 
     return render(request, 'wamytmapp/add.html', {'form': form})
 
