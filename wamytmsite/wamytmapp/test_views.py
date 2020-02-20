@@ -1,6 +1,7 @@
 import datetime
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.contrib.auth.models import User
+from django.test.utils import setup_test_environment, teardown_test_environment
 from .models import TimeRange, OrgUnit, AllDayEvent, query_events_timeranges_in_week, user_display_name
 from .views import _prepareWeekdata, _prepareList1Data
 
@@ -74,9 +75,11 @@ class ViewsTests(TestCase):
         self.outsideRight = self.hasTimeRangeObject(
             monday + datetime.timedelta(days=9), monday + datetime.timedelta(days=12), self.users[0])
         # An all day event on tuesday
-        self.hasAllDayEvent(description = "ruby tue", day = monday + datetime.timedelta(days=1))
+        self.hasAllDayEvent(description="ruby tue",
+                            day=monday + datetime.timedelta(days=1))
         # An all day event on friday
-        self.hasAllDayEvent(description = "frik", day = monday + datetime.timedelta(days=4))
+        self.hasAllDayEvent(description="frik", day=monday +
+                            datetime.timedelta(days=4))
 
         # Act
         queryResult, allDayEventsResult = query_events_timeranges_in_week()
@@ -85,12 +88,37 @@ class ViewsTests(TestCase):
         # Assert
         self.assertSequenceEqual(
             result, [
-                {'days': [0, 0, 'a', 0, 0], 'user': self.users[4], 'username': user_display_name(self.users[4])},
-                {'days': ['a', 0, 0, 0, 0], 'user': self.users[2], 'username': user_display_name(self.users[2])},
-                {'days': [0, 0, 'a', 'a', 'a'], 'user': self.users[1], 'username': user_display_name(self.users[1])}
+                {'days': [0, 0, 'a', 0, 0], 'user': self.users[4],
+                    'username': user_display_name(self.users[4])},
+                {'days': ['a', 0, 0, 0, 0], 'user': self.users[2],
+                    'username': user_display_name(self.users[2])},
+                {'days': [0, 0, 'a', 'a', 'a'], 'user': self.users[1],
+                    'username': user_display_name(self.users[1])}
             ])
         self.assertEqual(allDayEventsResult[0].description, "ruby tue")
         self.assertEqual(allDayEventsResult[1].description, "frik")
+
+    def test_list1_without_parameter(self):
+        client = Client()
+        response = client.get('/cal/list')
+        self.assertEqual(200, response.status_code)
+
+    def test_list1_with_parameter_start(self):
+        client = Client()
+        response = client.get('/cal/list?fd=2020-02-24')
+        self.assertEqual(200, response.status_code)
+
+    def test_list1_with_parameter_end(self):
+        client = Client()
+        response = client.get('/cal/list?fd=2020-02-24&td=2020-02-28')
+        self.assertEqual(200, response.status_code)
+
+    def test_list1_with_time_range_contains_all_days(self):
+        client = Client()
+        response = client.get('/cal/list?fd=2020-02-24&td=2020-02-28')
+        self.assertEqual(200, response.status_code)
+        for d in range(24, 29):
+            self.assertContains(response, f'<th scope="row">{d}. Feb')
 
     def hasTimeRangeObject(self, start: datetime.date, end: datetime.date, user: User):
         timeRange = TimeRange(start=start, end=end,
