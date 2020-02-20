@@ -1,3 +1,16 @@
+# Version 5
+
+  * [Datepicker](https://github.com/uxsolutions/bootstrap-datepicker) added
+  * Front page: go to date
+
+# Version 4
+
+  * I18N
+
+# Version 3
+
+  * Release
+
 # Version 2
 
   * Show first and last name when adding new time ranges

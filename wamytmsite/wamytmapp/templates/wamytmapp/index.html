@@ -3,19 +3,49 @@
 {% load i18n %}
 
 {% block content %}
+{% get_current_language as LANGUAGE_CODE %}
 <h2>{% trans "Week view" context "IndexTemplate" %}</h2>
 
-<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"-1"}}" role="button">{% trans "Previous week" context "IndexTemplate" %}</a>
-<a class="btn btn-light" href="{% url 'wamytmapp:index' %}" role="button">{% trans "Current week" context "IndexTemplate" %}</a>
-<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"1"}}" role="button">{% trans "Next week" context "IndexTemplate" %}</a>
+<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"-1"}}"
+    role="button">{% trans "Previous week" context "IndexTemplate" %}</a>
+<a class="btn btn-light" href="{% url 'wamytmapp:index' %}"
+    role="button">{% trans "Current week" context "IndexTemplate" %}</a>
+<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"1"}}"
+    role="button">{% trans "Next week" context "IndexTemplate" %}</a>
+<button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseFilter" aria-expanded="false"
+    aria-controls="collapseFilter">
+    {% trans "Filters" context "IndexTemplate" %}
+</button>
 
+<div class="collapse mt-2" id="collapseFilter">
+    <div class="card card-body d-flex flex-row">
+        <input type="text" name="filterDate" data-provide="datepicker" data-date-calendar-weeks="true"
+            data-date-format="yyyy-mm-dd" data-date-today-highlight="true" data-date-week-start="1"
+            data-date-today-btn="true" data-date-language="{{ LANGUAGE_CODE }}"
+            class="form-control d-inline w-auto" title="">
+        <button type="button" id="goToDate"
+            class="btn btn-secondary d-inline">{% trans "Go" context "IndexTemplateFilters" %}</button>
+        <script>
+            $('#goToDate').on('click', function () {
+                var d = $('input[name="filterDate"').datepicker('getDate');
+                if (!d) {
+                    return;
+                }
+                var today = new Date();
+                var delta = Math.floor((d.getTime() - today.getTime()) / 1000 / 3600 / 24 / 7 + 4/7);
+                window.location.href = "{% url 'wamytmapp:index' %}?weekdelta=" + delta;
+            });
+        </script>
+    </div>
+</div>
 
 <table class="table table-sm presence mt-3">
     <thead>
         <tr>
             <th scope="col">{% trans "Person" context "IndexTemplate" %}</th>
             {% for day in days %}
-            <th scope="col"{% if day.allday %} class="allday"{% endif %}>{% if day.allday %}{{ day.allday.description }}<br>{% endif %}{{ day.day }}</th>
+            <th scope="col" {% if day.allday %} class="allday" {% endif %}>
+                {% if day.allday %}{{ day.allday.description }}<br>{% endif %}{{ day.day }}</th>
             {% endfor %}
         </tr>
     </thead>
@@ -30,7 +60,7 @@
             <td class="kind-{{ day }}">{{ trc|get_value_from_dict:day }}</td>
             {% endif %}
             {% endfor %}
-        </tr>        
+        </tr>
         {% endfor %}
     </tbody>
 </table>
