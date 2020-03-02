@@ -151,10 +151,10 @@ def list1(request):
     if filterform.is_valid():
         startparamvalue = filterform.cleaned_data['fd']
         start = datetime.datetime.strptime(
-            startparamvalue, "%Y-%m-%d") if startparamvalue else None
+            startparamvalue, "%Y-%m-%d").date() if startparamvalue else None
         endparamvalue = filterform.cleaned_data['td']
         end = datetime.datetime.strptime(
-            endparamvalue, "%Y-%m-%d") if endparamvalue else None
+            endparamvalue, "%Y-%m-%d").date() if endparamvalue else None
         orgunitparamvalue = filterform.cleaned_data['orgunit']
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
     (events, alldayevents), start, end = query_events_list1(start, end, orgunit)

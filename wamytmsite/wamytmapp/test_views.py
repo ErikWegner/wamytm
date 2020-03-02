@@ -104,11 +104,13 @@ class ViewsTests(TestCase):
         self.assertEqual(200, response.status_code)
 
     def test_list1_with_parameter_start(self):
+        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[4])
         client = Client()
         response = client.get('/cal/list?fd=2020-02-24')
         self.assertEqual(200, response.status_code)
 
     def test_list1_with_parameter_end(self):
+        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[4])
         client = Client()
         response = client.get('/cal/list?fd=2020-02-24&td=2020-02-28')
         self.assertEqual(200, response.status_code)
