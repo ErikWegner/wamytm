@@ -1,8 +1,6 @@
 """
 Django settings for wamytmsite project
-for running inside a container.
-
-Required settings are available as environment variables.
+for running through docker-compose.yml file.
 """
 
 import os
@@ -34,7 +32,7 @@ DATABASES = {
         'NAME': 'wamytmdb',
         'USER': 'wamytm',
         'PASSWORD': 'Stw9nUvm',
-        'HOST': '127.0.0.1',
+        'HOST': 'db',
         'PORT': '',
     }
 }

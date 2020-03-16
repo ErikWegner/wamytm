@@ -1,4 +1,4 @@
-# Run an evaluation instance of korporator
+# Setup required services for local development
 version: '3'
 
 services:
@@ -19,16 +19,6 @@ services:
       - KEYCLOAK_PASSWORD=s3c4stroNG
     ports:
       - 8443:8443
-
-  korporator:
-    image: erikwegner/korporator
-    volumes:
-      - ./wamytmsite/wamytmsite/settings:/usr/src/app/wamytmsite/settings
-    environment: 
-      - SECRET_KEY=dfkjdhf8743hfsdhfksjh932
-      - DJANGO_SETTINGS_MODULE=wamytmsite.settings.dockercompose
-    ports:
-      - 8000:8000
 
 volumes:
   wamytm-db:

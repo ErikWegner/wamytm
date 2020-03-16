@@ -1,8 +1,6 @@
 """
 Django settings for wamytmsite project
-for running inside a container.
-
-Required settings are available as environment variables.
+for development.
 """
 
 import os
@@ -10,10 +8,10 @@ import os
 from . import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = '82021938-3cf7-41ac-a314-9af12725f985'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = 'DEBUG' in os.environ and os.environ['DEBUG'].upper() in ['TRUE', '1']
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
