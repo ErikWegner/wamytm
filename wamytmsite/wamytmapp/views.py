@@ -1,15 +1,19 @@
 import datetime
 from django.core.exceptions import ValidationError
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.views.generic import FormView
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.utils.translation import get_language_from_request
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from typing import List
 
 from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm
+from .serializers import TimeRangeSerializer
 
 class DayHeader:
     def __init__(self, day: datetime.date):
@@ -192,3 +196,14 @@ def profile(request):
         form = ProfileForm(user=request.user)
 
     return render(request, 'wamytmapp/profile.html', {'form': form})
+
+class TimeRangesList(APIView):
+    permission_classes = [IsAuthenticated]
+
+    """
+    List TimeRange objects
+    """
+    def get(self, request, format=None):
+        timerangeItems = TimeRange.objects.all()
+        serializer = TimeRangeSerializer(timerangeItems, many=True)
+        return Response(serializer.data)

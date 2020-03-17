@@ -37,7 +37,7 @@ This app allows every user to plan her/his office days and days off.
   - Install [Python 3.8](https://www.python.org/downloads/)
   - Install `pipenv`:
 
-     pip install pipenv
+        pip install pipenv
 
   - Enter pipenv environment: `pipenv shell`
   - Install dependencies: `pipenv install`

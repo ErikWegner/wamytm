@@ -12,13 +12,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INSTALLED_APPS = [
     'wamytmapp.apps.WamytmappConfig',
     'bootstrap4',
+    'oauth2_provider',
     'social_django',
+    'rest_framework_social_oauth2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -42,6 +45,13 @@ AUTHENTICATION_BACKENDS = [
     'social_core.backends.keycloak.KeycloakOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+        'rest_framework_social_oauth2.authentication.SocialAuthentication',
+    ),
+}
 
 ROOT_URLCONF = 'wamytmsite.urls'
 
@@ -78,14 +88,6 @@ SOCIAL_AUTH_PIPELINE = (
 SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
 
 WSGI_APPLICATION = 'wamytmsite.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
-DATABASES = {
-}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -137,4 +139,7 @@ SOCIAL_AUTH_KEYCLOAK_KEY = "wamytm"
 SOCIAL_AUTH_KEYCLOAK_ID_KEY = "username"
 
 # Can be set to False for development
-VERIFY_SSL = False
+VERIFY_SSL = True
+
+DRFSO2_PROPRIETARY_BACKEND_NAME = "Keycloak"
+DRFSO2_URL_NAMESPACE = "social_core.backends"
