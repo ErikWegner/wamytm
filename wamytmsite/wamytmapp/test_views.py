@@ -88,12 +88,12 @@ class ViewsTests(TestCase):
         # Assert
         self.assertSequenceEqual(
             result, [
-                {'days': [0, 0, 'a', 0, 0], 'user': self.users[4],
-                    'username': user_display_name(self.users[4])},
+                {'days': [0, 0, 'a', 'a', 'a'], 'user': self.users[1],
+                    'username': user_display_name(self.users[1])},
                 {'days': ['a', 0, 0, 0, 0], 'user': self.users[2],
                     'username': user_display_name(self.users[2])},
-                {'days': [0, 0, 'a', 'a', 'a'], 'user': self.users[1],
-                    'username': user_display_name(self.users[1])}
+                {'days': [0, 0, 'a', 0, 0], 'user': self.users[4],
+                    'username': user_display_name(self.users[4])},
             ])
         self.assertEqual(allDayEventsResult[0].description, "ruby tue")
         self.assertEqual(allDayEventsResult[1].description, "frik")
@@ -121,6 +121,18 @@ class ViewsTests(TestCase):
         self.assertEqual(200, response.status_code)
         for d in range(24, 29):
             self.assertContains(response, f'<th scope="row">{d}. Feb')
+
+    def test_index_is_sorted(self):
+        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[4])
+        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[2])
+        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[1])
+        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[3])
+        queryResult, allDayEventsResult = query_events_timeranges_in_week(datetime.date(2020,2,24), datetime.date(2020,3,1))
+        self.assertEquals(4, len(queryResult))
+        self.assertEquals(self.users[1].id, queryResult[0].user_id)
+        self.assertEquals(self.users[2].id, queryResult[1].user_id)
+        self.assertEquals(self.users[3].id, queryResult[2].user_id)
+        self.assertEquals(self.users[4].id, queryResult[3].user_id)
 
     def hasTimeRangeObject(self, start: datetime.date, end: datetime.date, user: User):
         timeRange = TimeRange(start=start, end=end,

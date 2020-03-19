@@ -99,6 +99,8 @@ class TimeRangeManager(models.Manager):
         if orgunits is not None:
             query = query.filter(orgunit__in=orgunits)
 
+        query = query.order_by('user')
+
         return query
 
 

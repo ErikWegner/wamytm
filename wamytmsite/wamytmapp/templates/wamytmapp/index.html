@@ -32,7 +32,7 @@
                     return;
                 }
                 var today = new Date();
-                var delta = Math.floor((d.getTime() - today.getTime()) / 1000 / 3600 / 24 / 7 + 4/7);
+                var delta = Math.floor((d.getTime() - today.getTime()) / 1000 / 3600 / 24 / 7 + today.getDay()/7);
                 window.location.href = "{% url 'wamytmapp:index' %}?weekdelta=" + delta;
             });
         </script>

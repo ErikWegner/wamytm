@@ -51,7 +51,12 @@ This app allows every user to plan her/his office days and days off.
   - Bash: `DJANGO_SETTINGS_MODULE=wamytmsite.settings.test python manage.py test`
   - PowerShell: 
 
+        # setup environment
         $env:DJANGO_SETTINGS_MODULE="wamytmsite.settings.test"
+        cd wamytmsite
+        python manage.py collectstatic
+
+        # run tests
         python manage.py test
 
 ### Configure login with Keycloak
