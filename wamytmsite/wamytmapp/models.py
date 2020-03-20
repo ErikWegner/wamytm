@@ -89,17 +89,21 @@ class TimeRangeManager(models.Manager):
             Return all TimeRange objects that overlap with the
             start and end date
         """
-        query = super().get_queryset().filter(
+        query = super().get_queryset(
+        ).filter(
             start__lte=end,
-            end__gte=start).annotate(
-                start_trim=Greatest('start', start),
-                end_trim=Least('end', end)
+            end__gte=start
+        ).annotate(
+            start_trim=Greatest('start', start),
+            end_trim=Least('end', end)
+        ).order_by(
+            'user__last_name',
+            'user__first_name',
+            'user__username'
         )
 
         if orgunits is not None:
             query = query.filter(orgunit__in=orgunits)
-
-        query = query.order_by('user')
 
         return query
 
@@ -250,6 +254,7 @@ def get_children(org_units: List[OrgUnit]):
             r.append((org_unit.name, tuple(charr)))
     return r
 
+
 def user_display_name(user):
     full_name = user.get_full_name()
-    return full_name if full_name is not "" else user.username
+    return full_name if full_name != "" else user.username

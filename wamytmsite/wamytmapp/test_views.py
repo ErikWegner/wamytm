@@ -10,8 +10,11 @@ class ViewsTests(TestCase):
     def setUp(self):
         self.users = []
         for userindex in range(0, 5):
-            self.users.append(User.objects.create_user(
-                F'unittestuser{userindex}'))
+            user = User.objects.create_user(
+                F'unittestuser{userindex}',
+                first_name='John',
+                last_name='Doe')
+            self.users.append(user)
         self.org_unit = OrgUnit(name='unittestou')
         self.org_unit.save()
 
@@ -123,16 +126,24 @@ class ViewsTests(TestCase):
             self.assertContains(response, f'<th scope="row">{d}. Feb')
 
     def test_index_is_sorted(self):
+        # Assign first name and last name
+        self.user_has_full_name(4, "Tim", "Smith")
+        self.user_has_full_name(1, "Tina", "Smith")
+        self.user_has_full_name(2, "Daniel", "Radis")
+        self.user_has_full_name(3, "Eva", "Jones")
+        # Create date items
         self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[4])
         self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[2])
         self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[1])
         self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[3])
+
         queryResult, allDayEventsResult = query_events_timeranges_in_week(datetime.date(2020,2,24), datetime.date(2020,3,1))
         self.assertEquals(4, len(queryResult))
-        self.assertEquals(self.users[1].id, queryResult[0].user_id)
+        # Sorted results
+        self.assertEquals(self.users[3].id, queryResult[0].user_id)
         self.assertEquals(self.users[2].id, queryResult[1].user_id)
-        self.assertEquals(self.users[3].id, queryResult[2].user_id)
-        self.assertEquals(self.users[4].id, queryResult[3].user_id)
+        self.assertEquals(self.users[4].id, queryResult[2].user_id)
+        self.assertEquals(self.users[1].id, queryResult[3].user_id)
 
     def hasTimeRangeObject(self, start: datetime.date, end: datetime.date, user: User):
         timeRange = TimeRange(start=start, end=end,
@@ -146,3 +157,9 @@ class ViewsTests(TestCase):
 
     def d(self, s: str):
         return datetime.datetime.strptime(s, "%Y-%m-%d")
+
+    def user_has_full_name(self, index, first_name, last_name):
+        user = self.users[index]
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save()
