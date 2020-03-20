@@ -145,8 +145,9 @@ def add(request):
 def list1(request):
     filterformvalues = request.GET.copy()
     if request.user is not None and request.user.is_authenticated and 'orgunit' not in filterformvalues:
-        filterformvalues['orgunit'] = TeamMember.objects.get(
-                pk=request.user.id).orgunit_id
+        tm = TeamMember.objects.filter(pk=request.user.id)
+        if tm.exists():
+            filterformvalues['orgunit'] = tm.first().orgunit_id
     filterform = OrgUnitFilterForm(filterformvalues)
     orgunitparamvalue = None
     start = None
