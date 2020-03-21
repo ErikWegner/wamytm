@@ -17,6 +17,9 @@ services:
     environment: 
       - KEYCLOAK_USER=k-admin
       - KEYCLOAK_PASSWORD=s3c4stroNG
+      - KEYCLOAK_IMPORT=/tmp/wamytm-realm.json
+    volumes:
+      - ./realm.json:/tmp/wamytm-realm.json
     ports:
       - 8443:8443
 

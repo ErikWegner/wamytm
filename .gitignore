@@ -4,4 +4,4 @@ wamytmsite/db.sqlite3
 *.pyc
 *.orig
 # static files for test
-wamytmsite/wamytmsite
+/wamytmsite/wamytmsite/staticfiles

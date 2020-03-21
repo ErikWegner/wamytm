@@ -1,4 +1,4 @@
-# Run an evaluation instance of korporator
+# Build a fresh container image of korporator and run it 
 version: '3'
 
 services:
@@ -25,9 +25,10 @@ services:
 
   korporator:
     image: erikwegner/korporator
+    build: .
     environment:
       - SECRET_KEY=dfkjdhf8743hfsdhfksjh932
-      - WAMYTM_DEBUG=False
+      - WAMYTM_DEBUG=True
       - WAMYTM_DATABASE_ENGINE=django.db.backends.postgresql_psycopg2
       - WAMYTM_DATABASE_HOST=db
       - WAMYTM_DATABASE_NAME=wamytmdb

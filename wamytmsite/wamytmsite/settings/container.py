@@ -1,6 +1,8 @@
 """
 Django settings for wamytmsite project
-for running through docker-compose.yml file.
+for running inside a container.
+
+Required settings are available as environment variables.
 """
 
 import os
@@ -11,7 +13,7 @@ from . import *
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = 'DEBUG' in os.environ and os.environ['DEBUG'].upper() in ['TRUE', '1']
+DEBUG = 'WAMYTM_DEBUG' in os.environ and os.environ['WAMYTM_DEBUG'].upper() in ['TRUE', '1']
 
 ALLOWED_HOSTS = ['*']
 
@@ -28,30 +30,30 @@ DATABASES = {
 
 # Postgres
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'wamytmdb',
-        'USER': 'wamytm',
-        'PASSWORD': 'Stw9nUvm',
-        'HOST': 'db',
-        'PORT': '',
+        'ENGINE': os.environ['WAMYTM_DATABASE_ENGINE'],
+        'NAME': os.environ['WAMYTM_DATABASE_NAME'],
+        'USER': os.environ['WAMYTM_DATABASE_USERNAME'],
+        'PASSWORD': os.environ['WAMYTM_DATABASE_PASSWORD'],
+        'HOST': os.environ['WAMYTM_DATABASE_HOST'],
+        'PORT': os.environ['WAMYTM_DATABASE_PORT'],
     }
 }
 
 # Clients > Client ID
-SOCIAL_AUTH_KEYCLOAK_KEY = "wamytm"
+SOCIAL_AUTH_KEYCLOAK_KEY = os.environ['WAMYTM_KEYCLOAK_CLIENT_ID']
 
 # Clients > Client > Credentials > Secret
-SOCIAL_AUTH_KEYCLOAK_SECRET = "6fd1a212-deed-450c-b28d-3170a0c6102c"
+SOCIAL_AUTH_KEYCLOAK_SECRET = os.environ['WAMYTM_KEYCLOAK_CLIENT_SECRET']
 
 # Realm Settings > Keys > Public key
-SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxFXkNZ3uZQ9Zd/GBzkVwbzjhrQ8pJDqLQclUS1XIO34RTA1gRjBVz1d5xWpK9piF0XJGjJGCBPfPQ3cBVEH0xZ+ezpgslZzhh6ur2lv0wugHPwotMXWGIibpO1yiw/wGCszHdroziuwWU9Auf2kOwn1CTjQxg4IOa/fJKyIwxrfppofZNQ3Kq2Z881V9gbXAilDj0Xt8vuO3PEsFghFUce0AFpFtCxX0d8vfxuz92+tUSM/rZf5VR2aXXOdU+sZ3gJwz1w7a4+3eEM9xSD5wJnTbavSjwbJF27Tl4Vngc/tn/Q/5eppDMJb9/STO26OLHXnBUjAZ2PTO0Zau6sU4NQIDAQAB"
+SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = os.environ['WAMYTM_KEYCLOAK_PUBLIC_KEY']
 
-SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = 'https://127.0.0.1:8443/auth/realms/wamytmdev/protocol/openid-connect/auth'
-SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = 'https://127.0.0.1:8443/auth/realms/wamytmdev/protocol/openid-connect/token'
+SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = os.environ['WAMYTM_KEYCLOAK_AUTH_URL']
+SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = os.environ['WAMYTM_KEYCLOAK_TOKEN_URL']
 SOCIAL_AUTH_KEYCLOAK_ID_KEY = "username"
 
 # Can be set to False for development
-VERIFY_SSL = False
+VERIFY_SSL = 'WAMYTM_KEYCLOAK_VERIFY_SSL' not in os.environ or os.environ['WAMYTM_KEYCLOAK_VERIFY_SSL'].upper() in ['TRUE', '1']
 
 # Enable temporary logging (see https://stackoverflow.com/a/51462712)
 # LOGGING = { 'version': 1, 'disable_existing_loggers': False, 'handlers': { 'file': { 'level': 'DEBUG', 'class': 'logging.FileHandler', 'filename': '/tmp/debug.log', }, }, 'loggers': { 'django': { 'handlers': ['file'], 'level': 'DEBUG', 'propagate': True, }, }, }
