@@ -33,14 +33,12 @@ This app allows every user to plan her/his office days and days off.
   - Temporary accept certificate
 - Korporator setup
   - Install [Python 3.8](https://www.python.org/downloads/)
-  - Install `pipenv`:
-
-        pip install pipenv
-
+  - Install [pipenv](https://pipenv.readthedocs.io/): `pip install pipenv`
   - Enter pipenv environment: `pipenv shell`
   - Install dependencies: `pipenv install`
   - Initialize database: `cd wamytmsite && python manage.py migrate`
   - Create super user: `cd wamytmsite && python manage.py createsuperuser`
+  - (Optional) Remove existing data and create new example data: `cd wamytmsite && python manage.py example_data`
 - Run korporator
   - Run application in development mode: `cd wamytmsite && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py runserver`
   - Access the backend at http://localhost:8000/admin/
