@@ -1,5 +1,7 @@
 wamytmsite/db.sqlite3
-.vscode
+.vscode/.ropeproject
+.vscode/settings.json
 *.pyc
-/wamytmsite/wamytmsite/settings.py
 *.orig
+# static files for test
+/wamytmsite/wamytmsite/staticfiles

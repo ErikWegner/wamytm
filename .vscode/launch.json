@@ -1,0 +1,39 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Tests",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/wamytmsite",
+            "program": "${workspaceFolder}/wamytmsite/manage.py",
+            "args": [
+                "test"
+            ],
+            "django": true,
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.test"
+            }
+        },
+        {
+            "name": "Python: Django",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/wamytmsite",
+            "program": "${workspaceFolder}/wamytmsite/manage.py",
+            "args": [
+                "runserver",
+                "--noreload"
+            ],
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.dev",
+                "DEBUG": "TRUE"
+            },
+            "django": true,
+            "justMyCode": false
+        }
+    ]
+}
