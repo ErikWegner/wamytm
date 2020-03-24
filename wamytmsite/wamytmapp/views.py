@@ -1,3 +1,4 @@
+import csv
 import datetime
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
@@ -174,6 +175,32 @@ def list1(request):
 
     return render(request, 'wamytmapp/list1.html', viewdata)
 
+def weekCSV(request):
+    weekdelta = int(request.GET['weekdelta']) if "weekdelta" in request.GET else 0
+    timeRangeFilter = request.GET['kind'] if 'kind' in request.GET else None
+
+    today = datetime.date.today()
+    monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
+    timeranges, _ = query_events_timeranges_in_week(monday)
+
+    users = []
+    for timerange in timeranges:
+        if timerange.user in users:
+            continue
+        if timeRangeFilter is not None and timerange.kind != timeRangeFilter:
+            continue
+        users.append(timerange.user)
+
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = F'attachment; filename="korporator-{monday}.csv"'
+
+    writer = csv.writer(response, delimiter=';')
+    writer.writerow(['KID', 'Vorname', 'Nachname', 'E-Mail'])
+    for user in users:
+        writer.writerow([user.username, user.first_name, user.last_name, user.email])
+
+    return response
 
 @login_required
 def profile(request):

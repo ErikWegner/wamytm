@@ -64,4 +64,8 @@
         {% endfor %}
     </tbody>
 </table>
+
+<a class="" href="{% url 'wamytmapp:weekCSV' %}?kind=m&weekdelta={{ weekdelta }}"
+    role="">{% trans "Report Mobile Workers" context "IndexTemplate" %}</a>
+
 {% endblock %}
