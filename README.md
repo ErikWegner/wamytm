@@ -88,3 +88,13 @@ This app allows every user to plan her/his office days and days off.
     alter schema public owner to wamytm;
     \q
 
+## Container settings
+
+| Environment variable | Setting |  
+|---|---|
+| WAMYTM_TRUST_X_FORWARDED_PROTO |   `True` trust the X-Forwarded_Proto header |
+| | `False` to ignore the header |
+| USE_X_FORWARDED_HOST | `True` use X-Forwarded-Host header to construct links |
+| | `False` to ignore the header |
+
+See [docker-compose.yml](docker-compose.yml) for further settings.
