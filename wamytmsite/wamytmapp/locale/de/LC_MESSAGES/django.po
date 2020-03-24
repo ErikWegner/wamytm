@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-20 22:06+0100\n"
+"POT-Creation-Date: 2020-03-24 21:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Erik Wegner <e_wegner@web.de>\n"
 "Language: de\n"
@@ -92,82 +92,82 @@ msgctxt "Models"
 msgid "Organizational units"
 msgstr "Organisationseinheiten"
 
-#: wamytmapp/models.py:110 wamytmapp/models.py:115
+#: wamytmapp/models.py:116 wamytmapp/models.py:121
 msgctxt "TimeRangeChoice"
 msgid "absent"
 msgstr "abwesend"
 
-#: wamytmapp/models.py:111 wamytmapp/models.py:116
+#: wamytmapp/models.py:117 wamytmapp/models.py:122
 msgctxt "TimeRangeChoice"
 msgid "present"
 msgstr "im Büro"
 
-#: wamytmapp/models.py:112 wamytmapp/models.py:117
+#: wamytmapp/models.py:118 wamytmapp/models.py:123
 msgctxt "TimeRangeChoice"
 msgid "mobile"
 msgstr "Mobiles Arbeiten"
 
-#: wamytmapp/models.py:120
+#: wamytmapp/models.py:126
 msgctxt "TimeRange"
 msgid "User"
 msgstr "Benutzer"
 
-#: wamytmapp/models.py:122
+#: wamytmapp/models.py:128
 msgctxt "TimeRange"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/models.py:123
+#: wamytmapp/models.py:129
 msgctxt "TimeRange"
 msgid "Start"
 msgstr "Anfang"
 
-#: wamytmapp/models.py:125
+#: wamytmapp/models.py:131
 msgctxt "TimeRange"
 msgid "End"
 msgstr "Ende"
 
-#: wamytmapp/models.py:127
+#: wamytmapp/models.py:133
 msgctxt "TimeRange"
 msgid "Kind of time range"
 msgstr "Art des Zeiteintrags"
 
-#: wamytmapp/models.py:132
+#: wamytmapp/models.py:138
 msgctxt "Models"
 msgid "time range"
 msgstr "Zeiteintrag"
 
-#: wamytmapp/models.py:133
+#: wamytmapp/models.py:139
 msgctxt "Models"
 msgid "time ranges"
 msgstr "Zeiteinträge"
 
-#: wamytmapp/models.py:138
+#: wamytmapp/models.py:144
 msgctxt "Models"
 msgid "End date may not be before start date."
 msgstr "Das Ende-Datum darf nicht vor dem Anfangs-Datum liegen."
 
-#: wamytmapp/models.py:149
+#: wamytmapp/models.py:155
 msgctxt "TimeRangeStr"
 msgid "TimeRange"
 msgstr "Zeiteintrag"
 
-#: wamytmapp/models.py:169
+#: wamytmapp/models.py:175
 msgctxt "AllDayEvent"
 msgid "description"
 msgstr "Beschreibung"
 
-#: wamytmapp/models.py:172
+#: wamytmapp/models.py:178
 msgctxt "AllDayEvent"
 msgid "day"
 msgstr "Tag"
 
-#: wamytmapp/models.py:178
+#: wamytmapp/models.py:184
 msgctxt "Models"
 msgid "all day event"
 msgstr "Ganztagsereignis"
 
-#: wamytmapp/models.py:179
+#: wamytmapp/models.py:185
 msgctxt "Models"
 msgid "all day events"
 msgstr "Ganztagsereignisse"
@@ -223,45 +223,55 @@ msgctxt "BaseTemplate"
 msgid "Administration"
 msgstr "Verwaltung"
 
-#: wamytmapp/templates/wamytmapp/index.html:6
+#: wamytmapp/templates/wamytmapp/index.html:7
 msgctxt "IndexTemplate"
 msgid "Week view"
 msgstr "Wochenansicht"
 
-#: wamytmapp/templates/wamytmapp/index.html:9
+#: wamytmapp/templates/wamytmapp/index.html:10
 msgctxt "IndexTemplate"
 msgid "Previous week"
 msgstr "Eine Woche zurück"
 
-#: wamytmapp/templates/wamytmapp/index.html:11
+#: wamytmapp/templates/wamytmapp/index.html:12
 msgctxt "IndexTemplate"
 msgid "Current week"
 msgstr "aktuelle Woche"
 
-#: wamytmapp/templates/wamytmapp/index.html:13
+#: wamytmapp/templates/wamytmapp/index.html:14
 msgctxt "IndexTemplate"
 msgid "Next week"
 msgstr "Eine Woche vor"
 
-#: wamytmapp/templates/wamytmapp/index.html:16
+#: wamytmapp/templates/wamytmapp/index.html:17
 msgctxt "IndexTemplate"
 msgid "Filters"
 msgstr "Filter"
 
-#: wamytmapp/templates/wamytmapp/index.html:26
+#: wamytmapp/templates/wamytmapp/index.html:27
 msgctxt "IndexTemplateFilters"
 msgid "Go"
 msgstr "Los"
 
-#: wamytmapp/templates/wamytmapp/index.html:41
+#: wamytmapp/templates/wamytmapp/index.html:45
 msgctxt "IndexTemplate"
 msgid "Person"
 msgstr "Person"
+
+#: wamytmapp/templates/wamytmapp/index.html:69
+msgctxt "IndexTemplate"
+msgid "Report Mobile Workers"
+msgstr "Bericht Mobiles Arbeiten"
 
 #: wamytmapp/templates/wamytmapp/list1.html:17
 msgctxt "List1Template"
 msgid "Date"
 msgstr "Datum"
+
+#: wamytmapp/templates/wamytmapp/list1.html:42
+msgctxt "IndexTemplate"
+msgid "iCal calendar sync"
+msgstr "iCal Kalender-Synchronisation"
 
 #: wamytmapp/templates/wamytmapp/profile.html:9
 msgctxt "ProfileTemplate"
