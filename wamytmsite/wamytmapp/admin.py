@@ -77,3 +77,4 @@ class AllDayEventAdmin(admin.ModelAdmin):
     search_fields = ['description']
 
 korporator_admin.register(AllDayEvent, AllDayEventAdmin)
+korporator_admin.register(OrgUnit)

@@ -59,3 +59,6 @@ VERIFY_SSL = False
 #     os.path.join(BASE_DIR, "locale"),
 #     os.path.join(BASE_DIR, "wamytmapp/locale"), 
 # ]
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

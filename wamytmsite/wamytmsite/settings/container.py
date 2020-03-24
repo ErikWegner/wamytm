@@ -61,3 +61,8 @@ VERIFY_SSL = 'WAMYTM_KEYCLOAK_VERIFY_SSL' not in os.environ or os.environ['WAMYT
 #     os.path.join(BASE_DIR, "locale"),
 #     os.path.join(BASE_DIR, "wamytmapp/locale"), 
 # ]
+
+if 'WAMYTM_TRUST_X_FORWARDED_PROTO' in os.environ and os.environ['WAMYTM_TRUST_X_FORWARDED_PROTO'].upper() in ['TRUE', '1']:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+USE_X_FORWARDED_HOST = 'WAMYTM_USE_X_FORWARDED_HOST' in os.environ and os.environ['WAMYTM_USE_X_FORWARDED_HOST'] in ['TRUE', '1']
