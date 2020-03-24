@@ -7,6 +7,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.utils.translation import get_language_from_request
+from django_ical.views import ICalFeed
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,11 +17,13 @@ from .models import TimeRange, TeamMember, query_events_timeranges_in_week, quer
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm
 from .serializers import TimeRangeSerializer
 
+
 class DayHeader:
     def __init__(self, day: datetime.date):
         self.day = day
         self.allday = False
         pass
+
 
 def _prepareWeekdata(weekdata: List[TimeRange]):
     """
@@ -97,7 +100,8 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 
 
 def index(request):
-    weekdelta = int(request.GET['weekdelta']) if "weekdelta" in request.GET else 0
+    weekdelta = int(request.GET['weekdelta']
+                    ) if "weekdelta" in request.GET else 0
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
     days = []
@@ -171,12 +175,15 @@ def list1(request):
             if dh.day == alldayevent.day:
                 dh.allday = alldayevent
     viewdata['ouselect'] = filterform
+    viewdata['orgunit'] = 0 if orgunit is None else orgunit
     viewdata['trc'] = TimeRange.VIEWS_LEGEND
 
     return render(request, 'wamytmapp/list1.html', viewdata)
 
+
 def weekCSV(request):
-    weekdelta = int(request.GET['weekdelta']) if "weekdelta" in request.GET else 0
+    weekdelta = int(request.GET['weekdelta']
+                    ) if "weekdelta" in request.GET else 0
     timeRangeFilter = request.GET['kind'] if 'kind' in request.GET else None
 
     today = datetime.date.today()
@@ -198,9 +205,11 @@ def weekCSV(request):
     writer = csv.writer(response, delimiter=';')
     writer.writerow(['KID', 'Vorname', 'Nachname', 'E-Mail'])
     for user in users:
-        writer.writerow([user.username, user.first_name, user.last_name, user.email])
+        writer.writerow([user.username, user.first_name,
+                         user.last_name, user.email])
 
     return response
+
 
 @login_required
 def profile(request):
@@ -225,13 +234,52 @@ def profile(request):
 
     return render(request, 'wamytmapp/profile.html', {'form': form})
 
+
 class TimeRangesList(APIView):
     permission_classes = [IsAuthenticated]
 
     """
     List TimeRange objects
     """
+
     def get(self, request, format=None):
         timerangeItems = TimeRange.objects.all()
         serializer = TimeRangeSerializer(timerangeItems, many=True)
         return Response(serializer.data)
+
+
+class TeamFeed(ICalFeed):
+    product_id = '-//example.com//Example//EN'
+    timezone = 'UTC'
+    file_name = "event.ics"
+
+    def items(self, obj):
+        orgunit = obj['orgunit'] if obj['orgunit'] > 0 else None
+        today = datetime.date.today()
+        startdate = today - datetime.timedelta(weeks=4)
+        enddate = today + datetime.timedelta(weeks=12)
+        (events, _), _, _ = query_events_list1(startdate, enddate, orgunit)
+        return events
+
+    def get_object(self, request, *args, **kwargs):
+        return {'orgunit': kwargs['orgunit']}
+
+    def item_guid(self, item):
+        return F"{item.id}@wamytm"
+
+    def item_title(self, item):
+        username = user_display_name(item.user)
+        kind = TimeRange.VIEWS_LEGEND[item.kind]
+        return F"{username} ({kind})"
+
+    def item_description(self, item):
+        return ""
+
+    def item_start_datetime(self, item):
+        return item.start
+
+    def item_end_datetime(self, item):
+        return item.end
+
+    def item_link(self, item):
+        return ""

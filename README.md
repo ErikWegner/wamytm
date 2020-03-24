@@ -24,6 +24,7 @@ This app allows every user to plan her/his office days and days off.
 
 ## Development
 
+- Checkout `dev` branch from repository
 - Start required containers: `docker-compose -f docker-compose-dev.yml up -d`
 - Database
   - Connect to database server: `docker-compose exec db psql -U postgres`

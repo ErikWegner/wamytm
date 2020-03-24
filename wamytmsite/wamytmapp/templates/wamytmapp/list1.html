@@ -37,4 +37,8 @@
     {% endif %}
     {% endfor %}
 </table>
+
+<a class="" href="{% url 'wamytmapp:icalfeed-by-orgunit' orgunit=orgunit %}"
+    role="">{% trans "iCal calendar sync" context "IndexTemplate" %}</a>
+
 {% endblock %}
