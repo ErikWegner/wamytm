@@ -1,6 +1,7 @@
 {% extends 'wamytmapp/base.html' %}
 {% load get_value_from_dict %}
 {% load get_partial_symbol %}
+{% load get_description_tooltip %}
 {% load i18n %}
 
 {% block content %}
@@ -59,7 +60,7 @@
             {% if day == 0%}
             <td class="empty"></td>
             {% else %}
-            <td class="kind-{{ day.k }}">{{ trc|get_value_from_dict:day.k }}{{ day|get_partial_symbol }}</td>
+            <td class="kind-{{ day.k }}">{{ trc|get_value_from_dict:day.k }}{{ day|get_partial_symbol }}{{ day|get_description_tooltip }}</td>
             {% endif %}
             {% endfor %}
         </tr>

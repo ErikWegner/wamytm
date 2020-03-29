@@ -2,6 +2,7 @@
 {% load bootstrap4 %}
 {% load get_value_from_dict %}
 {% load get_partial_symbol %}
+{% load get_description_tooltip %}
 {% load i18n %}
 
 {% block content %}
@@ -31,7 +32,7 @@
             <th scope="row"{% if line.day.allday %} class="allday"{% endif %}>{{ line.day.day | date:"d. M (D)" }}{% if line.day.allday %} {{ line.day.allday.description }}{% endif %}</th>
             {% for col in line.cols %}
             {% if col %}
-            <td class="kind-{{ col.kind_with_details }}">{% with col.kind_with_details as k %}{{ trc|get_value_from_dict:k }}{{ col.data|get_partial_symbol }}{% endwith %}</td>
+            <td class="kind-{{ col.kind_with_details }}">{% with col.kind_with_details as k %}{{ trc|get_value_from_dict:k }}{% endwith %}{{ col.data|get_partial_symbol }}{{ col.data|get_description_tooltip}}</td>
             {% else %}
             <td></td>
             {% endif %}

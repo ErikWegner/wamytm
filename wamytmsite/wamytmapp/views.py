@@ -42,11 +42,9 @@ def _prepareWeekdata(weekdata: List[TimeRange]):
                 days.append(0)
             collector[item.user] = {"days": days}
         for d in range(item.start_trim.weekday(), 1 + item.end_trim.weekday()):
-            collector[item.user]["days"][d] = {
-                'k': item.kind_with_details()
-            }
-            if TimeRange.DATA_PARTIAL in item.data:
-                collector[item.user]["days"][d]['partial'] = item.data[TimeRange.DATA_PARTIAL]
+            daydata = item.data
+            daydata['k'] = item.kind_with_details()
+            collector[item.user]["days"][d] = daydata
     result = []
     for user in collector:
         result.append({
