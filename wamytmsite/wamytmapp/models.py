@@ -39,6 +39,7 @@ class OrgUnit(models.Model):
     objects = OrgUnitManager()
 
     class Meta:
+        ordering = ['name']
         verbose_name = pgettext_lazy('Models', 'Organizational unit')
         verbose_name_plural = pgettext_lazy('Models', 'Organizational units')
 
@@ -63,7 +64,8 @@ def create_teammember(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_teammember(sender, instance, **kwargs):
-    instance.teammember.save()
+    if hasattr(instance, 'teammember'):
+        instance.teammember.save()
 
 
 class TimeRangeManager(models.Manager):

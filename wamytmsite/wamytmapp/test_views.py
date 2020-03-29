@@ -13,7 +13,7 @@ class ViewsTests(TestCase):
             user = User.objects.create_user(
                 F'unittestuser{userindex}',
                 first_name='John',
-                last_name='Doe')
+                last_name='Doe' + str(userindex))
             self.users.append(user)
         self.org_unit = OrgUnit(name='unittestou')
         self.org_unit.save()
@@ -152,10 +152,85 @@ class ViewsTests(TestCase):
         self.assertEquals(self.users[4].id, queryResult[2].user_id)
         self.assertEquals(self.users[1].id, queryResult[3].user_id)
 
-    def hasTimeRangeObject(self, start: datetime.date, end: datetime.date, user: User):
+    def test_week_view_contains_all_possible_kinds(self):
+        # Create date items
+        today = datetime.date.today()
+        monday = today - datetime.timedelta(days=today.weekday())
+
+        d = monday + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[4], kind=TimeRange.MOBILE, data={
+            'v': '1',
+            TimeRange.DATA_KINDDETAIL: 'p'
+        })
+        d = d + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[2], kind=TimeRange.PRESENT)
+        d = d + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[1], kind=TimeRange.MOBILE)
+        d = d + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[3])
+
+        client = Client()
+        response = client.get('/cal/')
+
+        self.assertEqual(200, response.status_code)
+        content = response.content.decode('utf-8')
+
+        self.assertIn('<tbody>', content)
+        tablerows = content[
+            (content.index('<tbody>') + 7):(content.index('</tbody>'))]
+        self.maxDiff = None
+        self.assertHTMLEqual(
+            '<tr><th scope="row">' + user_display_name(self.users[1]) + '</th>' +
+            '<td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="kind-m">mobile</td><td class="empty"></td>' +
+            '</tr>' +
+            '<tr><th scope="row">' + user_display_name(self.users[2]) + '</th>' +
+            '<td class="empty"></td><td class="empty"></td><td class="kind-p">present</td><td class="empty"></td><td class="empty"></td>' +
+            '</tr>' +
+            '<tr><th scope="row">' + user_display_name(self.users[3]) + '</th>' +
+            '<td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="kind-a">absent</td>' +
+            '</tr>' +
+            '<tr><th scope="row">' + user_display_name(self.users[4]) + '</th>' +
+            '<td class="empty"></td><td class="kind-mp">mobile (particular circumstances)</td><td class="empty"></td><td class="empty"></td><td class="empty"></td>' +
+            '</tr>',
+            tablerows)
+
+    def test_months_view_contains_all_possible_kinds(self):
+        # Create date items
+        today = datetime.date.today()
+        monday = today + datetime.timedelta(days=(7 - today.weekday()))
+
+        d = monday + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[4], kind=TimeRange.MOBILE, data={
+            'v': '1',
+            TimeRange.DATA_KINDDETAIL: 'p'
+        })
+        d = d + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[2], kind=TimeRange.PRESENT)
+        d = d + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[1], kind=TimeRange.MOBILE)
+        d = d + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[3])
+
+        client = Client()
+        response = client.get('/cal/list')
+
+        self.assertEqual(200, response.status_code)
+        content = response.content.decode('utf-8')
+
+        self.assertIn('<tbody>', content)
+        tablerows = content[
+            (content.index('<tbody>') + 7):(content.index('</tbody>'))]
+        self.maxDiff = None
+        self.assertInHTML('<td class="kind-m">mobile</td>', tablerows)
+        self.assertInHTML('<td class="kind-p">present</td>', tablerows)
+        self.assertInHTML('<td class="kind-a">absent</td>', tablerows)
+        self.assertInHTML(
+            '<td class="kind-mp">mobile (particular circumstances)</td>', tablerows)
+
+    def hasTimeRangeObject(self, start: datetime.date, end: datetime.date, user: User, kind=TimeRange.ABSENT, data={}):
         timeRange = TimeRange(start=start, end=end,
-                              user=user, orgunit=self.org_unit, kind=TimeRange.ABSENT,
-                              data={})
+                              user=user, orgunit=self.org_unit, kind=kind,
+                              data=data)
         timeRange.save()
         return timeRange
 
