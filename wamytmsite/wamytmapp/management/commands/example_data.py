@@ -62,7 +62,7 @@ class Command(BaseCommand):
                 kind=choice(TimeRange.KIND_CHOICES)[0],
                 data={'v': 1}
             )
-            if tr.kind == TimeRange.MOBILE and randint(0, 10) % 3 == 0:
+            if tr.kind == TimeRange.MOBILE and randint(0, 10) % 4 == 0:
                 tr.data[TimeRange.DATA_KINDDETAIL] = 'p'
 
             # Create some old entries without data

@@ -1,6 +1,8 @@
 from django import forms
-from .models import OrgUnit, TimeRange, TeamMember, user_display_name
 from django.utils.translation import pgettext_lazy
+
+from .models import OrgUnit, TimeRange, TeamMember, user_display_name
+from .config import RuntimeConfig
 
 
 class DateInput(forms.DateInput):
@@ -11,8 +13,6 @@ class AddTimeRangeForm(forms.Form):
     """
         A form to add a new time range entry.
     """
-    KIND_DEFAULT = '_'
-    KIND_LABEL = 'label'
     dateInputAttrs = {
         'data-provide': 'datepicker',
         'data-date-calendar-weeks': 'true',
@@ -47,6 +47,8 @@ class AddTimeRangeForm(forms.Form):
         label=pgettext_lazy('AddTimeRangeForm', 'Kind of time range')
     )
 
+    _runtimeConfig = RuntimeConfig()
+
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super(AddTimeRangeForm, self).__init__(*args, **kwargs)
@@ -66,46 +68,13 @@ class AddTimeRangeForm(forms.Form):
         complexKind = cleaned_data['kind']
         cleaned_data['kind'] = complexKind[:1]
         cleaned_data['data'] = {'v': 1}
-        if complexKind[1:] != AddTimeRangeForm.KIND_DEFAULT:
+        if complexKind[1:] != RuntimeConfig.KIND_DEFAULT:
             cleaned_data['data'][TimeRange.DATA_KINDDETAIL] = complexKind[1:]
 
         return TimeRange(**cleaned_data)
 
     def _setupKindChoices(self):
-        basechoices = [
-            TimeRange.ABSENT,
-            TimeRange.PRESENT,
-            TimeRange.MOBILE
-        ]
-        kindchoices_config = {
-            TimeRange.ABSENT: {
-                AddTimeRangeForm.KIND_DEFAULT: True
-            },
-            TimeRange.PRESENT: {
-                AddTimeRangeForm.KIND_DEFAULT: True
-            },
-            TimeRange.MOBILE: {
-                AddTimeRangeForm.KIND_DEFAULT: True,
-                'p': {
-                    AddTimeRangeForm.KIND_LABEL: pgettext_lazy(
-                        'TimeRangeChoice', 'mobile (particular circumstances)')
-                }
-            }
-        }
-
-        choices = []
-
-        for basechoice in basechoices:
-            kindchoice_config = kindchoices_config[basechoice]
-            for configkey in kindchoice_config.keys():
-                if configkey == AddTimeRangeForm.KIND_DEFAULT:
-                    choices.append(
-                        (basechoice + '_', TimeRange.VIEWS_LEGEND[basechoice]))
-                    continue
-                choices.append(
-                    (basechoice + configkey, kindchoice_config[configkey][AddTimeRangeForm.KIND_LABEL]))
-
-        self.fields['kind'].choices = choices
+        self.fields['kind'].choices = RuntimeConfig.TimeRangeChoices
 
 
 class OrgUnitFilterForm(forms.Form):

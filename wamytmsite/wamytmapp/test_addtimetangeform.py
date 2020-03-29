@@ -1,12 +1,14 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 
+from .config import RuntimeConfig
 from .forms import AddTimeRangeForm
 from .models import OrgUnit, TimeRange
 
 
 class AddTimeRangeFormTests(TestCase):
     def setUp(self):
+        self.runtimeConfig = RuntimeConfig()
         self.user = User.objects.create_user('unittestuser1')
         self.org_unit = OrgUnit(name='unittestou')
         self.org_unit.save()
@@ -27,7 +29,7 @@ class AddTimeRangeFormTests(TestCase):
         postData = {
             'start': '2020-03-28',
             'end': '',
-            'kind': TimeRange.ABSENT + AddTimeRangeForm.KIND_DEFAULT,
+            'kind': TimeRange.ABSENT + self.runtimeConfig.KIND_DEFAULT,
             'orgunit_id': str(self.org_unit.id)
         }
         form = AddTimeRangeForm(data=postData, user=self.user)
@@ -68,4 +70,5 @@ class AddTimeRangeFormTests(TestCase):
         form = AddTimeRangeForm(data=postData, user=self.user)
         self.assertFalse(form.is_valid())
         self.assertIn('kind', form.errors)
-        self.assertEquals('Select a valid choice. m! is not one of the available choices.', form.errors['kind'][0])
+        self.assertEquals(
+            'Select a valid choice. m! is not one of the available choices.', form.errors['kind'][0])

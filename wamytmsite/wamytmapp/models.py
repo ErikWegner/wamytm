@@ -122,11 +122,6 @@ class TimeRange(models.Model):
         (PRESENT, pgettext_lazy('TimeRangeChoice', 'present')),
         (MOBILE, pgettext_lazy('TimeRangeChoice', 'mobile')),
     ]
-    VIEWS_LEGEND = {
-        ABSENT: pgettext_lazy('TimeRangeChoice', 'absent'),
-        PRESENT: pgettext_lazy('TimeRangeChoice', 'present'),
-        MOBILE: pgettext_lazy('TimeRangeChoice', 'mobile')
-    }
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              verbose_name=pgettext_lazy('TimeRange', 'User'))
     orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE,
@@ -160,6 +155,12 @@ class TimeRange(models.Model):
     def __str__(self):
         s = pgettext_lazy('TimeRangeStr', "TimeRange")
         return str(format_lazy('{s}({start}, {end})', s=s, start=self.start, end=self.end))
+
+    def kind_with_details(self):
+        r = self.kind
+        if self.data and TimeRange.DATA_KINDDETAIL in self.data:
+            r = r + self.data[TimeRange.DATA_KINDDETAIL]
+        return r
 
 
 class AllDayEventsManager(models.Manager):
