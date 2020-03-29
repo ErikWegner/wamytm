@@ -11,8 +11,10 @@ class AddTimeRangeForm(forms.Form):
     """
         A form to add a new time range entry.
     """
+    KIND_DEFAULT = '_'
+    KIND_LABEL = 'label'
     dateInputAttrs = {
-        'data-provide':'datepicker',
+        'data-provide': 'datepicker',
         'data-date-calendar-weeks': 'true',
         'data-date-format': 'yyyy-mm-dd',
         'data-date-today-highlight': 'true',
@@ -32,17 +34,17 @@ class AddTimeRangeForm(forms.Form):
         label=pgettext_lazy('AddTimeRangeForm', 'End'),
         required=False,
         help_text=pgettext_lazy('AddTimeRangeForm',
-                    'If left blank, it will be set to start date'),
+                                'If left blank, it will be set to start date'),
         widget=forms.widgets.DateInput(attrs=dateInputAttrs)
     )
     orgunit_id = forms.ChoiceField(
         required=True,
-        help_text=pgettext_lazy('AddTimeRangeForm', 'Entry will be visible to this and all organizational units above'),
+        help_text=pgettext_lazy(
+            'AddTimeRangeForm', 'Entry will be visible to this and all organizational units above'),
         label=pgettext_lazy('AddTimeRangeForm', 'Organizational unit'))
     kind = forms.ChoiceField(
         required=True,
-        label=pgettext_lazy('AddTimeRangeForm', 'Kind of time range'),
-        choices=TimeRange.KIND_CHOICES
+        label=pgettext_lazy('AddTimeRangeForm', 'Kind of time range')
     )
 
     def __init__(self, *args, **kwargs):
@@ -52,6 +54,7 @@ class AddTimeRangeForm(forms.Form):
         self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit_id'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id
+        self._setupKindChoices()
 
     def get_time_range(self):
         if self.is_valid() == False:
@@ -60,8 +63,49 @@ class AddTimeRangeForm(forms.Form):
         cleaned_data = self.cleaned_data
         cleaned_data['user_id'] = self.user.id
         del(cleaned_data['user'])
+        complexKind = cleaned_data['kind']
+        cleaned_data['kind'] = complexKind[:1]
+        cleaned_data['data'] = {'v': 1}
+        if complexKind[1:] != AddTimeRangeForm.KIND_DEFAULT:
+            cleaned_data['data'][TimeRange.DATA_KINDDETAIL] = complexKind[1:]
 
         return TimeRange(**cleaned_data)
+
+    def _setupKindChoices(self):
+        basechoices = [
+            TimeRange.ABSENT,
+            TimeRange.PRESENT,
+            TimeRange.MOBILE
+        ]
+        kindchoices_config = {
+            TimeRange.ABSENT: {
+                AddTimeRangeForm.KIND_DEFAULT: True
+            },
+            TimeRange.PRESENT: {
+                AddTimeRangeForm.KIND_DEFAULT: True
+            },
+            TimeRange.MOBILE: {
+                AddTimeRangeForm.KIND_DEFAULT: True,
+                'p': {
+                    AddTimeRangeForm.KIND_LABEL: pgettext_lazy(
+                        'TimeRangeChoice', 'mobile (particular circumstances)')
+                }
+            }
+        }
+
+        choices = []
+
+        for basechoice in basechoices:
+            kindchoice_config = kindchoices_config[basechoice]
+            for configkey in kindchoice_config.keys():
+                if configkey == AddTimeRangeForm.KIND_DEFAULT:
+                    choices.append(
+                        (basechoice + '_', TimeRange.VIEWS_LEGEND[basechoice]))
+                    continue
+                choices.append(
+                    (basechoice + configkey, kindchoice_config[configkey][AddTimeRangeForm.KIND_LABEL]))
+
+        self.fields['kind'].choices = choices
 
 
 class OrgUnitFilterForm(forms.Form):
@@ -82,7 +126,8 @@ class OrgUnitFilterForm(forms.Form):
 class ProfileForm(forms.Form):
     orgunit = forms.ChoiceField(
         required=True,
-        help_text=pgettext_lazy('ProfileForm', 'Default value when adding new entries and for filter'),
+        help_text=pgettext_lazy(
+            'ProfileForm', 'Default value when adding new entries and for filter'),
         label=pgettext_lazy('ProfileForm', 'Organizational unit'))
 
     def __init__(self, *args, **kwargs):

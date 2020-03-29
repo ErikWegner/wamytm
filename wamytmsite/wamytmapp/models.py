@@ -111,6 +111,7 @@ class TimeRangeManager(models.Manager):
 
 
 class TimeRange(models.Model):
+    DATA_KINDDETAIL = 'kinddetail'
     ABSENT = 'a'
     PRESENT = 'p'
     MOBILE = 'm'

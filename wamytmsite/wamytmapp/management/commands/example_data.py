@@ -59,7 +59,8 @@ class Command(BaseCommand):
                 orgunit=tm.orgunit,
                 start=start,
                 end=end,
-                kind=choice(TimeRange.KIND_CHOICES)[0]
+                kind=choice(TimeRange.KIND_CHOICES)[0],
+                data={}
             )
             tr.save()
 
@@ -70,8 +71,8 @@ class Command(BaseCommand):
         for _ in range(25):
             day = mondayLastWeek + datetime.timedelta(days=randint(0, 100))
             AllDayEvent(
-                description = 'A special day',
-                day = day
+                description='A special day',
+                day=day
             ).save()
 
     def removeData(self):

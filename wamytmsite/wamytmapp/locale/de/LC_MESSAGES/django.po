@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-24 21:27+0100\n"
+"POT-Creation-Date: 2020-03-29 14:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Erik Wegner <e_wegner@web.de>\n"
 "Language: de\n"
@@ -22,152 +22,157 @@ msgctxt "Admin site"
 msgid "Korporator administration area"
 msgstr "Verwaltungsbereich für Korporator"
 
-#: wamytmapp/forms.py:23
+#: wamytmapp/forms.py:25
 msgctxt "AddTimeRangeForm"
 msgid "User"
 msgstr "Benutzer"
 
-#: wamytmapp/forms.py:28
+#: wamytmapp/forms.py:30
 msgctxt "AddTimeRangeForm"
 msgid "Start"
 msgstr "Anfang"
 
-#: wamytmapp/forms.py:32
+#: wamytmapp/forms.py:34
 msgctxt "AddTimeRangeForm"
 msgid "End"
 msgstr "Ende"
 
-#: wamytmapp/forms.py:35
+#: wamytmapp/forms.py:37
 msgctxt "AddTimeRangeForm"
 msgid "If left blank, it will be set to start date"
 msgstr ""
 "Wird das Feld leer gelassen, wird automatisch das Anfangs-Datum verwendet"
 
-#: wamytmapp/forms.py:40
+#: wamytmapp/forms.py:43
 msgctxt "AddTimeRangeForm"
 msgid "Entry will be visible to this and all organizational units above"
 msgstr ""
 "Eintrag ist sichtbar für diese und alle darüber liegenden "
 "Organisationseinheiten"
 
-#: wamytmapp/forms.py:41
+#: wamytmapp/forms.py:44
 msgctxt "AddTimeRangeForm"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/forms.py:44
+#: wamytmapp/forms.py:47
 msgctxt "AddTimeRangeForm"
 msgid "Kind of time range"
 msgstr "Art des Zeiteintrags"
 
-#: wamytmapp/forms.py:75
+#: wamytmapp/forms.py:91
+msgctxt "TimeRangeChoice"
+msgid "mobile (particular circumstances)"
+msgstr "Mobiles Arbeiten (besondere Situation)"
+
+#: wamytmapp/forms.py:119
 msgctxt "OrgUnitFilterForm"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/forms.py:85
+#: wamytmapp/forms.py:130
 msgctxt "ProfileForm"
 msgid "Default value when adding new entries and for filter"
 msgstr ""
 "Standardwert beim Hinzufügen neuer Kalendereinträge und in der 3-Montats-"
 "Vorschau"
 
-#: wamytmapp/forms.py:86
+#: wamytmapp/forms.py:131
 msgctxt "ProfileForm"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/models.py:22
+#: wamytmapp/models.py:24
 msgctxt "OrgUnitManager"
 msgid "All"
 msgstr "Alle"
 
-#: wamytmapp/models.py:40
+#: wamytmapp/models.py:42
 msgctxt "Models"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/models.py:41
+#: wamytmapp/models.py:43
 msgctxt "Models"
 msgid "Organizational units"
 msgstr "Organisationseinheiten"
 
-#: wamytmapp/models.py:116 wamytmapp/models.py:121
+#: wamytmapp/models.py:119 wamytmapp/models.py:124
 msgctxt "TimeRangeChoice"
 msgid "absent"
 msgstr "abwesend"
 
-#: wamytmapp/models.py:117 wamytmapp/models.py:122
+#: wamytmapp/models.py:120 wamytmapp/models.py:125
 msgctxt "TimeRangeChoice"
 msgid "present"
 msgstr "im Büro"
 
-#: wamytmapp/models.py:118 wamytmapp/models.py:123
+#: wamytmapp/models.py:121 wamytmapp/models.py:126
 msgctxt "TimeRangeChoice"
 msgid "mobile"
 msgstr "Mobiles Arbeiten"
 
-#: wamytmapp/models.py:126
+#: wamytmapp/models.py:129
 msgctxt "TimeRange"
 msgid "User"
 msgstr "Benutzer"
 
-#: wamytmapp/models.py:128
+#: wamytmapp/models.py:131
 msgctxt "TimeRange"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/models.py:129
+#: wamytmapp/models.py:132
 msgctxt "TimeRange"
 msgid "Start"
 msgstr "Anfang"
 
-#: wamytmapp/models.py:131
+#: wamytmapp/models.py:134
 msgctxt "TimeRange"
 msgid "End"
 msgstr "Ende"
 
-#: wamytmapp/models.py:133
+#: wamytmapp/models.py:136
 msgctxt "TimeRange"
 msgid "Kind of time range"
 msgstr "Art des Zeiteintrags"
 
-#: wamytmapp/models.py:138
+#: wamytmapp/models.py:142
 msgctxt "Models"
 msgid "time range"
 msgstr "Zeiteintrag"
 
-#: wamytmapp/models.py:139
+#: wamytmapp/models.py:143
 msgctxt "Models"
 msgid "time ranges"
 msgstr "Zeiteinträge"
 
-#: wamytmapp/models.py:144
+#: wamytmapp/models.py:148
 msgctxt "Models"
 msgid "End date may not be before start date."
 msgstr "Das Ende-Datum darf nicht vor dem Anfangs-Datum liegen."
 
-#: wamytmapp/models.py:155
+#: wamytmapp/models.py:159
 msgctxt "TimeRangeStr"
 msgid "TimeRange"
 msgstr "Zeiteintrag"
 
-#: wamytmapp/models.py:175
+#: wamytmapp/models.py:179
 msgctxt "AllDayEvent"
 msgid "description"
 msgstr "Beschreibung"
 
-#: wamytmapp/models.py:178
+#: wamytmapp/models.py:182
 msgctxt "AllDayEvent"
 msgid "day"
 msgstr "Tag"
 
-#: wamytmapp/models.py:184
+#: wamytmapp/models.py:188
 msgctxt "Models"
 msgid "all day event"
 msgstr "Ganztagsereignis"
 
-#: wamytmapp/models.py:185
+#: wamytmapp/models.py:189
 msgctxt "Models"
 msgid "all day events"
 msgstr "Ganztagsereignisse"
