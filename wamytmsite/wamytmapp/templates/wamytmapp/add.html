@@ -18,11 +18,19 @@
         <div class="col-md-7">
             {% bootstrap_field form.start %}
             {% bootstrap_field form.end %}
-            {% bootstrap_field form.kind %}
         </div>
         <div class="col-md-5">
             {% bootstrap_field form.user %}
             {% bootstrap_field form.orgunit_id %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-7">
+            {% bootstrap_field form.kind %}
+            {% bootstrap_field form.description %}
+        </div>
+        <div class="col-md-5">
+            {% bootstrap_field form.part_of_day %}
         </div>
     </div>
     {% buttons %}

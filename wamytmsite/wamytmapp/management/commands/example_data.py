@@ -64,6 +64,8 @@ class Command(BaseCommand):
             )
             if tr.kind == TimeRange.MOBILE and randint(0, 10) % 4 == 0:
                 tr.data[TimeRange.DATA_KINDDETAIL] = 'p'
+            if randint(0, 10) < 3:
+                tr.data[TimeRange.DATA_PARTIAL] = 'f' if randint(0,2) % 2 == 0 else 'a'
 
             # Create some old entries without data
             if randint(0, 20) < 1:

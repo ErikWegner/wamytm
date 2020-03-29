@@ -72,3 +72,77 @@ class AddTimeRangeFormTests(TestCase):
         self.assertIn('kind', form.errors)
         self.assertEquals(
             'Select a valid choice. m! is not one of the available choices.', form.errors['kind'][0])
+
+    def test_get_time_range_with_description(self):
+        unittestdescription = 'A description for this item'
+        postData = {
+            'start': '2020-03-28',
+            'end': '',
+            'kind': TimeRange.MOBILE + '_',
+            'orgunit_id': str(self.org_unit.id),
+            'description': unittestdescription
+        }
+        form = AddTimeRangeForm(data=postData, user=self.user)
+
+        self.assertTrue(form.is_valid(), form.errors)
+        time_range = form.get_time_range()
+        time_range.full_clean()
+        time_range.save()
+        self.assertIn(TimeRange.DATA_DESCRIPTION, time_range.data)
+        self.assertEquals(
+            unittestdescription,
+            time_range.data[TimeRange.DATA_DESCRIPTION])
+
+    def test_get_time_range_partial_forenoon(self):
+        postData = {
+            'start': '2020-03-28',
+            'end': '',
+            'kind': TimeRange.MOBILE + '_',
+            'orgunit_id': str(self.org_unit.id),
+            'part_of_day': 'f'
+        }
+        form = AddTimeRangeForm(data=postData, user=self.user)
+
+        self.assertTrue(form.is_valid(), form.errors)
+        time_range = form.get_time_range()
+        time_range.full_clean()
+        time_range.save()
+        self.assertIn(TimeRange.DATA_PARTIAL, time_range.data)
+        self.assertEquals(
+            'f',
+            time_range.data[TimeRange.DATA_PARTIAL])
+
+    def test_get_time_range_partial_afternoon(self):
+        postData = {
+            'start': '2020-03-28',
+            'end': '',
+            'kind': TimeRange.MOBILE + '_',
+            'orgunit_id': str(self.org_unit.id),
+            'part_of_day': 'a'
+        }
+        form = AddTimeRangeForm(data=postData, user=self.user)
+
+        self.assertTrue(form.is_valid(), form.errors)
+        time_range = form.get_time_range()
+        time_range.full_clean()
+        time_range.save()
+        self.assertIn(TimeRange.DATA_PARTIAL, time_range.data)
+        self.assertEquals(
+            'a',
+            time_range.data[TimeRange.DATA_PARTIAL])
+
+    def test_get_time_range_partial_wholeday(self):
+        postData = {
+            'start': '2020-03-28',
+            'end': '',
+            'kind': TimeRange.MOBILE + '_',
+            'orgunit_id': str(self.org_unit.id),
+            'part_of_day': ''
+        }
+        form = AddTimeRangeForm(data=postData, user=self.user)
+
+        self.assertTrue(form.is_valid(), form.errors)
+        time_range = form.get_time_range()
+        time_range.full_clean()
+        time_range.save()
+        self.assertNotIn(TimeRange.DATA_PARTIAL, time_range.data)

@@ -91,11 +91,11 @@ class ViewsTests(TestCase):
         # Assert
         self.assertSequenceEqual(
             result, [
-                {'days': [0, 0, 'a', 'a', 'a'], 'user': self.users[1],
+                {'days': [0, 0, {'k': 'a'}, {'k': 'a'}, {'k': 'a'}], 'user': self.users[1],
                     'username': user_display_name(self.users[1])},
-                {'days': ['a', 0, 0, 0, 0], 'user': self.users[2],
+                {'days': [{'k': 'a'}, 0, 0, 0, 0], 'user': self.users[2],
                     'username': user_display_name(self.users[2])},
-                {'days': [0, 0, 'a', 0, 0], 'user': self.users[4],
+                {'days': [0, 0, {'k': 'a'}, 0, 0], 'user': self.users[4],
                     'username': user_display_name(self.users[4])},
             ])
         self.assertEqual(allDayEventsResult[0].description, "ruby tue")
@@ -226,6 +226,79 @@ class ViewsTests(TestCase):
         self.assertInHTML('<td class="kind-a">absent</td>', tablerows)
         self.assertInHTML(
             '<td class="kind-mp">mobile (particular circumstances)</td>', tablerows)
+
+    def test_week_view_contains_partial_markers(self):
+        # Create date items
+        today = datetime.date.today()
+        monday = today - datetime.timedelta(days=today.weekday())
+
+        d = monday + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[4], kind=TimeRange.MOBILE, data={
+            'v': '1',
+            TimeRange.DATA_KINDDETAIL: 'p',
+            TimeRange.DATA_PARTIAL: 'a'
+        })
+        d = d + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[2], kind=TimeRange.PRESENT, data={
+            'v': '1',
+            TimeRange.DATA_PARTIAL: 'f'
+        })
+        d = d + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[1], kind=TimeRange.MOBILE)
+
+        client = Client()
+        response = client.get('/cal/')
+
+        self.assertEqual(200, response.status_code)
+        content = response.content.decode('utf-8')
+
+        self.assertIn('<tbody>', content)
+        tablerows = content[
+            (content.index('<tbody>') + 7):(content.index('</tbody>'))]
+        self.maxDiff = None
+        self.assertHTMLEqual(
+            '<tr><th scope="row">' + user_display_name(self.users[1]) + '</th>' +
+            '<td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="kind-m">mobile</td><td class="empty"></td>' +
+            '</tr>' +
+            '<tr><th scope="row">' + user_display_name(self.users[2]) + '</th>' +
+            '<td class="empty"></td><td class="empty"></td><td class="kind-p">present 🕗</td><td class="empty"></td><td class="empty"></td>' +
+            '</tr>' +
+            '<tr><th scope="row">' + user_display_name(self.users[4]) + '</th>' +
+            '<td class="empty"></td><td class="kind-mp">mobile (particular circumstances) 🕑</td><td class="empty"></td><td class="empty"></td><td class="empty"></td>' +
+            '</tr>',
+            tablerows)
+
+    def test_months_view_contains_partial_markers(self):
+        # Create date items
+        today = datetime.date.today()
+        monday = today + datetime.timedelta(days=(7 - today.weekday()))
+
+        d = monday + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[4], kind=TimeRange.MOBILE, data={
+            'v': '1',
+            TimeRange.DATA_PARTIAL: 'a'
+        })
+        d = d + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[2], kind=TimeRange.PRESENT, data={
+            'v': '1',
+            TimeRange.DATA_PARTIAL: 'f'
+        })
+        d = d + datetime.timedelta(days=1)
+        self.hasTimeRangeObject(d, d, self.users[1], kind=TimeRange.MOBILE)
+
+        client = Client()
+        response = client.get('/cal/list')
+
+        self.assertEqual(200, response.status_code)
+        content = response.content.decode('utf-8')
+
+        self.assertIn('<tbody>', content)
+        tablerows = content[
+            (content.index('<tbody>') + 7):(content.index('</tbody>'))]
+        self.maxDiff = None
+        self.assertInHTML('<td class="kind-m">mobile 🕑</td>', tablerows)
+        self.assertInHTML('<td class="kind-p">present 🕗</td>', tablerows)
+        self.assertInHTML('<td class="kind-a">absent</td>', tablerows)
 
     def hasTimeRangeObject(self, start: datetime.date, end: datetime.date, user: User, kind=TimeRange.ABSENT, data={}):
         timeRange = TimeRange(start=start, end=end,
