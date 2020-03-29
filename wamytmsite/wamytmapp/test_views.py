@@ -261,10 +261,10 @@ class ViewsTests(TestCase):
             '<td class="empty"></td><td class="empty"></td><td class="empty"></td><td class="kind-m">mobile</td><td class="empty"></td>' +
             '</tr>' +
             '<tr><th scope="row">' + user_display_name(self.users[2]) + '</th>' +
-            '<td class="empty"></td><td class="empty"></td><td class="kind-p">present 🕗</td><td class="empty"></td><td class="empty"></td>' +
+            '<td class="empty"></td><td class="empty"></td><td class="kind-p">present <span class="partial-f">🕗</span></td><td class="empty"></td><td class="empty"></td>' +
             '</tr>' +
             '<tr><th scope="row">' + user_display_name(self.users[4]) + '</th>' +
-            '<td class="empty"></td><td class="kind-mp">mobile (particular circumstances) 🕑</td><td class="empty"></td><td class="empty"></td><td class="empty"></td>' +
+            '<td class="empty"></td><td class="kind-mp">mobile (particular circumstances) <span class="partial-a">🕑</span></td><td class="empty"></td><td class="empty"></td><td class="empty"></td>' +
             '</tr>',
             tablerows)
 
@@ -284,7 +284,7 @@ class ViewsTests(TestCase):
             TimeRange.DATA_PARTIAL: 'f'
         })
         d = d + datetime.timedelta(days=1)
-        self.hasTimeRangeObject(d, d, self.users[1], kind=TimeRange.MOBILE)
+        self.hasTimeRangeObject(d, d, self.users[1], kind=TimeRange.ABSENT)
 
         client = Client()
         response = client.get('/cal/list')
@@ -296,8 +296,8 @@ class ViewsTests(TestCase):
         tablerows = content[
             (content.index('<tbody>') + 7):(content.index('</tbody>'))]
         self.maxDiff = None
-        self.assertInHTML('<td class="kind-m">mobile 🕑</td>', tablerows)
-        self.assertInHTML('<td class="kind-p">present 🕗</td>', tablerows)
+        self.assertInHTML('<td class="kind-m">mobile <span class="partial-a">🕑</span></td>', tablerows)
+        self.assertInHTML('<td class="kind-p">present <span class="partial-f">🕗</span></td>', tablerows)
         self.assertInHTML('<td class="kind-a">absent</td>', tablerows)
 
     def hasTimeRangeObject(self, start: datetime.date, end: datetime.date, user: User, kind=TimeRange.ABSENT, data={}):

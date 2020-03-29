@@ -1,3 +1,4 @@
+{% load i18n %}
 <footer id="footer" class="border-top bg-light">
     <div class="container">
         <div class="row">
@@ -20,6 +21,12 @@
             s$.datepicker('setEndDate', (e$.datepicker('getDate')));
         });
 
+        $('.partial-f').each(function (n, e) {
+            $(e).prop('title', '{% trans "Forenoon" context "Tooltip" %}');
+        });
+        $('.partial-a').each(function (n, e) {
+            $(e).prop('title', '{% trans "Afternoon" context "Tooltip" %}');
+        });
     });
 
 </script>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-29 23:00+0200\n"
+"POT-Creation-Date: 2020-03-29 23:16+0200\n"
 "PO-Revision-Date: 2020-03-29 21:09+0200\n"
 "Last-Translator: Erik Wegner <e_wegner@web.de>\n"
 "Language: de\n"
@@ -257,6 +257,16 @@ msgstr "Profil"
 msgctxt "BaseTemplate"
 msgid "Administration"
 msgstr "Verwaltung"
+
+#: wamytmsite/wamytmapp/templates/wamytmapp/footer.html:25
+msgctxt "Tooltip"
+msgid "Forenoon"
+msgstr "Vormittag"
+
+#: wamytmsite/wamytmapp/templates/wamytmapp/footer.html:28
+msgctxt "Tooltip"
+msgid "Afternoon"
+msgstr "Nachmittag"
 
 #: wamytmsite/wamytmapp/templates/wamytmapp/index.html:8
 msgctxt "IndexTemplate"
