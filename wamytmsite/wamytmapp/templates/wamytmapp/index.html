@@ -1,5 +1,7 @@
 {% extends 'wamytmapp/base.html' %}
 {% load get_value_from_dict %}
+{% load get_partial_symbol %}
+{% load get_description_tooltip %}
 {% load i18n %}
 
 {% block content %}
@@ -39,6 +41,7 @@
     </div>
 </div>
 
+{% spaceless %}
 <table class="table table-sm presence mt-3">
     <thead>
         <tr>
@@ -57,13 +60,14 @@
             {% if day == 0%}
             <td class="empty"></td>
             {% else %}
-            <td class="kind-{{ day }}">{{ trc|get_value_from_dict:day }}</td>
+            <td class="kind-{{ day.k }}">{{ trc|get_value_from_dict:day.k }}{{ day|get_partial_symbol }}{{ day|get_description_tooltip }}</td>
             {% endif %}
             {% endfor %}
         </tr>
         {% endfor %}
     </tbody>
 </table>
+{% endspaceless %}
 
 <a class="" href="{% url 'wamytmapp:weekCSV' %}?kind=m&weekdelta={{ weekdelta }}"
     role="">{% trans "Report Mobile Workers" context "IndexTemplate" %}</a>

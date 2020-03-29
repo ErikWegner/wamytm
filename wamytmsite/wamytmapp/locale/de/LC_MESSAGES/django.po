@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-24 21:27+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2020-03-29 23:16+0200\n"
+"PO-Revision-Date: 2020-03-29 21:09+0200\n"
 "Last-Translator: Erik Wegner <e_wegner@web.de>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -17,278 +17,323 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: wamytmapp/admin.py:29
+#: wamytmsite/wamytmapp/admin.py:29
 msgctxt "Admin site"
 msgid "Korporator administration area"
 msgstr "Verwaltungsbereich für Korporator"
 
-#: wamytmapp/forms.py:23
+#: wamytmsite/wamytmapp/config.py:27
+msgctxt "TimeRangeChoice"
+msgid "mobile (particular circumstances)"
+msgstr "Mobiles Arbeiten (besondere Situation)"
+
+#: wamytmsite/wamytmapp/config.py:34 wamytmsite/wamytmapp/models.py:123
+msgctxt "TimeRangeChoice"
+msgid "absent"
+msgstr "abwesend"
+
+#: wamytmsite/wamytmapp/config.py:35 wamytmsite/wamytmapp/models.py:124
+msgctxt "TimeRangeChoice"
+msgid "present"
+msgstr "im Büro"
+
+#: wamytmsite/wamytmapp/config.py:36 wamytmsite/wamytmapp/models.py:125
+msgctxt "TimeRangeChoice"
+msgid "mobile"
+msgstr "Mobiles Arbeiten"
+
+#: wamytmsite/wamytmapp/forms.py:25
 msgctxt "AddTimeRangeForm"
 msgid "User"
 msgstr "Benutzer"
 
-#: wamytmapp/forms.py:28
+#: wamytmsite/wamytmapp/forms.py:29
 msgctxt "AddTimeRangeForm"
 msgid "Start"
 msgstr "Anfang"
 
-#: wamytmapp/forms.py:32
+#: wamytmsite/wamytmapp/forms.py:33
 msgctxt "AddTimeRangeForm"
 msgid "End"
 msgstr "Ende"
 
-#: wamytmapp/forms.py:35
+#: wamytmsite/wamytmapp/forms.py:36
 msgctxt "AddTimeRangeForm"
 msgid "If left blank, it will be set to start date"
 msgstr ""
 "Wird das Feld leer gelassen, wird automatisch das Anfangs-Datum verwendet"
 
-#: wamytmapp/forms.py:40
+#: wamytmsite/wamytmapp/forms.py:41
 msgctxt "AddTimeRangeForm"
 msgid "Entry will be visible to this and all organizational units above"
 msgstr ""
 "Eintrag ist sichtbar für diese und alle darüber liegenden "
 "Organisationseinheiten"
 
-#: wamytmapp/forms.py:41
+#: wamytmsite/wamytmapp/forms.py:42
 msgctxt "AddTimeRangeForm"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/forms.py:44
+#: wamytmsite/wamytmapp/forms.py:45
 msgctxt "AddTimeRangeForm"
 msgid "Kind of time range"
 msgstr "Art des Zeiteintrags"
 
-#: wamytmapp/forms.py:75
+#: wamytmsite/wamytmapp/forms.py:49
+msgctxt "AddTimeRangeForm"
+msgid "Description"
+msgstr "Beschreibung"
+
+#: wamytmsite/wamytmapp/forms.py:52
+msgctxt "AddTimeRangeForm"
+msgid "Entry can be associated to a part of the day"
+msgstr "Der Eintrag kann nur einem Teil des Tages zugeordnet werden."
+
+#: wamytmsite/wamytmapp/forms.py:53
+msgctxt "AddTimeRangeForm"
+msgid "Partial entry"
+msgstr "Teileintrag"
+
+#: wamytmsite/wamytmapp/forms.py:56
+msgctxt "AddTimeRangeForm"
+msgid "Whole day"
+msgstr "Ganztägig"
+
+#: wamytmsite/wamytmapp/forms.py:57
+msgctxt "AddTimeRangeForm"
+msgid "Forenoon"
+msgstr "Vormittag"
+
+#: wamytmsite/wamytmapp/forms.py:58
+msgctxt "AddTimeRangeForm"
+msgid "Afternoon"
+msgstr "Nachmittag"
+
+#: wamytmsite/wamytmapp/forms.py:110
 msgctxt "OrgUnitFilterForm"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/forms.py:85
+#: wamytmsite/wamytmapp/forms.py:121
 msgctxt "ProfileForm"
 msgid "Default value when adding new entries and for filter"
 msgstr ""
 "Standardwert beim Hinzufügen neuer Kalendereinträge und in der 3-Montats-"
 "Vorschau"
 
-#: wamytmapp/forms.py:86
+#: wamytmsite/wamytmapp/forms.py:122
 msgctxt "ProfileForm"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/models.py:22
+#: wamytmsite/wamytmapp/models.py:24
 msgctxt "OrgUnitManager"
 msgid "All"
 msgstr "Alle"
 
-#: wamytmapp/models.py:40
+#: wamytmsite/wamytmapp/models.py:43
 msgctxt "Models"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/models.py:41
+#: wamytmsite/wamytmapp/models.py:44
 msgctxt "Models"
 msgid "Organizational units"
 msgstr "Organisationseinheiten"
 
-#: wamytmapp/models.py:116 wamytmapp/models.py:121
-msgctxt "TimeRangeChoice"
-msgid "absent"
-msgstr "abwesend"
-
-#: wamytmapp/models.py:117 wamytmapp/models.py:122
-msgctxt "TimeRangeChoice"
-msgid "present"
-msgstr "im Büro"
-
-#: wamytmapp/models.py:118 wamytmapp/models.py:123
-msgctxt "TimeRangeChoice"
-msgid "mobile"
-msgstr "Mobiles Arbeiten"
-
-#: wamytmapp/models.py:126
+#: wamytmsite/wamytmapp/models.py:128
 msgctxt "TimeRange"
 msgid "User"
 msgstr "Benutzer"
 
-#: wamytmapp/models.py:128
+#: wamytmsite/wamytmapp/models.py:130
 msgctxt "TimeRange"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/models.py:129
+#: wamytmsite/wamytmapp/models.py:131
 msgctxt "TimeRange"
 msgid "Start"
 msgstr "Anfang"
 
-#: wamytmapp/models.py:131
+#: wamytmsite/wamytmapp/models.py:133
 msgctxt "TimeRange"
 msgid "End"
 msgstr "Ende"
 
-#: wamytmapp/models.py:133
+#: wamytmsite/wamytmapp/models.py:135
 msgctxt "TimeRange"
 msgid "Kind of time range"
 msgstr "Art des Zeiteintrags"
 
-#: wamytmapp/models.py:138
+#: wamytmsite/wamytmapp/models.py:141
 msgctxt "Models"
 msgid "time range"
 msgstr "Zeiteintrag"
 
-#: wamytmapp/models.py:139
+#: wamytmsite/wamytmapp/models.py:142
 msgctxt "Models"
 msgid "time ranges"
 msgstr "Zeiteinträge"
 
-#: wamytmapp/models.py:144
+#: wamytmsite/wamytmapp/models.py:147
 msgctxt "Models"
 msgid "End date may not be before start date."
 msgstr "Das Ende-Datum darf nicht vor dem Anfangs-Datum liegen."
 
-#: wamytmapp/models.py:155
+#: wamytmsite/wamytmapp/models.py:158
 msgctxt "TimeRangeStr"
 msgid "TimeRange"
 msgstr "Zeiteintrag"
 
-#: wamytmapp/models.py:175
+#: wamytmsite/wamytmapp/models.py:184
 msgctxt "AllDayEvent"
 msgid "description"
 msgstr "Beschreibung"
 
-#: wamytmapp/models.py:178
+#: wamytmsite/wamytmapp/models.py:187
 msgctxt "AllDayEvent"
 msgid "day"
 msgstr "Tag"
 
-#: wamytmapp/models.py:184
+#: wamytmsite/wamytmapp/models.py:193
 msgctxt "Models"
 msgid "all day event"
 msgstr "Ganztagsereignis"
 
-#: wamytmapp/models.py:185
+#: wamytmsite/wamytmapp/models.py:194
 msgctxt "Models"
 msgid "all day events"
 msgstr "Ganztagsereignisse"
 
-#: wamytmapp/templates/wamytmapp/add.html:9
+#: wamytmsite/wamytmapp/templates/wamytmapp/add.html:9
 msgctxt "AddTimeRangeForm"
 msgid "New entry"
 msgstr "Neuer Eintrag"
 
-#: wamytmapp/templates/wamytmapp/add.html:10
+#: wamytmsite/wamytmapp/templates/wamytmapp/add.html:10
 msgctxt "AddTimeRangeForm"
 msgid "A new date can be added."
 msgstr "Ein neuer Kalendereintrag wird erfasst."
 
-#: wamytmapp/templates/wamytmapp/add.html:30
+#: wamytmsite/wamytmapp/templates/wamytmapp/add.html:38
 msgctxt "AddTimeRangeForm"
 msgid "Submit"
 msgstr "Absenden"
 
-#: wamytmapp/templates/wamytmapp/add.html:32
+#: wamytmsite/wamytmapp/templates/wamytmapp/add.html:40
 msgctxt "AddTimeRangeForm"
 msgid "Cancel"
 msgstr "Abbruch"
 
-#: wamytmapp/templates/wamytmapp/base.html:6
-#: wamytmapp/templates/wamytmapp/base.html:33
+#: wamytmsite/wamytmapp/templates/wamytmapp/base.html:6
+#: wamytmsite/wamytmapp/templates/wamytmapp/base.html:33
 msgctxt "BaseTemplate"
 msgid "Korporator"
 msgstr "Korporator"
 
-#: wamytmapp/templates/wamytmapp/base.html:40
+#: wamytmsite/wamytmapp/templates/wamytmapp/base.html:40
 msgctxt "BaseTemplate"
 msgid "Start"
 msgstr "Startseite"
 
-#: wamytmapp/templates/wamytmapp/base.html:41
+#: wamytmsite/wamytmapp/templates/wamytmapp/base.html:41
 msgctxt "BaseTemplate"
 msgid "Add date"
 msgstr "Neuer Eintrag"
 
-#: wamytmapp/templates/wamytmapp/base.html:42
+#: wamytmsite/wamytmapp/templates/wamytmapp/base.html:42
 msgctxt "BaseTemplate"
 msgid "3 months ahead view"
 msgstr "3-Monats-Vorschau"
 
-#: wamytmapp/templates/wamytmapp/base.html:43
+#: wamytmsite/wamytmapp/templates/wamytmapp/base.html:43
 msgctxt "BaseTemplate"
 msgid "Profile"
 msgstr "Profil"
 
-#: wamytmapp/templates/wamytmapp/base.html:45
+#: wamytmsite/wamytmapp/templates/wamytmapp/base.html:45
 msgctxt "BaseTemplate"
 msgid "Administration"
 msgstr "Verwaltung"
 
-#: wamytmapp/templates/wamytmapp/index.html:7
+#: wamytmsite/wamytmapp/templates/wamytmapp/footer.html:25
+msgctxt "Tooltip"
+msgid "Forenoon"
+msgstr "Vormittag"
+
+#: wamytmsite/wamytmapp/templates/wamytmapp/footer.html:28
+msgctxt "Tooltip"
+msgid "Afternoon"
+msgstr "Nachmittag"
+
+#: wamytmsite/wamytmapp/templates/wamytmapp/index.html:8
 msgctxt "IndexTemplate"
 msgid "Week view"
 msgstr "Wochenansicht"
 
-#: wamytmapp/templates/wamytmapp/index.html:10
+#: wamytmsite/wamytmapp/templates/wamytmapp/index.html:11
 msgctxt "IndexTemplate"
 msgid "Previous week"
 msgstr "Eine Woche zurück"
 
-#: wamytmapp/templates/wamytmapp/index.html:12
+#: wamytmsite/wamytmapp/templates/wamytmapp/index.html:13
 msgctxt "IndexTemplate"
 msgid "Current week"
 msgstr "aktuelle Woche"
 
-#: wamytmapp/templates/wamytmapp/index.html:14
+#: wamytmsite/wamytmapp/templates/wamytmapp/index.html:15
 msgctxt "IndexTemplate"
 msgid "Next week"
 msgstr "Eine Woche vor"
 
-#: wamytmapp/templates/wamytmapp/index.html:17
+#: wamytmsite/wamytmapp/templates/wamytmapp/index.html:18
 msgctxt "IndexTemplate"
 msgid "Filters"
 msgstr "Filter"
 
-#: wamytmapp/templates/wamytmapp/index.html:27
+#: wamytmsite/wamytmapp/templates/wamytmapp/index.html:28
 msgctxt "IndexTemplateFilters"
 msgid "Go"
 msgstr "Los"
 
-#: wamytmapp/templates/wamytmapp/index.html:45
+#: wamytmsite/wamytmapp/templates/wamytmapp/index.html:47
 msgctxt "IndexTemplate"
 msgid "Person"
 msgstr "Person"
 
-#: wamytmapp/templates/wamytmapp/index.html:69
+#: wamytmsite/wamytmapp/templates/wamytmapp/index.html:72
 msgctxt "IndexTemplate"
 msgid "Report Mobile Workers"
 msgstr "Bericht Mobiles Arbeiten"
 
-#: wamytmapp/templates/wamytmapp/list1.html:17
+#: wamytmsite/wamytmapp/templates/wamytmapp/list1.html:22
 msgctxt "List1Template"
 msgid "Date"
 msgstr "Datum"
 
-#: wamytmapp/templates/wamytmapp/list1.html:42
+#: wamytmsite/wamytmapp/templates/wamytmapp/list1.html:48
 msgctxt "IndexTemplate"
 msgid "iCal calendar sync"
 msgstr "iCal Kalender-Synchronisation"
 
-#: wamytmapp/templates/wamytmapp/profile.html:9
+#: wamytmsite/wamytmapp/templates/wamytmapp/profile.html:9
 msgctxt "ProfileTemplate"
 msgid "Profile"
 msgstr "Profil"
 
-#: wamytmapp/templates/wamytmapp/profile.html:10
+#: wamytmsite/wamytmapp/templates/wamytmapp/profile.html:10
 msgctxt "ProfileTemplate"
 msgid "Account settings."
 msgstr "Einstellungen zum Anmeldekonto."
 
-#: wamytmapp/templates/wamytmapp/profile.html:20
+#: wamytmsite/wamytmapp/templates/wamytmapp/profile.html:20
 msgctxt "ProfileTemplate"
 msgid "Submit"
 msgstr "Absenden"
 
-#: wamytmapp/templates/wamytmapp/profile.html:22
+#: wamytmsite/wamytmapp/templates/wamytmapp/profile.html:22
 msgctxt "ProfileTemplate"
 msgid "Cancel"
 msgstr "Abbruch"

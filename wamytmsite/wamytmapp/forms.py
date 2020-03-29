@@ -1,6 +1,8 @@
 from django import forms
-from .models import OrgUnit, TimeRange, TeamMember, user_display_name
 from django.utils.translation import pgettext_lazy
+
+from .models import OrgUnit, TimeRange, TeamMember, user_display_name
+from .config import RuntimeConfig
 
 
 class DateInput(forms.DateInput):
@@ -12,7 +14,7 @@ class AddTimeRangeForm(forms.Form):
         A form to add a new time range entry.
     """
     dateInputAttrs = {
-        'data-provide':'datepicker',
+        'data-provide': 'datepicker',
         'data-date-calendar-weeks': 'true',
         'data-date-format': 'yyyy-mm-dd',
         'data-date-today-highlight': 'true',
@@ -22,8 +24,7 @@ class AddTimeRangeForm(forms.Form):
     user = forms.CharField(
         label=pgettext_lazy('AddTimeRangeForm', 'User'),
         disabled=True,
-        required=False,
-    )
+        required=False)
     start = forms.DateField(
         label=pgettext_lazy('AddTimeRangeForm', 'Start'),
         required=True,
@@ -32,18 +33,32 @@ class AddTimeRangeForm(forms.Form):
         label=pgettext_lazy('AddTimeRangeForm', 'End'),
         required=False,
         help_text=pgettext_lazy('AddTimeRangeForm',
-                    'If left blank, it will be set to start date'),
-        widget=forms.widgets.DateInput(attrs=dateInputAttrs)
-    )
+                                'If left blank, it will be set to start date'),
+        widget=forms.widgets.DateInput(attrs=dateInputAttrs))
     orgunit_id = forms.ChoiceField(
         required=True,
-        help_text=pgettext_lazy('AddTimeRangeForm', 'Entry will be visible to this and all organizational units above'),
+        help_text=pgettext_lazy(
+            'AddTimeRangeForm', 'Entry will be visible to this and all organizational units above'),
         label=pgettext_lazy('AddTimeRangeForm', 'Organizational unit'))
     kind = forms.ChoiceField(
         required=True,
-        label=pgettext_lazy('AddTimeRangeForm', 'Kind of time range'),
-        choices=TimeRange.KIND_CHOICES
-    )
+        label=pgettext_lazy('AddTimeRangeForm', 'Kind of time range'))
+    description = forms.CharField(
+        max_length=150,
+        required=False,
+        label=pgettext_lazy('AddTimeRangeForm', 'Description'))
+    part_of_day = forms.ChoiceField(
+        help_text=pgettext_lazy(
+            'AddTimeRangeForm', 'Entry can be associated to a part of the day'),
+        label=pgettext_lazy('AddTimeRangeForm', 'Partial entry'),
+        required=False,
+        choices=[
+            (None, pgettext_lazy('AddTimeRangeForm', 'Whole day')),
+            ('f', pgettext_lazy('AddTimeRangeForm', 'Forenoon')),
+            ('a', pgettext_lazy('AddTimeRangeForm', 'Afternoon'))
+        ])
+
+    _runtimeConfig = RuntimeConfig()
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
@@ -52,6 +67,7 @@ class AddTimeRangeForm(forms.Form):
         self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit_id'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id
+        self._setupKindChoices()
 
     def get_time_range(self):
         if self.is_valid() == False:
@@ -60,8 +76,27 @@ class AddTimeRangeForm(forms.Form):
         cleaned_data = self.cleaned_data
         cleaned_data['user_id'] = self.user.id
         del(cleaned_data['user'])
+        complexKind = cleaned_data['kind']
+        cleaned_data['kind'] = complexKind[:1]
+        jsondata = {'v': 1}
+        if complexKind[1:] != RuntimeConfig.KIND_DEFAULT:
+            jsondata[TimeRange.DATA_KINDDETAIL] = complexKind[1:]
+        if 'description' in cleaned_data and cleaned_data['description'] != '':
+            jsondata[TimeRange.DATA_DESCRIPTION] = cleaned_data['description']
+        if 'part_of_day' in cleaned_data and cleaned_data['part_of_day'] != '':
+            jsondata[TimeRange.DATA_PARTIAL] = cleaned_data['part_of_day']
+        initData = {
+            'user_id': self.user.id,
+            'orgunit_id': cleaned_data['orgunit_id'],
+            'start': cleaned_data['start'],
+            'end': cleaned_data['end'],
+            'kind': complexKind[:1],
+            'data': jsondata
+        }
+        return TimeRange(**initData)
 
-        return TimeRange(**cleaned_data)
+    def _setupKindChoices(self):
+        self.fields['kind'].choices = RuntimeConfig.TimeRangeChoices
 
 
 class OrgUnitFilterForm(forms.Form):
@@ -82,7 +117,8 @@ class OrgUnitFilterForm(forms.Form):
 class ProfileForm(forms.Form):
     orgunit = forms.ChoiceField(
         required=True,
-        help_text=pgettext_lazy('ProfileForm', 'Default value when adding new entries and for filter'),
+        help_text=pgettext_lazy(
+            'ProfileForm', 'Default value when adding new entries and for filter'),
         label=pgettext_lazy('ProfileForm', 'Organizational unit'))
 
     def __init__(self, *args, **kwargs):

@@ -27,7 +27,7 @@ This app allows every user to plan her/his office days and days off.
 - Checkout `dev` branch from repository
 - Start required containers: `docker-compose -f docker-compose-dev.yml up -d`
 - Database
-  - Connect to database server: `docker-compose exec db psql -U postgres`
+  - Connect to database server: `docker-compose -f docker-compose-dev.yml exec db psql -U postgres`
   - Setup database (see [commands](#database-setup-commands))
 - Keycloak identity server
   - Open Keycloak by visiting https://localhost:8443/auth/
@@ -37,9 +37,9 @@ This app allows every user to plan her/his office days and days off.
   - Install [pipenv](https://pipenv.readthedocs.io/): `pip install pipenv`
   - Enter pipenv environment: `pipenv shell`
   - Install dependencies: `pipenv install`
-  - Initialize database: `cd wamytmsite && python manage.py migrate`
-  - Create super user: `cd wamytmsite && python manage.py createsuperuser`
-  - (Optional) Remove existing data and create new example data: `cd wamytmsite && python manage.py example_data`
+  - Initialize database: `cd wamytmsite && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py migrate`
+  - Create super user: `cd wamytmsite && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py createsuperuser`
+  - (Optional) Remove existing data and create new example data: `cd wamytmsite && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py example_data`
 - Run korporator
   - Run application in development mode: `cd wamytmsite && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py runserver`
   - Access the backend at http://localhost:8000/admin/
@@ -47,7 +47,16 @@ This app allows every user to plan her/his office days and days off.
   - Example users:
     user1:3itsvxks, user2:Fq5vnMfj
 - Run tests:
-  - Bash: `DJANGO_SETTINGS_MODULE=wamytmsite.settings.test python manage.py test`
+  - Bash:
+
+        # setup environment
+        export DJANGO_SETTINGS_MODULE=wamytmsite.settings.test
+        cd wamytmsite
+        ./manage.py collectstatic
+
+        # run tests
+        ./manage.py test
+
   - PowerShell: 
 
         # setup environment
@@ -87,6 +96,10 @@ This app allows every user to plan her/his office days and days off.
     \c wamytmdb
     alter schema public owner to wamytm;
     \q
+
+To run tests, execute this command:
+
+    ALTER USER wamytm CREATEDB;
 
 ## Container settings
 

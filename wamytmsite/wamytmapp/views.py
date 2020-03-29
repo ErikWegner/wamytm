@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from typing import List
 
+from .config import RuntimeConfig
 from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm
 from .serializers import TimeRangeSerializer
@@ -41,7 +42,9 @@ def _prepareWeekdata(weekdata: List[TimeRange]):
                 days.append(0)
             collector[item.user] = {"days": days}
         for d in range(item.start_trim.weekday(), 1 + item.end_trim.weekday()):
-            collector[item.user]["days"][d] = item.kind
+            daydata = item.data
+            daydata['k'] = item.kind_with_details()
+            collector[item.user]["days"][d] = daydata
     result = []
     for user in collector:
         result.append({
@@ -117,7 +120,7 @@ def index(request):
     context = {
         'this_week': timeranges_thisweek,
         'days': days,
-        'trc': TimeRange.VIEWS_LEGEND,
+        'trc': RuntimeConfig.TimeRangeViewsLegend,
         'weekdelta': weekdelta
     }
     return render(request, 'wamytmapp/index.html', context)
@@ -176,7 +179,7 @@ def list1(request):
                 dh.allday = alldayevent
     viewdata['ouselect'] = filterform
     viewdata['orgunit'] = 0 if orgunit is None else orgunit
-    viewdata['trc'] = TimeRange.VIEWS_LEGEND
+    viewdata['trc'] = RuntimeConfig.TimeRangeViewsLegend
 
     return render(request, 'wamytmapp/list1.html', viewdata)
 
@@ -269,7 +272,7 @@ class TeamFeed(ICalFeed):
 
     def item_title(self, item):
         username = user_display_name(item.user)
-        kind = TimeRange.VIEWS_LEGEND[item.kind]
+        kind = RuntimeConfig.TimeRangeViewsLegend[item.kind_with_details()]
         return F"{username} ({kind})"
 
     def item_description(self, item):

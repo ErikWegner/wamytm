@@ -1,6 +1,8 @@
 {% extends 'wamytmapp/base.html' %}
 {% load bootstrap4 %}
 {% load get_value_from_dict %}
+{% load get_partial_symbol %}
+{% load get_description_tooltip %}
 {% load i18n %}
 
 {% block content %}
@@ -9,9 +11,13 @@
     {% bootstrap_form ouselect %}
 </form>
 
+{% spaceless %}
 <table class="table table-sm presence">
     {% for line in lines %}
-    {% if forloop.counter0 == 0 or forloop.counter0 > 8 and line.start_of_week and line.four_week_counter == 1  %}
+    {% if forloop.counter0 == 0 or forloop.counter0 > 8 and line.start_of_week and line.four_week_counter == 1 %}
+    {% if forloop.counter0 > 0 %}
+    </tbody>
+    {% endif %}
     <thead>
         <tr class="bg-secondary">
             <th scope="col">{% trans "Date" context "List1Template" %}</th>
@@ -26,17 +32,18 @@
             <th scope="row"{% if line.day.allday %} class="allday"{% endif %}>{{ line.day.day | date:"d. M (D)" }}{% if line.day.allday %} {{ line.day.allday.description }}{% endif %}</th>
             {% for col in line.cols %}
             {% if col %}
-            <td class="kind-{{ col.kind }}">{% with col.kind as k %}{{ trc|get_value_from_dict:k }}{% endwith %}</td>
+            <td class="kind-{{ col.kind_with_details }}">{% with col.kind_with_details as k %}{{ trc|get_value_from_dict:k }}{% endwith %}{{ col.data|get_partial_symbol }}{{ col.data|get_description_tooltip}}</td>
             {% else %}
             <td></td>
             {% endif %}
             {% endfor %}
         </tr>
-    {% if forloop.counter0|divisibleby:14 %}
+    {% if forloop.last %}
     </tbody>
     {% endif %}
     {% endfor %}
 </table>
+{% endspaceless %}
 
 <a class="" href="{% url 'wamytmapp:icalfeed-by-orgunit' orgunit=orgunit %}"
     role="">{% trans "iCal calendar sync" context "IndexTemplate" %}</a>

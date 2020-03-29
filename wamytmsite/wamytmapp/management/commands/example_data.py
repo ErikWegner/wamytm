@@ -59,8 +59,20 @@ class Command(BaseCommand):
                 orgunit=tm.orgunit,
                 start=start,
                 end=end,
-                kind=choice(TimeRange.KIND_CHOICES)[0]
+                kind=choice(TimeRange.KIND_CHOICES)[0],
+                data={'v': 1}
             )
+            if tr.kind == TimeRange.MOBILE and randint(0, 10) % 4 == 0:
+                tr.data[TimeRange.DATA_KINDDETAIL] = 'p'
+            if randint(0, 10) < 3:
+                tr.data[TimeRange.DATA_PARTIAL] = 'f' if randint(
+                    0, 2) % 2 == 0 else 'a'
+            if randint(0, 10) < 5:
+                tr.data[TimeRange.DATA_DESCRIPTION] = 'Items can have a description'
+
+            # Create some old entries without data
+            if randint(0, 20) < 1:
+                tr.data = {}
             tr.save()
 
     def generateAllDayEvents(self):
@@ -70,8 +82,8 @@ class Command(BaseCommand):
         for _ in range(25):
             day = mondayLastWeek + datetime.timedelta(days=randint(0, 100))
             AllDayEvent(
-                description = 'A special day',
-                day = day
+                description='A special day',
+                day=day
             ).save()
 
     def removeData(self):

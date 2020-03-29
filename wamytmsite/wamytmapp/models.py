@@ -1,6 +1,8 @@
 import datetime
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models.functions import Greatest, Least
 from django.db.models.signals import post_save
@@ -37,6 +39,7 @@ class OrgUnit(models.Model):
     objects = OrgUnitManager()
 
     class Meta:
+        ordering = ['name']
         verbose_name = pgettext_lazy('Models', 'Organizational unit')
         verbose_name_plural = pgettext_lazy('Models', 'Organizational units')
 
@@ -61,7 +64,8 @@ def create_teammember(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_teammember(sender, instance, **kwargs):
-    instance.teammember.save()
+    if hasattr(instance, 'teammember'):
+        instance.teammember.save()
 
 
 class TimeRangeManager(models.Manager):
@@ -109,6 +113,9 @@ class TimeRangeManager(models.Manager):
 
 
 class TimeRange(models.Model):
+    DATA_KINDDETAIL = 'kinddetail'
+    DATA_DESCRIPTION = 'desc'
+    DATA_PARTIAL = 'partial'
     ABSENT = 'a'
     PRESENT = 'p'
     MOBILE = 'm'
@@ -117,11 +124,6 @@ class TimeRange(models.Model):
         (PRESENT, pgettext_lazy('TimeRangeChoice', 'present')),
         (MOBILE, pgettext_lazy('TimeRangeChoice', 'mobile')),
     ]
-    VIEWS_LEGEND = {
-        ABSENT: pgettext_lazy('TimeRangeChoice', 'absent'),
-        PRESENT: pgettext_lazy('TimeRangeChoice', 'present'),
-        MOBILE: pgettext_lazy('TimeRangeChoice', 'mobile')
-    }
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              verbose_name=pgettext_lazy('TimeRange', 'User'))
     orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE,
@@ -131,6 +133,7 @@ class TimeRange(models.Model):
         blank=True, verbose_name=pgettext_lazy('TimeRange', 'End'))
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT,
                             verbose_name=pgettext_lazy('TimeRange', 'Kind of time range'))
+    data = JSONField(encoder=DjangoJSONEncoder)
 
     objects = TimeRangeManager()
 
@@ -154,6 +157,12 @@ class TimeRange(models.Model):
     def __str__(self):
         s = pgettext_lazy('TimeRangeStr', "TimeRange")
         return str(format_lazy('{s}({start}, {end})', s=s, start=self.start, end=self.end))
+
+    def kind_with_details(self):
+        r = self.kind
+        if self.data and TimeRange.DATA_KINDDETAIL in self.data:
+            r = r + self.data[TimeRange.DATA_KINDDETAIL]
+        return r
 
 
 class AllDayEventsManager(models.Manager):
