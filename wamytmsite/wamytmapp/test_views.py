@@ -107,13 +107,15 @@ class ViewsTests(TestCase):
         self.assertEqual(200, response.status_code)
 
     def test_list1_with_parameter_start(self):
-        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[4])
+        self.hasTimeRangeObject(datetime.date(
+            2020, 2, 25), datetime.date(2020, 2, 26), self.users[4])
         client = Client()
         response = client.get('/cal/list?fd=2020-02-24')
         self.assertEqual(200, response.status_code)
 
     def test_list1_with_parameter_end(self):
-        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[4])
+        self.hasTimeRangeObject(datetime.date(
+            2020, 2, 25), datetime.date(2020, 2, 26), self.users[4])
         client = Client()
         response = client.get('/cal/list?fd=2020-02-24&td=2020-02-28')
         self.assertEqual(200, response.status_code)
@@ -132,12 +134,17 @@ class ViewsTests(TestCase):
         self.user_has_full_name(2, "Daniel", "Radis")
         self.user_has_full_name(3, "Eva", "Jones")
         # Create date items
-        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[4])
-        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[2])
-        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[1])
-        self.hasTimeRangeObject(datetime.date(2020,2,25), datetime.date(2020,2,26), self.users[3])
+        self.hasTimeRangeObject(datetime.date(
+            2020, 2, 25), datetime.date(2020, 2, 26), self.users[4])
+        self.hasTimeRangeObject(datetime.date(
+            2020, 2, 25), datetime.date(2020, 2, 26), self.users[2])
+        self.hasTimeRangeObject(datetime.date(
+            2020, 2, 25), datetime.date(2020, 2, 26), self.users[1])
+        self.hasTimeRangeObject(datetime.date(
+            2020, 2, 25), datetime.date(2020, 2, 26), self.users[3])
 
-        queryResult, _ = query_events_timeranges_in_week(datetime.date(2020,2,24), datetime.date(2020,3,1))
+        queryResult, _ = query_events_timeranges_in_week(
+            datetime.date(2020, 2, 24), datetime.date(2020, 3, 1))
         self.assertEquals(4, len(queryResult))
         # Sorted results
         self.assertEquals(self.users[3].id, queryResult[0].user_id)
@@ -147,7 +154,8 @@ class ViewsTests(TestCase):
 
     def hasTimeRangeObject(self, start: datetime.date, end: datetime.date, user: User):
         timeRange = TimeRange(start=start, end=end,
-                              user=user, orgunit=self.org_unit, kind=TimeRange.ABSENT)
+                              user=user, orgunit=self.org_unit, kind=TimeRange.ABSENT,
+                              data={})
         timeRange.save()
         return timeRange
 

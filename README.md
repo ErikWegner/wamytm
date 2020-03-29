@@ -27,7 +27,7 @@ This app allows every user to plan her/his office days and days off.
 - Checkout `dev` branch from repository
 - Start required containers: `docker-compose -f docker-compose-dev.yml up -d`
 - Database
-  - Connect to database server: `docker-compose exec db psql -U postgres`
+  - Connect to database server: `docker-compose -f docker-compose-dev.yml exec db psql -U postgres`
   - Setup database (see [commands](#database-setup-commands))
 - Keycloak identity server
   - Open Keycloak by visiting https://localhost:8443/auth/
@@ -47,7 +47,16 @@ This app allows every user to plan her/his office days and days off.
   - Example users:
     user1:3itsvxks, user2:Fq5vnMfj
 - Run tests:
-  - Bash: `DJANGO_SETTINGS_MODULE=wamytmsite.settings.test python manage.py test`
+  - Bash:
+
+        # setup environment
+        export DJANGO_SETTINGS_MODULE=wamytmsite.settings.test
+        cd wamytmsite
+        ./manage.py collectstatic
+
+        # run tests
+        ./manage.py test
+
   - PowerShell: 
 
         # setup environment
@@ -87,6 +96,10 @@ This app allows every user to plan her/his office days and days off.
     \c wamytmdb
     alter schema public owner to wamytm;
     \q
+
+To run tests, execute this command:
+
+    ALTER USER wamytm CREATEDB;
 
 ## Container settings
 

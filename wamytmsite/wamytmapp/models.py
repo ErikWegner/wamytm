@@ -1,6 +1,8 @@
 import datetime
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models.functions import Greatest, Least
 from django.db.models.signals import post_save
@@ -131,6 +133,7 @@ class TimeRange(models.Model):
         blank=True, verbose_name=pgettext_lazy('TimeRange', 'End'))
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT,
                             verbose_name=pgettext_lazy('TimeRange', 'Kind of time range'))
+    data = JSONField(encoder=DjangoJSONEncoder)
 
     objects = TimeRangeManager()
 

@@ -5,8 +5,8 @@ services:
   db:
     image: postgres
     environment:
-      - POSTGRES_PASSWORD:PEqmZ9dt
-      - POSTGRES_USER:postgres
+      - POSTGRES_PASSWORD=PEqmZ9dt
+      - POSTGRES_USER=postgres
     volumes: 
       - wamytm-db:/var/lib/postgresql/data
     ports:
