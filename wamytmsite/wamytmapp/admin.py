@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import pgettext_lazy
 
 from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent
+from .forms import TimeRangeEditForm
 
 admin.site.register(OrgUnit)
 admin.site.register(TimeRange)
@@ -40,6 +41,7 @@ class TimeRangeBasicAdmin(admin.ModelAdmin):
     list_filter = ('start', 'kind')
     date_hierarchy = 'start'
     ordering = ['-start']
+    form = TimeRangeEditForm
 
     def has_module_permission(self, request):
         return True

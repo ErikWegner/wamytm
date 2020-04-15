@@ -10,8 +10,18 @@ class RuntimeConfig:
     TimeRangeChoices = None
     TimeRangeViewsLegend = None
 
+    instance = None
+      
+    def __new__(cls):
+        if cls.instance is not None:
+            return cls.instance
+        else:
+            inst = cls.instance = super(RuntimeConfig, cls).__new__(cls)
+            inst.initTimeRangeChoicesAndViewsLegend()
+            return inst
+
     def __init__(self):
-        self.initTimeRangeChoicesAndViewsLegend()
+        pass
 
     def timeRangeChoicesConfig(self):
         return {
