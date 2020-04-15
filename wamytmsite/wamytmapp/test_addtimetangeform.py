@@ -20,7 +20,6 @@ class AddTimeRangeFormTests(TestCase):
             ('a_', 'absent'),
             ('p_', 'present'),
             ('m_', 'mobile'),
-            ('mp', 'mobile (particular circumstances)')
         ]
 
         self.assertEqual(expectedChoices, form.fields['kind'].choices)
@@ -41,24 +40,6 @@ class AddTimeRangeFormTests(TestCase):
 
         self.assertEquals(TimeRange.ABSENT, time_range.kind)
         self.assertNotIn(TimeRange.DATA_KINDDETAIL, time_range.data)
-
-    def test_get_time_range_with_subkind_choice(self):
-        postData = {
-            'start': '2020-03-28',
-            'end': '',
-            'kind': TimeRange.MOBILE + 'p',
-            'orgunit_id': str(self.org_unit.id)
-        }
-        form = AddTimeRangeForm(data=postData, user=self.user)
-        self.assertTrue(form.is_valid(), form.errors)
-
-        time_range = form.get_time_range()
-        time_range.full_clean()
-        time_range.save()
-
-        self.assertEquals(TimeRange.MOBILE, time_range.kind)
-        self.assertIn(TimeRange.DATA_KINDDETAIL, time_range.data)
-        self.assertEquals('p', time_range.data[TimeRange.DATA_KINDDETAIL])
 
     def test_get_time_range_with_invalid_subkind_choice(self):
         postData = {

@@ -10,9 +10,19 @@ class Command(BaseCommand):
     help = 'Generate example organizational units, users and time entries'
     requires_migrations_checks = True
     last_names = ['Turner', 'Cook', 'Wood', 'Smith', 'Jones',
-                  'Miller', 'Taylor', 'Anderson', 'Wright', 'Baker']
+                  'Miller', 'Taylor', 'Anderson', 'Wright', 'Baker',
+                  'Müller', 'Schmidt', 'Schneider', 'Fischer', 'Weber',
+                  'Meyer', 'Wagner', 'Becker', 'Schulz', 'Hoffmann',
+                  'Schäfer', 'Koch', 'Bauer', 'Richter', 'Klein',
+                  'Wolf', 'Schröder', 'Neumann', 'Schwarz', 'Zimmermann']
     first_names = ['Mary', 'James', 'Linda', 'Michael',
-                   'Karen', 'Daniel', 'Sandra', 'Christopher']
+                   'Karen', 'Daniel', 'Sandra', 'Christopher',
+                   'Carl', 'Anna', 'Bruno', 'Charlotte',
+                   'Friedrich', 'Elfriede', 'Ernst', 'Else',
+                   'Georg', 'Erika', 'Gerhard', 'Erna',
+                   'Heinz', 'Gerda', 'Herbert', 'Gisela',
+                   'Otto', 'Johanna', 'Paul', 'Margot',
+                   'Wilhelm', 'Marie', 'Wolfgang', 'Ursula']
 
     def generateOrgUnits(self):
         o = OrgUnit(name='Korporator HQ')
@@ -98,9 +108,9 @@ class Command(BaseCommand):
         self.removeData()
         self.stdout.write(self.style.NOTICE('Generating data'))
         self.generateOrgUnits()
-        self.generateUsers(25)
+        self.generateUsers(125)
         self.stdout.write(self.style.NOTICE('Generating time entries'))
-        self.generateTimeRanges(60)
+        self.generateTimeRanges(6000)
         self.generateAllDayEvents()
         self.stdout.write(self.style.SUCCESS(
             'Successfully generated data'))

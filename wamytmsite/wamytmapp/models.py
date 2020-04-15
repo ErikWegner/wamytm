@@ -140,6 +140,10 @@ class TimeRange(models.Model):
     class Meta:
         verbose_name = pgettext_lazy('Models', 'time range')
         verbose_name_plural = pgettext_lazy('Models', 'time ranges')
+        indexes = [
+            models.Index(fields=['start', 'end']),
+            models.Index(fields=['orgunit', 'start', 'end']),
+        ]
 
     def clean(self):
         if self.end is not None and self.end < self.start:
@@ -192,6 +196,9 @@ class AllDayEvent(models.Model):
     class Meta:
         verbose_name = pgettext_lazy('Models', 'all day event')
         verbose_name_plural = pgettext_lazy('Models', 'all day events')
+        indexes = [
+            models.Index(fields=['day']),
+        ]
 
     def __str__(self):
         return f"All day event on {self.day}: {self.description}"
