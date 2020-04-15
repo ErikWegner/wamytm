@@ -142,6 +142,7 @@ class TimeRange(models.Model):
         verbose_name_plural = pgettext_lazy('Models', 'time ranges')
         indexes = [
             models.Index(fields=['start', 'end']),
+            models.Index(fields=['orgunit', 'start', 'end']),
         ]
 
     def clean(self):
