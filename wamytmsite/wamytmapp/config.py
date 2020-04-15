@@ -6,6 +6,7 @@ from .models import TimeRange
 class RuntimeConfig:
     KIND_DEFAULT = '_'
     KIND_LABEL = 'label'
+    KIND_ENABLED = 'enabled'
     TimeRangeChoices = None
     TimeRangeViewsLegend = None
 
@@ -24,7 +25,8 @@ class RuntimeConfig:
                 RuntimeConfig.KIND_DEFAULT: True,
                 'p': {
                     RuntimeConfig.KIND_LABEL: pgettext_lazy(
-                        'TimeRangeChoice', 'mobile (particular circumstances)')
+                        'TimeRangeChoice', 'mobile (particular circumstances)'),
+                    RuntimeConfig.KIND_ENABLED: False,
                 }
             }
         }
@@ -52,8 +54,9 @@ class RuntimeConfig:
                         (basechoice + '_', VIEWS_LEGEND[basechoice]))
                     viewslegend[basechoice] = VIEWS_LEGEND[basechoice]
                     continue
-                choices.append(
-                    (basechoice + configkey, kindchoice_config[configkey][RuntimeConfig.KIND_LABEL]))
+                if kindchoice_config[configkey][RuntimeConfig.KIND_ENABLED]:
+                    choices.append(
+                        (basechoice + configkey, kindchoice_config[configkey][RuntimeConfig.KIND_LABEL]))
                 viewslegend[basechoice +
                             configkey] = kindchoice_config[configkey][RuntimeConfig.KIND_LABEL]
 
