@@ -144,7 +144,7 @@ class ViewsTests(TestCase):
             2020, 2, 25), datetime.date(2020, 2, 26), self.users[3])
 
         queryResult, _ = query_events_timeranges_in_week(
-            datetime.date(2020, 2, 24), datetime.date(2020, 3, 1))
+            datetime.date(2020, 2, 24))
         self.assertEquals(4, len(queryResult))
         # Sorted results
         self.assertEquals(self.users[3].id, queryResult[0].user_id)

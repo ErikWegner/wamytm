@@ -1,4 +1,5 @@
 {% extends 'wamytmapp/base.html' %}
+{% load bootstrap4 %}
 {% load get_value_from_dict %}
 {% load get_partial_symbol %}
 {% load get_description_tooltip %}
@@ -8,38 +9,54 @@
 {% get_current_language as LANGUAGE_CODE %}
 <h2>{% trans "Week view" context "IndexTemplate" %}</h2>
 
-<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"-1"}}"
-    role="button">{% trans "Previous week" context "IndexTemplate" %}</a>
-<a class="btn btn-light" href="{% url 'wamytmapp:index' %}"
-    role="button">{% trans "Current week" context "IndexTemplate" %}</a>
-<a class="btn btn-dark" href="{% url 'wamytmapp:index' %}?weekdelta={{ weekdelta | add:"1"}}"
-    role="button">{% trans "Next week" context "IndexTemplate" %}</a>
+<button type="button" onclick="go_week(-1);" class="btn btn-dark"
+    role="button">{% trans "Previous week" context "IndexTemplate" %}</button>
+<button type="button" onclick="setWeekdeltaAndSubmit(0);" class="btn btn-light"
+    role="button">{% trans "Current week" context "IndexTemplate" %}</button>
+<button type="button" onclick="go_week(1);" class="btn btn-dark"
+    role="button">{% trans "Next week" context "IndexTemplate" %}</button>
 <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseFilter" aria-expanded="false"
     aria-controls="collapseFilter">
     {% trans "Filters" context "IndexTemplate" %}
 </button>
 
-<div class="collapse mt-2" id="collapseFilter">
-    <div class="card card-body d-flex flex-row">
-        <input type="text" name="filterDate" data-provide="datepicker" data-date-calendar-weeks="true"
-            data-date-format="yyyy-mm-dd" data-date-today-highlight="true" data-date-week-start="1"
-            data-date-today-btn="true" data-date-language="{{ LANGUAGE_CODE }}"
-            class="form-control d-inline w-auto" title="">
-        <button type="button" id="goToDate"
-            class="btn btn-secondary d-inline">{% trans "Go" context "IndexTemplateFilters" %}</button>
-        <script>
+
+<form action="{% url 'wamytmapp:index' %}" method="get" role="form" id="filterform">
+    {% bootstrap_field filterform.weekdelta %}
+    <div class="collapse mt-2" id="collapseFilter">
+        <div class="card card-body d-flex flex-row">
+            <div class="row">
+                <div class="col-md-6 col-12">
+                    {% bootstrap_field filterform.orgunit show_label=False %}
+                </div>
+                <div class="col-md-4 col-10">
+                    <input type="text" id="filterDate" data-provide="datepicker" data-date-calendar-weeks="true"
+                    data-date-format="yyyy-mm-dd" data-date-today-highlight="true" data-date-week-start="1"
+                    data-date-today-btn="true" data-date-language="{{ LANGUAGE_CODE }}"
+                    class="form-control d-inline w-auto" title="">
+                </div>
+                <div class="col-md-2 col-2">
+                    <button type="button" id="goToDate"
+                    class="btn btn-secondary d-inline">{% trans "Go" context "IndexTemplateFilters" %}</button>
+                </div>
+            </div>
+            <script>
             $('#goToDate').on('click', function () {
-                var d = $('input[name="filterDate"').datepicker('getDate');
+                var d = $('#filterDate').datepicker('getDate');
                 if (!d) {
                     return;
                 }
+                var d_minutes = (d.getTime() / 1000 / 60 - d.getTimezoneOffset());
+                var d_monday = Math.floor(d_minutes / 60 / 24) - ((d.getDay() + 6) % 7);
                 var today = new Date();
-                var delta = Math.floor((d.getTime() - today.getTime()) / 1000 / 3600 / 24 / 7 + today.getDay()/7);
-                window.location.href = "{% url 'wamytmapp:index' %}?weekdelta=" + delta;
+                var t_monday = Math.floor((today.getTime() / 1000 / 60 - today.getTimezoneOffset()) / 60 / 24) - ((today.getDay() + 6) % 7);
+                var delta = (d_monday - t_monday) / 7;
+                setWeekdeltaAndSubmit(delta);
             });
-        </script>
+            </script>
+        </div>
     </div>
-</div>
+</form>
 
 {% spaceless %}
 <table class="table table-sm presence mt-3">
@@ -72,4 +89,19 @@
 <a class="" href="{% url 'wamytmapp:weekCSV' %}?kind=m&weekdelta={{ weekdelta }}"
     role="">{% trans "Report Mobile Workers" context "IndexTemplate" %}</a>
 
+
+<script>
+    function submitFilter() {
+        document.getElementById('filterform').submit();
+    }
+    function setWeekdeltaAndSubmit(value) {
+        document.getElementById('id_weekdelta').value = value;
+        submitFilter();
+    }
+    function go_week(delta) {
+        var strValue = document.getElementById('id_weekdelta').value;
+        var currentValue = parseInt(strValue ? strValue : "0");
+        setWeekdeltaAndSubmit(currentValue + delta);
+    }
+</script>
 {% endblock %}
