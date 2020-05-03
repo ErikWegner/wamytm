@@ -15,7 +15,7 @@ from typing import List
 
 from .config import RuntimeConfig
 from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name
-from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm
+from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm
 from .serializers import TimeRangeSerializer
 
 
@@ -103,8 +103,9 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 
 
 def index(request):
-    weekdelta = int(request.GET['weekdelta']
-                    ) if "weekdelta" in request.GET else 0
+    filterform = FrontPageFilterForm(request.GET)
+    filterform.is_valid()
+    weekdelta = filterform.cleaned_data['weekdelta']
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
     days = []
@@ -121,7 +122,8 @@ def index(request):
         'this_week': timeranges_thisweek,
         'days': days,
         'trc': RuntimeConfig.TimeRangeViewsLegend,
-        'weekdelta': weekdelta
+        'weekdelta': weekdelta,
+        'filterform': filterform
     }
     return render(request, 'wamytmapp/index.html', context)
 
