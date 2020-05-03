@@ -154,6 +154,16 @@ class AddTimeRangeForm(forms.Form):
 
 class FrontPageFilterForm(forms.Form):
     weekdelta = forms.IntegerField(required=False, widget=forms.HiddenInput())
+    orgunit = forms.ChoiceField(
+        required=False,
+        widget=forms.Select(
+            attrs={'onchange': 'submitFilter();'}
+        ),
+        label=pgettext_lazy('OrgUnitFilterForm', 'Organizational unit'))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['orgunit'].choices = OrgUnit.objects.selectListItemsWithAllChoice()
 
     def clean(self):
         cleaned_data = super().clean()

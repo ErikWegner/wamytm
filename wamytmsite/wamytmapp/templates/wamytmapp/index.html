@@ -20,22 +20,29 @@
     {% trans "Filters" context "IndexTemplate" %}
 </button>
 
+
 <form action="{% url 'wamytmapp:index' %}" method="get" role="form" id="filterform">
-    {% bootstrap_form filterform %}
-</form>
-
-
-<div class="collapse mt-2" id="collapseFilter">
-    <div class="card card-body d-flex flex-row">
-        <input type="text" name="filterDate" data-provide="datepicker" data-date-calendar-weeks="true"
-            data-date-format="yyyy-mm-dd" data-date-today-highlight="true" data-date-week-start="1"
-            data-date-today-btn="true" data-date-language="{{ LANGUAGE_CODE }}"
-            class="form-control d-inline w-auto" title="">
-        <button type="button" id="goToDate"
-            class="btn btn-secondary d-inline">{% trans "Go" context "IndexTemplateFilters" %}</button>
-        <script>
+    {% bootstrap_field filterform.weekdelta %}
+    <div class="collapse mt-2" id="collapseFilter">
+        <div class="card card-body d-flex flex-row">
+            <div class="row">
+                <div class="col-md-6 col-12">
+                    {% bootstrap_field filterform.orgunit show_label=False %}
+                </div>
+                <div class="col-md-4 col-10">
+                    <input type="text" id="filterDate" data-provide="datepicker" data-date-calendar-weeks="true"
+                    data-date-format="yyyy-mm-dd" data-date-today-highlight="true" data-date-week-start="1"
+                    data-date-today-btn="true" data-date-language="{{ LANGUAGE_CODE }}"
+                    class="form-control d-inline w-auto" title="">
+                </div>
+                <div class="col-md-2 col-2">
+                    <button type="button" id="goToDate"
+                    class="btn btn-secondary d-inline">{% trans "Go" context "IndexTemplateFilters" %}</button>
+                </div>
+            </div>
+            <script>
             $('#goToDate').on('click', function () {
-                var d = $('input[name="filterDate"').datepicker('getDate');
+                var d = $('#filterDate').datepicker('getDate');
                 if (!d) {
                     return;
                 }
@@ -46,9 +53,10 @@
                 var delta = (d_monday - t_monday) / 7;
                 setWeekdeltaAndSubmit(delta);
             });
-        </script>
+            </script>
+        </div>
     </div>
-</div>
+</form>
 
 {% spaceless %}
 <table class="table table-sm presence mt-3">

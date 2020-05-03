@@ -104,15 +104,18 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 
 def index(request):
     filterform = FrontPageFilterForm(request.GET)
-    filterform.is_valid()
+    if filterform.is_valid():
+        orgunitparamvalue = filterform.cleaned_data['orgunit']
     weekdelta = filterform.cleaned_data['weekdelta']
+    orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
+
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
     days = []
     for weekday in range(5):
         dh = DayHeader(monday + datetime.timedelta(days=weekday))
         days.append(dh)
-    timeranges, alldayevents = query_events_timeranges_in_week(monday)
+    timeranges, alldayevents = query_events_timeranges_in_week(monday, orgunit)
     for alldayevent in alldayevents:
         for dh in days:
             if dh.day == alldayevent.day:

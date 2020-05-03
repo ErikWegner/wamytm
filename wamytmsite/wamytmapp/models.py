@@ -210,7 +210,7 @@ def query_events_timeranges(start: datetime.date, end: datetime.date, orgunits: 
     return timeranges, alldayevents
 
 
-def query_events_timeranges_in_week(day_of_week: datetime.date = None, orgunits: List[OrgUnit] = None):
+def query_events_timeranges_in_week(day_of_week: datetime.date = None, orgunit: OrgUnit = None):
     """
         Return all TimeRange objects that start during this week or
         that end during this week.
@@ -218,7 +218,9 @@ def query_events_timeranges_in_week(day_of_week: datetime.date = None, orgunits:
     today = datetime.date.today() if day_of_week is None else day_of_week
     monday = today - datetime.timedelta(days=today.weekday())
     friday = monday + datetime.timedelta(days=4)
-    return query_events_timeranges(monday, friday)
+    orgunits = OrgUnit.objects.listDescendants(
+        orgunit) if orgunit is not None else None
+    return query_events_timeranges(monday, friday, orgunits)
 
 
 def query_events_list1(start, end, orgunit=None):
