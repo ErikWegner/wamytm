@@ -47,10 +47,15 @@ class OrgUnit(models.Model):
         return self.name
 
 
+class TeamMemberManager(models.Manager):
+    pass
+
+
 class TeamMember(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, primary_key=True,)
     orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE, null=True)
+    objects = TeamMemberManager()
 
     def __str__(self):
         return f"{self.user} ({self.orgunit})"

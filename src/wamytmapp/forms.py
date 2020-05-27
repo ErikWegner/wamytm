@@ -27,7 +27,7 @@ class TimeRangeEditForm(forms.ModelForm):
     subkind = forms.ChoiceField(
         required=True,
         label=pgettext_lazy('AddTimeRangeForm', 'Kind of time range'),
-        choices = RuntimeConfig().TimeRangeChoices)
+        choices=RuntimeConfig().TimeRangeChoices)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -42,14 +42,8 @@ class TimeRangeEditForm(forms.ModelForm):
 
     class Meta:
         model = TimeRange
-        fields = ['orgunit', 'start', 'end', 'subkind', 'part_of_day', 'description', 'user', 
-        # These hidden fields are required here to update them 
-        'kind', 'data'
-        ]
-        widgets = {
-            'data': forms.HiddenInput(),
-            'kind': forms.HiddenInput(),
-        }
+        fields = ['orgunit', 'start', 'end', 'subkind',
+                  'part_of_day', 'description', 'user']
 
     def clean(self):
         super().clean()
@@ -62,6 +56,12 @@ class TimeRangeEditForm(forms.ModelForm):
         if 'part_of_day' in cleaned_data and cleaned_data['part_of_day'] != '':
             jsondata[TimeRange.DATA_PARTIAL] = cleaned_data['part_of_day']
         self.cleaned_data['data'] = jsondata
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.data = self.cleaned_data['data']
+        instance.kind = self.cleaned_data['kind']
+        return super().save(commit)
 
 
 class AddTimeRangeForm(forms.Form):

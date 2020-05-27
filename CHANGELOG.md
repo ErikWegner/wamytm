@@ -1,3 +1,41 @@
+# Version 13
+
+  * Remove fields _kind_ and _data_ from admin [ModelForm](https://docs.djangoproject.com/en/dev/topics/forms/modelforms/)
+
+# Version 12
+
+  * Filter orgunit on index page
+
+# Version 11 
+
+  * Subkinds removed (for now)
+  * Indexes
+  * Dependencies updated
+
+# Version 10 
+
+  * Allow saving time range with kind detail
+  * Allow saving time range with partial information
+  * Allow saving time range with a description
+
+# Version 9 
+
+  * django-oauth-toolkit downgraded
+
+# Version 8
+
+  * Include OrgUnit in admin
+  * Export week data to csv
+  * Beta-Feature: iCal-Support
+
+# Version 7 
+
+ * Sort by names
+
+# Version 6
+
+ * Fix date comparison on view list1
+
 # Version 5
 
   * [Datepicker](https://github.com/uxsolutions/bootstrap-datepicker) added
