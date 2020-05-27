@@ -31,7 +31,7 @@ This app allows every user to plan her/his office days and days off.
   - Setup database (see [commands](#database-setup-commands))
 - Keycloak identity server
   - Open Keycloak by visiting https://localhost:8443/auth/
-  - Temporary accept certificate
+  - Temporarily accept certificate
 - Korporator setup
   - Install [Python 3.8](https://www.python.org/downloads/)
   - Install [pipenv](https://pipenv.readthedocs.io/): `pip install pipenv`
