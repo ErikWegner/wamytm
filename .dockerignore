@@ -1,4 +1,4 @@
-/wamytmsite/wamytmsite/staticfiles
+/src/wamytmsite/staticfiles
 __pycache__/
 */__pycache__/
 */*/__pycache__/
