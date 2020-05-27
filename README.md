@@ -37,11 +37,11 @@ This app allows every user to plan her/his office days and days off.
   - Install [pipenv](https://pipenv.readthedocs.io/): `pip install pipenv`
   - Enter pipenv environment: `pipenv shell`
   - Install dependencies: `pipenv install`
-  - Initialize database: `cd wamytmsite && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py migrate`
-  - Create super user: `cd wamytmsite && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py createsuperuser`
-  - (Optional) Remove existing data and create new example data: `cd wamytmsite && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py example_data`
+  - Initialize database: `cd src && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py migrate`
+  - Create super user: `cd src && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py createsuperuser`
+  - (Optional) Remove existing data and create new example data: `cd src && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py example_data`
 - Run korporator
-  - Run application in development mode: `cd wamytmsite && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py runserver`
+  - Run application in development mode: `cd src && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py runserver`
   - Access the backend at http://localhost:8000/admin/
   - Access the frondend at http://localhost:8000/
   - Example users:
@@ -51,7 +51,7 @@ This app allows every user to plan her/his office days and days off.
 
         # setup environment
         export DJANGO_SETTINGS_MODULE=wamytmsite.settings.test
-        cd wamytmsite
+        cd src
         ./manage.py collectstatic
 
         # run tests
@@ -61,7 +61,7 @@ This app allows every user to plan her/his office days and days off.
 
         # setup environment
         $env:DJANGO_SETTINGS_MODULE="wamytmsite.settings.test"
-        cd wamytmsite
+        cd src
         python manage.py collectstatic
 
         # run tests
