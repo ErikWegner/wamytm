@@ -3,27 +3,34 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.utils.translation import pgettext_lazy
 
-from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent
+from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent, OrgUnitDelegate
 from .forms import TimeRangeEditForm
 
 admin.site.register(OrgUnit)
 admin.site.register(TimeRange)
 admin.site.register(AllDayEvent)
 
-# Define an inline admin descriptor for TeamMember model
-# which acts a bit like a singleton
+
 class TeamMemberInline(admin.StackedInline):
     model = TeamMember
     can_delete = False
     verbose_name_plural = 'team members'
 
-# Define a new User admin
+
+class OrgUnitDelegateInline(admin.TabularInline):
+    model = OrgUnitDelegate
+    verbose_name = 'Delete for this organizational unit'
+    verbose_name_plural = 'Delegate for these organizational units'
+
+
 class UserAdmin(BaseUserAdmin):
-    inlines = (TeamMemberInline,)
+    inlines = (TeamMemberInline, OrgUnitDelegateInline)
+
 
 # Re-register UserAdmin
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+
 
 class BasicAdminSite(admin.AdminSite):
     site_header = "Korporator"
@@ -32,7 +39,9 @@ class BasicAdminSite(admin.AdminSite):
     def has_permission(self, request):
         return request.user is not None and request.user.is_authenticated
 
+
 korporator_admin = BasicAdminSite(name="ka")
+
 
 class TimeRangeBasicAdmin(admin.ModelAdmin):
     readonly_fields = ('user',)
@@ -49,18 +58,18 @@ class TimeRangeBasicAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
-    def has_view_permission(self, request, obj = None):
+    def has_view_permission(self, request, obj=None):
         if obj is None:
-            return True #False will be interpreted as meaning that the current user is not permitted to view any object of this type
+            return True  # False will be interpreted as meaning that the current user is not permitted to view any object of this type
         return self._isOwner(request, obj)
 
-    def has_change_permission(self, request, obj = None):
+    def has_change_permission(self, request, obj=None):
         return self._isOwner(request, obj)
 
-    def has_delete_permission(self, request, obj = None):
+    def has_delete_permission(self, request, obj=None):
         return self._isOwner(request, obj)
 
-    def _isOwner(self, request, obj = None):
+    def _isOwner(self, request, obj=None):
         if obj is None:
             return False
         return obj.user_id == request.user.id
@@ -69,7 +78,9 @@ class TimeRangeBasicAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         return qs.filter(user=request.user)
 
+
 korporator_admin.register(TimeRange, TimeRangeBasicAdmin)
+
 
 class AllDayEventAdmin(admin.ModelAdmin):
     date_hierarchy = 'day'
@@ -77,6 +88,7 @@ class AllDayEventAdmin(admin.ModelAdmin):
     list_filter = ('description',)
     ordering = ['-day']
     search_fields = ['description']
+
 
 korporator_admin.register(AllDayEvent, AllDayEventAdmin)
 korporator_admin.register(OrgUnit)

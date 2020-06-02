@@ -35,6 +35,10 @@ class OrgUnit(models.Model):
     name = models.CharField(max_length=80)
     parent = models.ForeignKey(
         'self', on_delete=models.CASCADE, blank=True, null=True)
+    delegates = models.ManyToManyField(
+        User,
+        through='OrgUnitDelegate'
+    )
 
     objects = OrgUnitManager()
 
@@ -207,6 +211,13 @@ class AllDayEvent(models.Model):
 
     def __str__(self):
         return f"All day event on {self.day}: {self.description}"
+
+
+class OrgUnitDelegate(models.Model):
+    orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE,
+                                verbose_name=pgettext_lazy('Delegate', 'Organizational unit'))
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             verbose_name=pgettext_lazy('Delegate', 'User'))
 
 
 def query_events_timeranges(start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):

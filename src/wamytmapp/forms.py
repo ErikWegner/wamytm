@@ -76,7 +76,7 @@ class AddTimeRangeForm(forms.Form):
         'data-date-week-start': '1',
         'data-date-today-btn': 'true'
     }
-    user = forms.CharField(
+    user = forms.ChoiceField(
         label=pgettext_lazy('AddTimeRangeForm', 'User'),
         disabled=True,
         required=False)
@@ -116,11 +116,15 @@ class AddTimeRangeForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super(AddTimeRangeForm, self).__init__(*args, **kwargs)
-        self.fields['user'].initial = user_display_name(self.user)
+        self.fields['user'].initial = self.user.id
+        self.fields['user'].choices = [(self.user.id,user_display_name(self.user))]
         self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit_id'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id
         self._setupKindChoices()
+        if self.user.orgunitdelegate_set.count():
+            self.fields['user'].disabled = False
+            # TODO: current user .. orgunitdelegates .. orgunits .. users
 
     def get_time_range(self):
         if self.is_valid() == False:
