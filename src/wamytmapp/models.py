@@ -24,6 +24,38 @@ class OrgUnitManager(models.Manager):
         toplevel.insert(0, ("", pgettext_lazy('OrgUnitManager', "All")))
         return toplevel
 
+    def queryDescendants(self, parents):
+        parentslist = tuple(parents if type(parents) is list else [parents])
+        qu = super().raw('''
+        WITH RECURSIVE ou(id, parent_id) AS (
+            SELECT id, parent_id
+            FROM wamytmapp_orgunit
+            WHERE id in %s
+        UNION ALL
+            SELECT t2.id, t2.parent_id
+            FROM wamytmapp_orgunit AS t2, ou AS t1
+            WHERE t2.parent_id = t1.id
+        )
+        SELECT DISTINCT id FROM ou
+        ''', params=[parentslist])
+        return list(qu)
+
+    def queryParents(self, children):
+        idlist = children if type(children) is list else [children]
+        qu = super().raw('''
+        WITH RECURSIVE ou(id, parent_id) AS (
+            SELECT id, parent_id
+            FROM wamytmapp_orgunit
+            WHERE id in (%s)
+        UNION ALL
+            SELECT t2.id, t2.parent_id
+            FROM wamytmapp_orgunit AS t2, ou AS t1
+            WHERE t2.id = t1.parent_id
+        )
+        SELECT DISTINCT id FROM ou
+        ''', idlist)
+        return list(qu)
+
     def listDescendants(self, parent_id):
         all_org_units = super().all()
         descendants = collect_descendents(all_org_units, parent_id)
@@ -217,9 +249,11 @@ class OrgUnitDelegateManager(models.Manager):
     def delegatedUsers(self, user_id):
         delegatedOUList = list(super().filter(
             user__id=user_id).values_list('orgunit_id', flat=True))
+        delegatedOUListRecursive = list(
+            map(lambda ou: ou.id, OrgUnit.objects.queryDescendants(delegatedOUList)))
 
         people = list(TeamMember.objects.filter(
-            orgunit__id=delegatedOUList[0]))
+            orgunit__id__in=delegatedOUListRecursive))
 
         return people
 
