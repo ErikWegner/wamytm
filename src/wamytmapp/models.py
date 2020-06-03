@@ -213,11 +213,23 @@ class AllDayEvent(models.Model):
         return f"All day event on {self.day}: {self.description}"
 
 
+class OrgUnitDelegateManager(models.Manager):
+    def delegatedUsers(self, user_id):
+        delegatedOUList = list(super().filter(
+            user__id=user_id).values_list('orgunit_id', flat=True))
+
+        people = list(TeamMember.objects.filter(
+            orgunit__id=delegatedOUList[0]))
+
+        return people
+
+
 class OrgUnitDelegate(models.Model):
     orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE,
                                 verbose_name=pgettext_lazy('Delegate', 'Organizational unit'))
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              verbose_name=pgettext_lazy('Delegate', 'User'))
+    objects = OrgUnitDelegateManager()
 
 
 def query_events_timeranges(start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):
