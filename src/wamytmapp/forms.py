@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import pgettext_lazy
 
-from .models import OrgUnit, TimeRange, TeamMember, user_display_name
+from .models import OrgUnit, OrgUnitDelegate, TimeRange, TeamMember, user_display_name
 from .config import RuntimeConfig
 
 
@@ -76,6 +76,7 @@ class AddTimeRangeForm(forms.Form):
         'data-date-week-start': '1',
         'data-date-today-btn': 'true'
     }
+    required_css_class = 'required'
     user = forms.ChoiceField(
         label=pgettext_lazy('AddTimeRangeForm', 'User'),
         disabled=True,
@@ -115,6 +116,7 @@ class AddTimeRangeForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
+        self.can_delegate = self.user.orgunitdelegate_set.count() > 0
         super(AddTimeRangeForm, self).__init__(*args, **kwargs)
         self.fields['user'].initial = self.user.id
         self.fields['user'].choices = [(self.user.id,user_display_name(self.user))]
@@ -122,16 +124,18 @@ class AddTimeRangeForm(forms.Form):
         self.fields['orgunit_id'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id
         self._setupKindChoices()
-        if self.user.orgunitdelegate_set.count():
-            self.fields['user'].disabled = False
-            # TODO: current user .. orgunitdelegates .. orgunits .. users
+        if self.can_delegate:
+            userfield = self.fields['user']
+            userfield.disabled = False
+            userfield.required = True
+            userfield.choices = map(lambda u: (u.user.id, user_display_name(u.user) + F" ({u.orgunit.name})"),OrgUnitDelegate.objects.delegatedUsers(self.user.id))
 
     def get_time_range(self):
         if self.is_valid() == False:
             return None
 
         cleaned_data = self.cleaned_data
-        cleaned_data['user_id'] = self.user.id
+        cleaned_data['user_id'] = cleaned_data['user'] if self.can_delegate else self.user.id
         del(cleaned_data['user'])
         complexKind = cleaned_data['kind']
         cleaned_data['kind'] = complexKind[:1]
@@ -143,7 +147,7 @@ class AddTimeRangeForm(forms.Form):
         if 'part_of_day' in cleaned_data and cleaned_data['part_of_day'] != '':
             jsondata[TimeRange.DATA_PARTIAL] = cleaned_data['part_of_day']
         initData = {
-            'user_id': self.user.id,
+            'user_id': cleaned_data['user_id'],
             'orgunit_id': cleaned_data['orgunit_id'],
             'start': cleaned_data['start'],
             'end': cleaned_data['end'],

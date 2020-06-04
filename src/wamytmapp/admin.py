@@ -16,11 +16,51 @@ class TeamMemberInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = 'team members'
 
+    def has_add_permission(self, request, obj=None):
+        return self._hasPermission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return self._hasPermission(request)
+
+    def has_module_permission(self, request):
+        return self._hasPermission(request)
+
+    def has_view_permission(self, request, obj=None):
+        if obj is None:
+            return True  # False will be interpreted as meaning that the current user is not permitted to view any object of this type
+        return self._hasPermission(request)
+
+    def _hasPermission(self, request):
+        return request.user.has_perm('wamytmapp.assign_delegates')
+
 
 class OrgUnitDelegateInline(admin.TabularInline):
     model = OrgUnitDelegate
     verbose_name = 'Delete for this organizational unit'
     verbose_name_plural = 'Delegate for these organizational units'
+
+    def has_add_permission(self, request, obj=None):
+        return self._hasPermission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        return self._hasPermission(request)
+
+    def has_change_permission(self, request, obj=None):
+        return self._hasPermission(request)
+
+    def has_module_permission(self, request):
+        return self._hasPermission(request)
+
+    def has_view_permission(self, request, obj=None):
+        if obj is None:
+            return True  # False will be interpreted as meaning that the current user is not permitted to view any object of this type
+        return self._hasPermission(request)
+
+    def _hasPermission(self, request):
+        return request.user.has_perm('wamytmapp.assign_delegates')
 
 
 class UserAdmin(BaseUserAdmin):
@@ -90,5 +130,39 @@ class AllDayEventAdmin(admin.ModelAdmin):
     search_fields = ['description']
 
 
+class DelegatesAdmin(admin.ModelAdmin):
+    list_display = ('username', 'last_name', 'first_name', 'org_unit')
+    list_filter = ('teammember__orgunit__name',)
+    fields = ('username', 'last_name', 'first_name',)
+    readonly_fields = ('username', 'last_name', 'first_name',)
+    inlines = (TeamMemberInline, OrgUnitDelegateInline,)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return self._hasPermission(request)
+
+    def has_module_permission(self, request):
+        return self._hasPermission(request)
+
+    def has_view_permission(self, request, obj=None):
+        if obj is None:
+            return True  # False will be interpreted as meaning that the current user is not permitted to view any object of this type
+        return self._hasPermission(request)
+
+    def _hasPermission(self, request):
+        return request.user.has_perm('wamytmapp.assign_delegates')
+
+    def org_unit(self, obj):
+        if obj.teammember.orgunit is None:
+            return None
+        return obj.teammember.orgunit.name
+
+
 korporator_admin.register(AllDayEvent, AllDayEventAdmin)
 korporator_admin.register(OrgUnit)
+korporator_admin.register(User, DelegatesAdmin)

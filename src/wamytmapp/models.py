@@ -265,6 +265,11 @@ class OrgUnitDelegate(models.Model):
                              verbose_name=pgettext_lazy('Delegate', 'User'))
     objects = OrgUnitDelegateManager()
 
+    class Meta:
+        permissions = [
+            ("assign_delegates", "Can assign delegates")
+        ]
+
 
 def query_events_timeranges(start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):
     alldayevents = AllDayEvent.objects.eventsInRange(start, end)
