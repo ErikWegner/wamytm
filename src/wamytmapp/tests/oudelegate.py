@@ -1,6 +1,6 @@
 import datetime
 import random
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.contrib.auth.models import User
 
 from .helpers import createAbsentTimeRangeObject
@@ -137,12 +137,37 @@ class OrgUnitDelegatesTests(TestCase):
         self.assertEqual(len(delegatedUsers),
                          (self.USERS_PER_TEAM + 1) * self.TEAMS_PER_UNIT * 2 + 2)
 
+    def test_CreatedByTeamMemberIsSeenByCreator(self):
+        """ The time range is created by a team member and
+        seen in the admin by the team leader """
+        # Arrange
+        teammember = random.choice(self.people)
+        timerange = createAbsentTimeRangeObject(
+            '2020-06-08', '2020-06-10', teammember.user, teammember.orgunit)
+        c = Client()
+        c.force_login(teammember.user)
+
+        # Act
+        response = c.get('/ka/wamytmapp/timerange/')
+
+        # Assert
+        self.assertContains(
+            response, F'<a href="/ka/wamytmapp/timerange/{timerange.id}/change/">June 8, 2020</a>')
+
     def test_CreatedByTeamMemberIsSeenByTeamLeader(self):
         """ The time range is created by a team member and
         seen in the admin by the team leader """
         # Arrange
-        user = random.choice(self.people)
-        timerange = createAbsentTimeRangeObject('2020-06-08', '2020-06-10', user.user, user.orgunit)
+        teammember = random.choice(self.people)
+        timerange = createAbsentTimeRangeObject(
+            '2020-06-08', '2020-06-10', teammember.user, teammember.orgunit)
+        leader = OrgUnitDelegate.objects.get(orgunit=teammember.orgunit)
+        c = Client()
+        c.force_login(leader.user)
 
         # Act
+        response = c.get('/ka/wamytmapp/timerange/')
 
+        # Assert
+        self.assertContains(
+            response, F'<a href="/ka/wamytmapp/timerange/{timerange.id}/change/">June 8, 2020</a>')
