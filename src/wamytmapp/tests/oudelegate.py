@@ -3,6 +3,7 @@ import random
 from django.test import TestCase
 from django.contrib.auth.models import User
 
+from .helpers import createAbsentTimeRangeObject
 from ..models import OrgUnit, TeamMember, OrgUnitDelegate
 
 
@@ -140,4 +141,8 @@ class OrgUnitDelegatesTests(TestCase):
         """ The time range is created by a team member and
         seen in the admin by the team leader """
         # Arrange
-        teammember = random.choice(self.people)
+        user = random.choice(self.people)
+        timerange = createAbsentTimeRangeObject('2020-06-08', '2020-06-10', user.user, user.orgunit)
+
+        # Act
+
