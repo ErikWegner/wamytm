@@ -1,7 +1,9 @@
+import datetime
+import random
 from django.test import TestCase
 from django.contrib.auth.models import User
 
-from .models import OrgUnit, TeamMember, OrgUnitDelegate
+from ..models import OrgUnit, TeamMember, OrgUnitDelegate
 
 
 class OrgUnitDelegatesTests(TestCase):
@@ -133,3 +135,9 @@ class OrgUnitDelegatesTests(TestCase):
         # Assert
         self.assertEqual(len(delegatedUsers),
                          (self.USERS_PER_TEAM + 1) * self.TEAMS_PER_UNIT * 2 + 2)
+
+    def test_CreatedByTeamMemberIsSeenByTeamLeader(self):
+        """ The time range is created by a team member and
+        seen in the admin by the team leader """
+        # Arrange
+        teammember = random.choice(self.people)

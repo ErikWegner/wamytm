@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import OrgUnit, collect_descendents, get_children
+from ..models import OrgUnit, collect_descendents, get_children
 
 
 class CreateSelectListItemsFromOrgUnitsTest(TestCase):

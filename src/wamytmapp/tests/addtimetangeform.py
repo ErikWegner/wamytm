@@ -1,9 +1,9 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 
-from .config import RuntimeConfig
-from .forms import AddTimeRangeForm
-from .models import OrgUnit, TimeRange
+from ..config import RuntimeConfig
+from ..forms import AddTimeRangeForm
+from ..models import OrgUnit, TimeRange
 
 
 class AddTimeRangeFormTests(TestCase):

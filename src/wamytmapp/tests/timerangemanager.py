@@ -1,7 +1,8 @@
 import datetime
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import TimeRange, OrgUnit
+from .helpers import d, createAbsentTimeRangeObject
+from ..models import TimeRange, OrgUnit
 
 
 class TimeRangeManagerTestQueries(TestCase):
@@ -22,9 +23,9 @@ class TimeRangeManagerTestQueries(TestCase):
         self.outsideRight = self.hasTimeRangeObject('2019-11-11', '2019-11-11')
 
         # Monday (left boundary)
-        self.queryStart = self.d('2019-11-04')
+        self.queryStart = d('2019-11-04')
         # Sunday (right boundary)
-        self.queryEnd = self.d('2019-11-10')
+        self.queryEnd = d('2019-11-10')
 
         # Filter events
         self.result = TimeRange.objects.eventsInRange(
@@ -43,12 +44,4 @@ class TimeRangeManagerTestQueries(TestCase):
         self.assertTrue(self.rightOverlap in self.result)
 
     def hasTimeRangeObject(self, start: str, end: str):
-        startDate = self.d(start)
-        endDate = self.d(end)
-        timeRange = TimeRange(start=startDate, end=endDate, user=self.user,
-                              orgunit=self.org_unit, kind=TimeRange.ABSENT, data={})
-        timeRange.save()
-        return timeRange
-
-    def d(self, s: str):
-        return datetime.datetime.strptime(s, "%Y-%m-%d")
+        return createAbsentTimeRangeObject(start, end, self.user, self.org_unit)
