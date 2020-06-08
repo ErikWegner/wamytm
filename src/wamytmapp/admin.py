@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.utils.translation import pgettext_lazy
 
 from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent, OrgUnitDelegate
@@ -116,7 +117,10 @@ class TimeRangeBasicAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.filter(user=request.user)
+        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(request.user.id)
+        return qs.filter(
+            Q(user=request.user)|Q(orgunit__id__in=delegatedOUList)
+        )
 
 
 korporator_admin.register(TimeRange, TimeRangeBasicAdmin)

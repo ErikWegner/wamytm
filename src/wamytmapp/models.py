@@ -26,6 +26,8 @@ class OrgUnitManager(models.Manager):
 
     def queryDescendants(self, parents):
         parentslist = tuple(parents if type(parents) is list else [parents])
+        if len(parentslist) == 0:
+            return list()
         qu = super().raw('''
         WITH RECURSIVE ou(id, parent_id) AS (
             SELECT id, parent_id
@@ -246,14 +248,18 @@ class AllDayEvent(models.Model):
 
 
 class OrgUnitDelegateManager(models.Manager):
-    def delegatedUsers(self, user_id):
+    def delegatedOUIdList(self, user_id):
         delegatedOUList = list(super().filter(
             user__id=user_id).values_list('orgunit_id', flat=True))
         delegatedOUListRecursive = list(
             map(lambda ou: ou.id, OrgUnit.objects.queryDescendants(delegatedOUList)))
+        return delegatedOUListRecursive
+
+    def delegatedUsers(self, user_id):
+        delegatedOUList = self.delegatedOUIdList(user_id)
 
         people = list(TeamMember.objects.filter(
-            orgunit__id__in=delegatedOUListRecursive))
+            orgunit__id__in=delegatedOUList))
 
         return people
 
