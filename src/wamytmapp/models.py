@@ -271,7 +271,17 @@ class OrgUnitDelegate(models.Model):
                              verbose_name=pgettext_lazy('Delegate', 'User'))
     objects = OrgUnitDelegateManager()
 
+    def __str__(self):
+        return str(format_lazy(
+            pgettext_lazy(
+                'Models', 'Delegation for {orgunit}'
+            ), orgunit=self.orgunit))
+
     class Meta:
+        verbose_name = pgettext_lazy(
+            'Models', 'Delegate for an organizational unit')
+        verbose_name_plural = pgettext_lazy(
+            'Models', 'Delegate for organizational units')
         permissions = [
             ("assign_delegates", "Can assign delegates")
         ]

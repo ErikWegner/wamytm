@@ -40,8 +40,8 @@ class TeamMemberInline(admin.StackedInline):
 
 class OrgUnitDelegateInline(admin.TabularInline):
     model = OrgUnitDelegate
-    verbose_name = 'Delegate for this organizational unit'
-    verbose_name_plural = 'Delegate for these organizational units'
+    verbose_name = pgettext_lazy("Admin site", 'Delegate for an organizational unit')
+    verbose_name_plural = pgettext_lazy("Admin site", 'Delegate for these organizational units')
 
     def has_add_permission(self, request, obj=None):
         return self._hasPermission(request)
