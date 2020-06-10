@@ -40,7 +40,7 @@ class TeamMemberInline(admin.StackedInline):
 
 class OrgUnitDelegateInline(admin.TabularInline):
     model = OrgUnitDelegate
-    verbose_name = 'Delete for this organizational unit'
+    verbose_name = 'Delegate for this organizational unit'
     verbose_name_plural = 'Delegate for these organizational units'
 
     def has_add_permission(self, request, obj=None):
@@ -102,18 +102,23 @@ class TimeRangeBasicAdmin(admin.ModelAdmin):
     def has_view_permission(self, request, obj=None):
         if obj is None:
             return True  # False will be interpreted as meaning that the current user is not permitted to view any object of this type
-        return self._isOwner(request, obj)
+        return self._isAccessAllowed(request, obj)
 
     def has_change_permission(self, request, obj=None):
-        return self._isOwner(request, obj)
+        return self._isAccessAllowed(request, obj)
 
     def has_delete_permission(self, request, obj=None):
-        return self._isOwner(request, obj)
+        return self._isAccessAllowed(request, obj)
 
-    def _isOwner(self, request, obj=None):
+    def _isAccessAllowed(self, request, obj=None):
         if obj is None:
             return False
-        return obj.user_id == request.user.id
+        if obj.user_id == request.user.id:
+            return True
+        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(request.user.id)
+        if obj.orgunit_id in delegatedOUList:
+            return True
+        return False
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
