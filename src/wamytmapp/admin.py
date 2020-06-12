@@ -1,7 +1,10 @@
 from django.contrib import admin
+from django.contrib.admin.models import LogEntry
+from django.contrib.admin.utils import quote
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.urls import NoReverseMatch, reverse
 from django.utils.translation import pgettext_lazy
 
 from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent, OrgUnitDelegate
@@ -40,8 +43,10 @@ class TeamMemberInline(admin.StackedInline):
 
 class OrgUnitDelegateInline(admin.TabularInline):
     model = OrgUnitDelegate
-    verbose_name = pgettext_lazy("Admin site", 'Delegate for an organizational unit')
-    verbose_name_plural = pgettext_lazy("Admin site", 'Delegate for these organizational units')
+    verbose_name = pgettext_lazy(
+        "Admin site", 'Delegate for an organizational unit')
+    verbose_name_plural = pgettext_lazy(
+        "Admin site", 'Delegate for these organizational units')
 
     def has_add_permission(self, request, obj=None):
         return self._hasPermission(request)
@@ -76,6 +81,7 @@ admin.site.register(User, UserAdmin)
 class BasicAdminSite(admin.AdminSite):
     site_header = "Korporator"
     index_title = pgettext_lazy("Admin site", "Korporator administration area")
+    index_template = "ka/index.html"
 
     def has_permission(self, request):
         return request.user is not None and request.user.is_authenticated
@@ -115,16 +121,18 @@ class TimeRangeBasicAdmin(admin.ModelAdmin):
             return False
         if obj.user_id == request.user.id:
             return True
-        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(request.user.id)
+        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(
+            request.user.id)
         if obj.orgunit_id in delegatedOUList:
             return True
         return False
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(request.user.id)
+        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(
+            request.user.id)
         return qs.filter(
-            Q(user=request.user)|Q(orgunit__id__in=delegatedOUList)
+            Q(user=request.user) | Q(orgunit__id__in=delegatedOUList)
         )
 
 
@@ -172,6 +180,22 @@ class DelegatesAdmin(admin.ModelAdmin):
         return obj.teammember.orgunit.name
 
 
+class KLogEntry(LogEntry):
+    def get_admin_url(self):
+        """
+        Return the admin URL to edit the object represented by this log entry.
+        """
+        if self.content_type and self.object_id:
+            url_name = 'adnub:%s_%s_change' % (
+                self.content_type.app_label, self.content_type.model)
+            try:
+                return reverse(url_name, args=(quote(self.object_id),), current_app='ka')
+            except NoReverseMatch:
+                pass
+        return None
+
+
 korporator_admin.register(AllDayEvent, AllDayEventAdmin)
 korporator_admin.register(OrgUnit)
 korporator_admin.register(User, DelegatesAdmin)
+korporator_admin.register(KLogEntry)
