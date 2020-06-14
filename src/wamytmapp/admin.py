@@ -7,6 +7,8 @@ from django.db.models import Q
 from django.urls import NoReverseMatch, reverse
 from django.utils.translation import pgettext_lazy
 
+from simple_history.admin import SimpleHistoryAdmin
+
 from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent, OrgUnitDelegate
 from .forms import TimeRangeEditForm
 
@@ -90,7 +92,7 @@ class BasicAdminSite(admin.AdminSite):
 korporator_admin = BasicAdminSite(name="ka")
 
 
-class TimeRangeBasicAdmin(admin.ModelAdmin):
+class TimeRangeBasicAdmin(SimpleHistoryAdmin):
     readonly_fields = ('user',)
     view_on_site = False
     list_display = ('start', 'end', 'kind')
@@ -98,6 +100,7 @@ class TimeRangeBasicAdmin(admin.ModelAdmin):
     date_hierarchy = 'start'
     ordering = ['-start']
     form = TimeRangeEditForm
+    history_list_display = ['start', 'end', 'kind']
 
     def has_module_permission(self, request):
         return True
@@ -180,22 +183,6 @@ class DelegatesAdmin(admin.ModelAdmin):
         return obj.teammember.orgunit.name
 
 
-class KLogEntry(LogEntry):
-    def get_admin_url(self):
-        """
-        Return the admin URL to edit the object represented by this log entry.
-        """
-        if self.content_type and self.object_id:
-            url_name = 'adnub:%s_%s_change' % (
-                self.content_type.app_label, self.content_type.model)
-            try:
-                return reverse(url_name, args=(quote(self.object_id),), current_app='ka')
-            except NoReverseMatch:
-                pass
-        return None
-
-
 korporator_admin.register(AllDayEvent, AllDayEventAdmin)
 korporator_admin.register(OrgUnit)
 korporator_admin.register(User, DelegatesAdmin)
-korporator_admin.register(KLogEntry)

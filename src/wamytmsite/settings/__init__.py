@@ -140,6 +140,8 @@ SOCIAL_AUTH_KEYCLOAK_KEY = "wamytm"
 
 SOCIAL_AUTH_KEYCLOAK_ID_KEY = "username"
 
+SIMPLE_HISTORY_REVERT_DISABLED=True
+
 # Can be set to False for development
 VERIFY_SSL = True
 
