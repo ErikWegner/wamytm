@@ -9,6 +9,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.text import format_lazy
 from django.utils.translation import pgettext_lazy
+from simple_history.models import HistoricalRecords
 from typing import List
 
 
@@ -177,6 +178,7 @@ class TimeRange(models.Model):
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT,
                             verbose_name=pgettext_lazy('TimeRange', 'Kind of time range'))
     data = JSONField(encoder=DjangoJSONEncoder)
+    history = HistoricalRecords()
 
     objects = TimeRangeManager()
 
