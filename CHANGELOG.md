@@ -1,6 +1,7 @@
 # Version 13
 
   * Remove fields _kind_ and _data_ from admin [ModelForm](https://docs.djangoproject.com/en/dev/topics/forms/modelforms/)
+  * Enable delegation: users can create time range entries for other users of assigned orgunits
 
 # Version 12
 

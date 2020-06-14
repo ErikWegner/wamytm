@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-10 23:10+0200\n"
+"POT-Creation-Date: 2020-06-14 17:53+0200\n"
 "PO-Revision-Date: 2020-03-29 21:09+0200\n"
 "Last-Translator: Erik Wegner <e_wegner@web.de>\n"
 "Language: de\n"
@@ -17,17 +17,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: wamytmapp/admin.py:43
+#: wamytmapp/admin.py:49
 msgctxt "Admin site"
 msgid "Delegate for an organizational unit"
 msgstr "Vertretung für eine Organisationseinheit"
 
-#: wamytmapp/admin.py:44
+#: wamytmapp/admin.py:51
 msgctxt "Admin site"
 msgid "Delegate for these organizational units"
 msgstr "Vertretung für diese Organisationseinheiten"
 
-#: wamytmapp/admin.py:78
+#: wamytmapp/admin.py:85
 msgctxt "Admin site"
 msgid "Korporator administration area"
 msgstr "Verwaltungsbereich für Korporator"
@@ -37,17 +37,17 @@ msgctxt "TimeRangeChoice"
 msgid "mobile (particular circumstances)"
 msgstr "Mobiles Arbeiten (besondere Situation)"
 
-#: wamytmapp/config.py:46 wamytmapp/models.py:166
+#: wamytmapp/config.py:46 wamytmapp/models.py:167
 msgctxt "TimeRangeChoice"
 msgid "absent"
 msgstr "abwesend"
 
-#: wamytmapp/config.py:47 wamytmapp/models.py:167
+#: wamytmapp/config.py:47 wamytmapp/models.py:168
 msgctxt "TimeRangeChoice"
 msgid "present"
 msgstr "im Büro"
 
-#: wamytmapp/config.py:48 wamytmapp/models.py:168
+#: wamytmapp/config.py:48 wamytmapp/models.py:169
 msgctxt "TimeRangeChoice"
 msgid "mobile"
 msgstr "Mobiles Arbeiten"
@@ -137,110 +137,148 @@ msgctxt "ProfileForm"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/models.py:24
+#: wamytmapp/models.py:25
 msgctxt "OrgUnitManager"
 msgid "All"
 msgstr "Alle"
 
-#: wamytmapp/models.py:81
+#: wamytmapp/models.py:82
 msgctxt "Models"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/models.py:82
+#: wamytmapp/models.py:83
 msgctxt "Models"
 msgid "Organizational units"
 msgstr "Organisationseinheiten"
 
-#: wamytmapp/models.py:171
+#: wamytmapp/models.py:172
 msgctxt "TimeRange"
 msgid "User"
 msgstr "Benutzer"
 
-#: wamytmapp/models.py:173
+#: wamytmapp/models.py:174
 msgctxt "TimeRange"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/models.py:174
+#: wamytmapp/models.py:175
 msgctxt "TimeRange"
 msgid "Start"
 msgstr "Anfang"
 
-#: wamytmapp/models.py:176
+#: wamytmapp/models.py:177
 msgctxt "TimeRange"
 msgid "End"
 msgstr "Ende"
 
-#: wamytmapp/models.py:178
+#: wamytmapp/models.py:179
 msgctxt "TimeRange"
 msgid "Kind of time range"
 msgstr "Art des Zeiteintrags"
 
-#: wamytmapp/models.py:184
+#: wamytmapp/models.py:186
 msgctxt "Models"
 msgid "time range"
 msgstr "Zeiteintrag"
 
-#: wamytmapp/models.py:185
+#: wamytmapp/models.py:187
 msgctxt "Models"
 msgid "time ranges"
 msgstr "Zeiteinträge"
 
-#: wamytmapp/models.py:194
+#: wamytmapp/models.py:196
 msgctxt "Models"
 msgid "End date may not be before start date."
 msgstr "Das Ende-Datum darf nicht vor dem Anfangs-Datum liegen."
 
-#: wamytmapp/models.py:205
+#: wamytmapp/models.py:207
 msgctxt "TimeRangeStr"
 msgid "TimeRange"
 msgstr "Zeiteintrag"
 
-#: wamytmapp/models.py:231
+#: wamytmapp/models.py:233
 msgctxt "AllDayEvent"
 msgid "description"
 msgstr "Beschreibung"
 
-#: wamytmapp/models.py:234
+#: wamytmapp/models.py:236
 msgctxt "AllDayEvent"
 msgid "day"
 msgstr "Tag"
 
-#: wamytmapp/models.py:240
+#: wamytmapp/models.py:242
 msgctxt "Models"
 msgid "all day event"
 msgstr "Ganztagsereignis"
 
-#: wamytmapp/models.py:241
+#: wamytmapp/models.py:243
 msgctxt "Models"
 msgid "all day events"
 msgstr "Ganztagsereignisse"
 
-#: wamytmapp/models.py:269
+#: wamytmapp/models.py:271
 msgctxt "Delegate"
 msgid "Organizational unit"
 msgstr "Organisationseinheit"
 
-#: wamytmapp/models.py:271
+#: wamytmapp/models.py:273
 msgctxt "Delegate"
 msgid "User"
 msgstr "Benutzer"
 
-#: wamytmapp/models.py:277
+#: wamytmapp/models.py:279
+#, python-brace-format
 msgctxt "Models"
 msgid "Delegation for {orgunit}"
 msgstr "Vertretung für {orgunit}"
 
-#: wamytmapp/models.py:282
+#: wamytmapp/models.py:284
 msgctxt "Models"
 msgid "Delegate for an organizational unit"
 msgstr "Vertretung für eine Organisationseinheit"
 
-#: wamytmapp/models.py:284
+#: wamytmapp/models.py:286
 msgctxt "Models"
 msgid "Delegate for organizational units"
 msgstr "Vertretung für Organisationseinheiten"
+
+#: wamytmapp/templates/ka/index.html:21
+#, python-format
+msgid "Models in the %(name)s application"
+msgstr "Modelle in der Anwendung %(name)s"
+
+#: wamytmapp/templates/ka/index.html:32
+msgid "Add"
+msgstr "Hinzufügen"
+
+#: wamytmapp/templates/ka/index.html:39
+msgid "View"
+msgstr "Ansehen"
+
+#: wamytmapp/templates/ka/index.html:41
+msgid "Change"
+msgstr "Ändern"
+
+#: wamytmapp/templates/ka/index.html:52
+msgid "You don’t have permission to view or edit anything."
+msgstr "Sie haben keine Berechtigung zur Anzeige oder Bearbeitung."
+
+#: wamytmapp/templates/ka/index.html:60
+msgid "Recent actions"
+msgstr "Letzte Aktionen"
+
+#: wamytmapp/templates/ka/index.html:61
+msgid "My actions"
+msgstr "Meine Aktionen"
+
+#: wamytmapp/templates/ka/index.html:65
+msgid "None available"
+msgstr "Keine verfügbar"
+
+#: wamytmapp/templates/ka/index.html:79
+msgid "Unknown content"
+msgstr "Unbekannter Inhalt"
 
 #: wamytmapp/templates/wamytmapp/add.html:9
 msgctxt "AddTimeRangeForm"
