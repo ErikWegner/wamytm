@@ -119,7 +119,8 @@ class AddTimeRangeForm(forms.Form):
         self.can_delegate = self.user.orgunitdelegate_set.count() > 0
         super(AddTimeRangeForm, self).__init__(*args, **kwargs)
         self.fields['user'].initial = self.user.id
-        self.fields['user'].choices = [(self.user.id,user_display_name(self.user))]
+        self.fields['user'].choices = [
+            (self.user.id, user_display_name(self.user))]
         self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit_id'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id
@@ -128,7 +129,8 @@ class AddTimeRangeForm(forms.Form):
             userfield = self.fields['user']
             userfield.disabled = False
             userfield.required = True
-            userfield.choices = map(lambda u: (u.user.id, user_display_name(u.user) + F" ({u.orgunit.name})"),OrgUnitDelegate.objects.delegatedUsers(self.user.id))
+            userfield.choices = map(lambda u: (u.user.id, user_display_name(
+                u.user) + F" ({u.orgunit.name})"), OrgUnitDelegate.objects.delegatedUsers(self.user.id))
 
     def get_time_range(self):
         if self.is_valid() == False:

@@ -5,3 +5,5 @@
 *.orig
 # static files for test
 /src/wamytmsite/staticfiles
+/src/htmlcov/
+/src/.coverage

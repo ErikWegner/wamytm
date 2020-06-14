@@ -170,8 +170,6 @@ class DelegatesAdmin(admin.ModelAdmin):
         return self._hasPermission(request)
 
     def has_view_permission(self, request, obj=None):
-        if obj is None:
-            return True  # False will be interpreted as meaning that the current user is not permitted to view any object of this type
         return self._hasPermission(request)
 
     def _hasPermission(self, request):

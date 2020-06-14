@@ -1,7 +1,8 @@
 import datetime
 import random
 from django.test import Client, TestCase
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
+from django.contrib.contenttypes.models import ContentType
 
 from .helpers import createAbsentTimeRangeObject
 from ..models import OrgUnit, TeamMember, TimeRange, OrgUnitDelegate
@@ -71,6 +72,33 @@ class OrgUnitDelegatesTests(TestCase):
         self.org_units = self.setupDefaultOrgChart()
         self.people = self.setupTeamMembers(self.org_units)
         self.leaders = self.setupLeads(self.org_units)
+
+    def test_TeamMemberHasNoAccessToUserModule(self):
+        # Arrange
+        teammember = random.choice(self.people)
+        c = Client()
+        c.force_login(teammember.user)
+
+        # Act
+        response = c.get("/ka/auth/user/")
+
+        # Assert
+        self.assertEqual(response.status_code, 403)
+
+    def test_UserWithPermissionHasAccessToUserModule(self):
+        # Arrange
+        teammember = random.choice(self.people)
+        content_type = ContentType.objects.get_for_model(OrgUnitDelegate)
+        permission = Permission.objects.get(content_type=content_type, codename='assign_delegates')
+        teammember.user.user_permissions.add(permission)
+        c = Client()
+        c.force_login(teammember.user)
+
+        # Act
+        response = c.get("/ka/auth/user/")
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
 
     def test_TeamLeaderHasPersons(self):
         # Arrange

@@ -67,6 +67,15 @@ This app allows every user to plan her/his office days and days off.
         # run tests
         python manage.py test
 
+- Run tests with coverage:
+
+  ```bash
+  cd src
+  DJANGO_SETTINGS_MODULE=wamytmsite.settings.test coverage run --source='.' manage.py test wamytmapp
+  coverage html
+  python -m http.server --directory htmlcov/ 8008
+  ```
+
 ### Configure login with Keycloak
 
 1. Create a new client `wamytm` in the realm's _Clients_ section
