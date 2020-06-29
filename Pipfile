@@ -7,6 +7,7 @@ verify_ssl = true
 pylint = "*"
 autopep8 = "*"
 rope = "*"
+coverage = "*"
 
 [packages]
 django = "*"
@@ -20,6 +21,7 @@ whitenoise = "*"
 djangorestframework = "*"
 django-rest-framework-social-oauth2 = "*"
 django-ical = "*"
+django-simple-history = "*"
 
 [requires]
 python_version = "3.8"

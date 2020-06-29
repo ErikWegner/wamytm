@@ -8,8 +8,8 @@
             "name": "Tests",
             "type": "python",
             "request": "launch",
-            "cwd": "${workspaceFolder}/wamytmsite",
-            "program": "${workspaceFolder}/wamytmsite/manage.py",
+            "cwd": "${workspaceFolder}/src",
+            "program": "${workspaceFolder}/src/manage.py",
             "args": [
                 "test"
             ],
@@ -22,8 +22,8 @@
             "name": "Python: Django",
             "type": "python",
             "request": "launch",
-            "cwd": "${workspaceFolder}/wamytmsite",
-            "program": "${workspaceFolder}/wamytmsite/manage.py",
+            "cwd": "${workspaceFolder}/src",
+            "program": "${workspaceFolder}/src/manage.py",
             "args": [
                 "runserver",
                 "--noreload"

@@ -7,7 +7,7 @@ COPY Pipfile.lock .
 
 RUN pip install --no-cache-dir pipenv && pipenv install --system --deploy
 
-COPY wamytmsite/ .
+COPY src/ .
 
 RUN mkdir -p /usr/src/app/wamytmsite/staticfiles/
 
