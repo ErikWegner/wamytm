@@ -113,6 +113,11 @@ def save_teammember(sender, instance, **kwargs):
 
 
 class TimeRangeManager(models.Manager):
+    OVERLAP_NEW_END = 'end',
+    OVERLAP_NEW_START = 'beg',
+    OVERLAP_SPLIT = 'spl',
+    OVERLAP_DELETE = 'del'
+
     def list1(self, start, end, orgunit=None):
         if start is None:
             start = datetime.date.today()
@@ -154,6 +159,24 @@ class TimeRangeManager(models.Manager):
             query = query.filter(orgunit__in=orgunits)
 
         return query
+
+    def overlapResolution(self, start: datetime.date, end: datetime.date, orgunit: OrgUnit):
+        r = {'mods': []}
+
+        overlapping_items = self.eventsInRange(start, end, [orgunit])
+        for item in overlapping_items:
+            mod = {'res': None}
+            if item.start >= start and item.end <= end:
+                mod['res'] = TimeRangeManager.OVERLAP_DELETE
+            elif item.start < start and item.end > end:
+                mod['res'] = TimeRangeManager.OVERLAP_SPLIT
+            elif item.start < start:
+                mod['res'] = TimeRangeManager.OVERLAP_NEW_END
+            elif item.end > end:
+                mod['res'] = TimeRangeManager.OVERLAP_NEW_START
+            r['mods'].append(mod)
+
+        return r
 
 
 class TimeRange(models.Model):
