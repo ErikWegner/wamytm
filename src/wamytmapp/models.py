@@ -165,7 +165,7 @@ class TimeRangeManager(models.Manager):
 
         overlapping_items = self.eventsInRange(start, end, [orgunit])
         for item in overlapping_items:
-            mod = {'res': None}
+            mod = {'res': None, 'item': item}
             if item.start >= start and item.end <= end:
                 mod['res'] = TimeRangeManager.OVERLAP_DELETE
             elif item.start < start and item.end > end:

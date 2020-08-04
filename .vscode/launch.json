@@ -5,13 +5,29 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Tests",
+            "name": "All tests",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/src",
             "program": "${workspaceFolder}/src/manage.py",
             "args": [
                 "test"
+            ],
+            "django": true,
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.test"
+            }
+        },
+        {
+            "name": "Test selection",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src",
+            "program": "${workspaceFolder}/src/manage.py",
+            "args": [
+                "test",
+                "-k",
+                "ConflictResolverTests"
             ],
             "django": true,
             "env": {

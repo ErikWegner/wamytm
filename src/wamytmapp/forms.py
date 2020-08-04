@@ -209,3 +209,15 @@ class ProfileForm(forms.Form):
         self.fields['orgunit'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id
+
+
+class ConflictCheckForm(forms.Form):
+    start = forms.DateField(
+        label=pgettext_lazy('ConflictCheckForm', 'Start'),
+        required=True)
+    end = forms.DateField(
+        label=pgettext_lazy('ConflictCheckForm', 'End'),
+        required=True)
+    ou = forms.IntegerField(
+        required=True,
+        label=pgettext_lazy('ConflictCheckForm', 'Organizational unit'))

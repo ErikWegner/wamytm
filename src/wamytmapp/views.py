@@ -1,7 +1,7 @@
 import csv
 import datetime
-from django.core.exceptions import ValidationError
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.core.exceptions import ValidationError, PermissionDenied
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views.generic import FormView
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -15,7 +15,7 @@ from typing import List
 
 from .config import RuntimeConfig
 from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name
-from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm
+from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
 from .serializers import TimeRangeSerializer
 
 
@@ -254,6 +254,17 @@ class TimeRangesList(APIView):
         timerangeItems = TimeRange.objects.all()
         serializer = TimeRangeSerializer(timerangeItems, many=True)
         return Response(serializer.data)
+
+
+def conflict_check(request):
+    if not request.user.is_authenticated:
+        raise PermissionDenied()
+    if request.method == 'POST':
+        form = ConflictCheckForm(data=request.POST)
+        if not form.is_valid():
+            return JsonResponse(form.errors, status=400)
+        return JsonResponse({'foo': 'bar'})
+    return HttpResponseBadRequest()
 
 
 class TeamFeed(ICalFeed):
