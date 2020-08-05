@@ -263,7 +263,11 @@ def conflict_check(request):
         form = ConflictCheckForm(data=request.POST)
         if not form.is_valid():
             return JsonResponse(form.errors, status=400)
-        return JsonResponse({'foo': 'bar'})
+        responseData = TimeRange.objects.overlapResolution(
+            form.cleaned_data['start'],
+            form.cleaned_data['end'],
+            form.cleaned_data['ou'])
+        return JsonResponse(responseData)
     return HttpResponseBadRequest()
 
 

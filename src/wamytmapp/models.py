@@ -113,9 +113,9 @@ def save_teammember(sender, instance, **kwargs):
 
 
 class TimeRangeManager(models.Manager):
-    OVERLAP_NEW_END = 'end',
-    OVERLAP_NEW_START = 'beg',
-    OVERLAP_SPLIT = 'spl',
+    OVERLAP_NEW_END = 'end'
+    OVERLAP_NEW_START = 'beg'
+    OVERLAP_SPLIT = 'spl'
     OVERLAP_DELETE = 'del'
 
     def list1(self, start, end, orgunit=None):
@@ -165,7 +165,7 @@ class TimeRangeManager(models.Manager):
 
         overlapping_items = self.eventsInRange(start, end, [orgunit])
         for item in overlapping_items:
-            mod = {'res': None, 'item': item}
+            mod = {'res': None, 'item': item.buildConflictJsonStructure()}
             if item.start >= start and item.end <= end:
                 mod['res'] = TimeRangeManager.OVERLAP_DELETE
             elif item.start < start and item.end > end:
@@ -235,6 +235,14 @@ class TimeRange(models.Model):
         if self.data and TimeRange.DATA_KINDDETAIL in self.data:
             r = r + self.data[TimeRange.DATA_KINDDETAIL]
         return r
+
+    def buildConflictJsonStructure(self):
+
+        return {
+            'id': self.id,
+            'start': (self.start if isinstance(self.start, datetime.date) else self.start.date()).strftime('%Y-%m-%d'),
+            'end': (self.end if isinstance(self.end, datetime.date) else self.end.date()).strftime('%Y-%m-%d'),
+        }
 
 
 class AllDayEventsManager(models.Manager):

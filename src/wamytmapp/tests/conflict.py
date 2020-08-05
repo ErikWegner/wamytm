@@ -101,7 +101,7 @@ class ConflictResolverTests(TestCase):
         self.assertEquals(4, len(r['mods']), 'Number of mods')
 
         def f(needle):
-            return lambda i: i['item'].id == needle.id
+            return lambda i: i['item']['id'] == needle.id
         modSplitItem = list(filter(f(splitItem), r['mods']))[0]
         self.assertEquals(modSplitItem['res'], TimeRangeManager.OVERLAP_SPLIT)
         modDeleteItem = list(filter(f(deleteItem), r['mods']))[0]
@@ -142,7 +142,7 @@ class ConflictResolverTests(TestCase):
             "ou": ["This field is required."]})
 
     def test_endpoint_responds_with_list(self):
-        self._createAllKinds()
+        objects = self._createAllKinds()
 
         c = Client()
         c.force_login(self.user)
@@ -152,6 +152,10 @@ class ConflictResolverTests(TestCase):
                 'end': '2020-08-12',
                 'ou': self.org_unit.id})
         self.assertEquals(200, response.status_code, response.content)
+        self.maxDiff = None
         self.assertJSONEqual(response.content, {'mods': [
-            {'item': 1, 'res': 'del'}
+            {'item': objects.endItem.buildConflictJsonStructure(), 'res': 'end'},
+            {'item': objects.splitItem.buildConflictJsonStructure(), 'res': 'spl'},
+            {'item': objects.deleteItem.buildConflictJsonStructure(), 'res': 'del'},
+            {'item': objects.beginItem.buildConflictJsonStructure(), 'res': 'beg'},
         ]})
