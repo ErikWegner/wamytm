@@ -25,7 +25,7 @@ class ConflictResolverTests(TestCase):
         return createAbsentTimeRangeObject(start, end, self.user, self.org_unit)
 
     def _overlapResolution(self, start: str, end: str):
-        return TimeRange.objects.overlapResolution(d(start).date(), d(end).date(), self.org_unit)
+        return TimeRange.objects.overlapResolution(d(start).date(), d(end).date(), self.user.id)
 
     def _assertMods(self, r, kind):
         self.assertTrue('mods' in r, 'Key \'mods\' exists')
@@ -138,24 +138,29 @@ class ConflictResolverTests(TestCase):
         self.assertEquals(400, response.status_code)
         self.assertJSONEqual(response.content, {
             "start": ["This field is required."],
-            "end": ["This field is required."],
-            "ou": ["This field is required."]})
+            "end": ["This field is required."]})
 
     def test_endpoint_responds_with_list(self):
         objects = self._createAllKinds()
+        sorted_objects = sorted([
+            (objects.endItem, 'end'),
+            (objects.splitItem, 'spl'),
+            (objects.beginItem, 'beg'),
+            (objects.deleteItem, 'del')], key=lambda t: t[0].id)
+        mods = list(
+            map(
+                lambda t: {
+                    'item': t[0].buildConflictJsonStructure(),
+                    'res': t[1]},
+                sorted_objects))
 
         c = Client()
         c.force_login(self.user)
         response = c.post(
             '/cal/check', {
                 'start': '2020-08-05',
-                'end': '2020-08-12',
-                'ou': self.org_unit.id})
+                'end': '2020-08-12'
+            })
         self.assertEquals(200, response.status_code, response.content)
         self.maxDiff = None
-        self.assertJSONEqual(response.content, {'mods': [
-            {'item': objects.endItem.buildConflictJsonStructure(), 'res': 'end'},
-            {'item': objects.splitItem.buildConflictJsonStructure(), 'res': 'spl'},
-            {'item': objects.deleteItem.buildConflictJsonStructure(), 'res': 'del'},
-            {'item': objects.beginItem.buildConflictJsonStructure(), 'res': 'beg'},
-        ]})
+        self.assertJSONEqual(response.content, {'mods': mods})

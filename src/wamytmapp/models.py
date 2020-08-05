@@ -137,7 +137,11 @@ class TimeRangeManager(models.Manager):
         friday = monday + datetime.timedelta(days=4)
         return self.eventsInRange(monday, friday)
 
-    def eventsInRange(self, start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):
+    def eventsInRange(self,
+                      start: datetime.date,
+                      end: datetime.date,
+                      orgunits: List[OrgUnit] = None,
+                      userid: int = None):
         """
             Return all TimeRange objects that overlap with the
             start and end date
@@ -158,12 +162,15 @@ class TimeRangeManager(models.Manager):
         if orgunits is not None:
             query = query.filter(orgunit__in=orgunits)
 
+        if userid is not None:
+            query = query.filter(user__id=userid)
+
         return query
 
-    def overlapResolution(self, start: datetime.date, end: datetime.date, orgunit: OrgUnit):
+    def overlapResolution(self, start: datetime.date, end: datetime.date, userid: int):
         r = {'mods': []}
 
-        overlapping_items = self.eventsInRange(start, end, [orgunit])
+        overlapping_items = self.eventsInRange(start, end, userid=userid)
         for item in overlapping_items:
             mod = {'res': None, 'item': item.buildConflictJsonStructure()}
             if item.start >= start and item.end <= end:
@@ -322,7 +329,7 @@ class OrgUnitDelegate(models.Model):
 
 def query_events_timeranges(start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):
     alldayevents = AllDayEvent.objects.eventsInRange(start, end)
-    timeranges = TimeRange.objects.eventsInRange(start, end, orgunits)
+    timeranges = TimeRange.objects.eventsInRange(start, end, orgunits=orgunits)
     return timeranges, alldayevents
 
 

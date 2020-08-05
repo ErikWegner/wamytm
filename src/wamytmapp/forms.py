@@ -218,6 +218,3 @@ class ConflictCheckForm(forms.Form):
     end = forms.DateField(
         label=pgettext_lazy('ConflictCheckForm', 'End'),
         required=True)
-    ou = forms.IntegerField(
-        required=True,
-        label=pgettext_lazy('ConflictCheckForm', 'Organizational unit'))

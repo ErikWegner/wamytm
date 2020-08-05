@@ -266,7 +266,7 @@ def conflict_check(request):
         responseData = TimeRange.objects.overlapResolution(
             form.cleaned_data['start'],
             form.cleaned_data['end'],
-            form.cleaned_data['ou'])
+            request.user.id)
         return JsonResponse(responseData)
     return HttpResponseBadRequest()
 
