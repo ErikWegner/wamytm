@@ -14,6 +14,13 @@ class AllKindRanges:
     beginItem: TimeRange
     endItem: TimeRange
 
+    def __iter__(self):
+        return iter([
+            (self.endItem, 'end'),
+            (self.splitItem, 'spl'),
+            (self.beginItem, 'beg'),
+            (self.deleteItem, 'del')])
+
 
 class ConflictResolverTests(TestCase):
     def setUp(self):
@@ -164,3 +171,36 @@ class ConflictResolverTests(TestCase):
         self.assertEquals(200, response.status_code, response.content)
         self.maxDiff = None
         self.assertJSONEqual(response.content, {'mods': mods})
+
+    def test_adding_new_timerange_with_mods_changes_some_existing_timeranges(self):
+        objects = self._createAllKinds()
+        untouched = []
+        untouched.append(self._hasTimeRangeObject('2020-06-01', '2020-06-15'))
+        untouched.append(self._hasTimeRangeObject('2020-05-01', '2020-05-15'))
+        untouched.append(self._hasTimeRangeObject('2020-08-05', '2020-08-12'))
+        overlap_actions = ",".join(map(lambda o: F"{o[0].id}:{o[1]}", objects))
+
+        c = Client()
+        c.force_login(self.user)
+        response = c.post(
+            '/cal/add', {
+                'start': '2020-08-05',
+                'end': '2020-08-12',
+                'orgunit_id': self.org_unit.id,
+                'kind': 'a_',
+                'overlap_actions': overlap_actions
+            })
+
+        self.assertEquals(302, response.status_code)
+        self.assertEquals("/cal/", response.get("Location"))
+        # deleteItem should have been deleted
+        with self.assertRaisesMessage(TimeRange.DoesNotExist, 'TimeRange matching query does not exist.'):
+            TimeRange.objects.get(id=objects.deleteItem.id)
+        # endItem has its end date set one day earlier than the new item starts
+        new_end = TimeRange.objects.get(id=objects.endItem.id)
+        self.assertEquals(new_end.end, d('2020-08-04').date())
+        self.assertNotEqual(new_end.end, objects.endItem.end.date())
+        # startItem has its start date set one day after the new item ends
+        new_start = TimeRange.objects.get(id=objects.beginItem.id)
+        self.assertEquals(new_start.start, d('2020-08-13').date())
+        self.assertNotEqual(new_start.start, objects.beginItem.start.date())

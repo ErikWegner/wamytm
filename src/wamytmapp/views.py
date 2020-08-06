@@ -1,6 +1,6 @@
 import csv
 import datetime
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import ValidationError, PermissionDenied, SuspiciousOperation
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views.generic import FormView
 from django.shortcuts import render
@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 from typing import List
 
 from .config import RuntimeConfig
-from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name
+from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name, TimeRangeManager
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
 from .serializers import TimeRangeSerializer
 
@@ -133,12 +133,39 @@ def index(request):
 
 @login_required
 def add(request):
+    def handle_overlaps(form: AddTimeRangeForm):
+        overlaps = TimeRange.objects.overlapResolution(
+            form.cleaned_data['start'],
+            form.cleaned_data['end'],
+            form.cleaned_data['user_id'])
+        overlaps_map = {}
+        for m in overlaps['mods']:
+            overlaps_map[m['item']['id']] = m['res']
+        form_overlap_map = form.cleaned_data['overlap_actions'].split(',')
+        for f in form_overlap_map:
+            fp = f.split(':')
+            if len(fp) != 2:
+                raise SuspiciousOperation()
+            action = fp[1].lower()
+            itemid = int(fp[0])
+            if action == TimeRangeManager.OVERLAP_DELETE:
+                TimeRange.objects.get(id=itemid).delete()
+            elif action == TimeRangeManager.OVERLAP_NEW_END:
+                item = TimeRange.objects.get(id=itemid)
+                item.end = form.cleaned_data['start'] + datetime.timedelta(days=-1)
+                item.save()
+            elif action == TimeRangeManager.OVERLAP_NEW_START:
+                item = TimeRange.objects.get(id=itemid)
+                item.start = form.cleaned_data['end'] + datetime.timedelta(days=1)
+                item.save()
+
     if request.method == 'POST':
         form = AddTimeRangeForm(data=request.POST, user=request.user)
         if form.is_valid():
             time_range = form.get_time_range()
             try:
                 time_range.full_clean()
+                handle_overlaps(form)
                 time_range.save()
                 return HttpResponseRedirect(reverse('wamytmapp:index'))
             except ValidationError as e:

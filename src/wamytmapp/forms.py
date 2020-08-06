@@ -113,6 +113,10 @@ class AddTimeRangeForm(forms.Form):
             ('f', pgettext_lazy('AddTimeRangeForm', 'Forenoon')),
             ('a', pgettext_lazy('AddTimeRangeForm', 'Afternoon'))
         ])
+    overlap_actions = forms.CharField(
+        widget=forms.widgets.HiddenInput,
+        required=False
+    )
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
