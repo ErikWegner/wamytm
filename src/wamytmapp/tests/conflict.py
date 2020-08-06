@@ -179,6 +179,7 @@ class ConflictResolverTests(TestCase):
         untouched.append(self._hasTimeRangeObject('2020-05-01', '2020-05-15'))
         untouched.append(self._hasTimeRangeObject('2020-08-05', '2020-08-12'))
         overlap_actions = ",".join(map(lambda o: F"{o[0].id}:{o[1]}", objects))
+        highestId = TimeRange.objects.all().order_by('-id').first().id
 
         c = Client()
         c.force_login(self.user)
@@ -200,7 +201,29 @@ class ConflictResolverTests(TestCase):
         new_end = TimeRange.objects.get(id=objects.endItem.id)
         self.assertEquals(new_end.end, d('2020-08-04').date())
         self.assertNotEqual(new_end.end, objects.endItem.end.date())
+        del(new_end)
         # startItem has its start date set one day after the new item ends
         new_start = TimeRange.objects.get(id=objects.beginItem.id)
         self.assertEquals(new_start.start, d('2020-08-13').date())
         self.assertNotEqual(new_start.start, objects.beginItem.start.date())
+        del(new_start)
+        # (1) splitItem: should have a new end and
+        new_split1 = TimeRange.objects.get(id=objects.splitItem.id)
+        self.assertEquals(new_split1.end, d('2020-08-04').date())
+        self.assertNotEqual(new_split1.end, objects.splitItem.end.date())
+        self.assertEqual(new_split1.start, objects.splitItem.start.date())
+        del(new_split1)
+        # (2) splitItem: should create a new item afterwards
+        new_items = TimeRange.objects.filter(id__gt=highestId)
+        # the splitted item and the post'ed item are 2 items
+        self.assertEquals(2, len(new_items))
+        new_split2 = new_items[0]
+        self.assertEquals(new_split2.start, d('2020-08-13').date())
+        self.assertNotEqual(new_split2.start, objects.splitItem.start.date())
+        self.assertEqual(new_split2.end, objects.splitItem.end.date())
+        del(new_split2)
+        del(new_items)
+        # assert objects have not changed
+        for untouched_object in untouched:
+            item = TimeRange.objects.get(id=untouched_object.id)
+            self.assertEquals(item, untouched_object)

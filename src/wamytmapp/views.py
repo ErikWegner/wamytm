@@ -148,16 +148,31 @@ def add(request):
                 raise SuspiciousOperation()
             action = fp[1].lower()
             itemid = int(fp[0])
+            if not itemid in overlaps_map or overlaps_map[itemid] != action:
+                raise SuspiciousOperation()
+            del(overlaps_map[itemid])
             if action == TimeRangeManager.OVERLAP_DELETE:
                 TimeRange.objects.get(id=itemid).delete()
             elif action == TimeRangeManager.OVERLAP_NEW_END:
                 item = TimeRange.objects.get(id=itemid)
-                item.end = form.cleaned_data['start'] + datetime.timedelta(days=-1)
+                item.end = form.cleaned_data['start'] + \
+                    datetime.timedelta(days=-1)
                 item.save()
             elif action == TimeRangeManager.OVERLAP_NEW_START:
                 item = TimeRange.objects.get(id=itemid)
-                item.start = form.cleaned_data['end'] + datetime.timedelta(days=1)
+                item.start = form.cleaned_data['end'] + \
+                    datetime.timedelta(days=1)
                 item.save()
+            elif action == TimeRangeManager.OVERLAP_SPLIT:
+                prev_item = TimeRange.objects.get(id=itemid)
+                next_item = TimeRange.objects.get(id=itemid)
+                next_item.pk = None
+                prev_item.end = form.cleaned_data['start'] + \
+                    datetime.timedelta(days=-1)
+                next_item.start = form.cleaned_data['end'] + \
+                    datetime.timedelta(days=1)
+                prev_item.save()
+                next_item.save()
 
     if request.method == 'POST':
         form = AddTimeRangeForm(data=request.POST, user=request.user)
