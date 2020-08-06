@@ -16,10 +16,10 @@ class AllKindRanges:
 
     def __iter__(self):
         return iter([
-            (self.endItem, 'end'),
-            (self.splitItem, 'spl'),
-            (self.beginItem, 'beg'),
-            (self.deleteItem, 'del')])
+            (self.endItem, TimeRangeManager.OVERLAP_NEW_END),
+            (self.splitItem, TimeRangeManager.OVERLAP_SPLIT),
+            (self.beginItem, TimeRangeManager.OVERLAP_NEW_START),
+            (self.deleteItem, TimeRangeManager.OVERLAP_DELETE)])
 
 
 class ConflictResolverTests(TestCase):
@@ -149,11 +149,7 @@ class ConflictResolverTests(TestCase):
 
     def test_endpoint_responds_with_list(self):
         objects = self._createAllKinds()
-        sorted_objects = sorted([
-            (objects.endItem, 'end'),
-            (objects.splitItem, 'spl'),
-            (objects.beginItem, 'beg'),
-            (objects.deleteItem, 'del')], key=lambda t: t[0].id)
+        sorted_objects = sorted(objects, key=lambda t: t[0].id)
         mods = list(
             map(
                 lambda t: {
