@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.contrib.auth.models import User
 
 from ..config import RuntimeConfig
@@ -127,3 +127,16 @@ class AddTimeRangeFormTests(TestCase):
         time_range.full_clean()
         time_range.save()
         self.assertNotIn(TimeRange.DATA_PARTIAL, time_range.data)
+
+    def test_can_add_element_by_post(self):
+        c = Client()
+        c.force_login(self.user)
+        response = c.post(
+            '/cal/add', {
+                'start': '2020-08-05',
+                'end': '2020-08-12',
+                'orgunit_id': self.org_unit.id,
+                'kind': 'a_'
+            })
+        self.assertEquals(302, response.status_code)
+        self.assertEquals("/cal/", response.get("Location"))
