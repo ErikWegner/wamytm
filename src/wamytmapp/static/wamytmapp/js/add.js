@@ -9,7 +9,13 @@
 
     function overlapactionsselection(id, res) {
         const restxt = wamytmi18n['res_' + res];
-        return ('<input class="overlapaction" type="checkbox" data-trid="' + id + '"> ' + restxt)
+        return ('<input class="overlapaction" type="checkbox" data-trid="' + 
+        id + '" name="overlap_actions" value="' + id + ':' + res + '"> ' + restxt)
+    }
+
+    function dateToPostStr(date) {
+        var localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
+        return localDate.toISOString().substring(0, 10);
     }
 
     function updateTable(data) {
@@ -42,7 +48,7 @@
             // these HTTP methods do not require CSRF protection
             return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
         }
-    
+
         const startDate = s$.datepicker('getDate');
         if (!startDate) {
             spinner$.hide();
@@ -55,23 +61,24 @@
         $.ajax({
             url: wamytmroot + 'check',
             method: "POST",
-            beforeSend: function(xhr, settings) {
+            beforeSend: function (xhr, settings) {
                 if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
                     xhr.setRequestHeader("X-CSRFToken", csrftoken);
                 }
             },
             data: {
-                start: startDate.toISOString().substring(0, 10),
-                end: endDate.toISOString().substring(0, 10),
+                start: dateToPostStr(startDate),
+                end: dateToPostStr(endDate),
             },
             xhrFields: {
                 withCredentials: true
-            }}).done(updateTable)
-              .fail(console.error)
-              .always(function() {
-                console.log( "complete" );
+            }
+        }).done(updateTable)
+            .fail(console.error)
+            .always(function () {
+                console.log("complete");
                 spinner$.hide();
-              });;
+            });;
     }
 
     s$.datepicker().on('changeDate', function (e) {

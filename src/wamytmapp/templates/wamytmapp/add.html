@@ -14,7 +14,7 @@
 
 {% bootstrap_form_errors form layout='inline' %}
 <form action="{% url 'wamytmapp:add' %}" method="post" role="form">
-    {% csrf_token %}{{ form.overlap_actions }}
+    {% csrf_token %}
     <div class="row">
         <div class="col-md-7">
             {% bootstrap_field form.start %}

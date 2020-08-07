@@ -174,7 +174,7 @@ class ConflictResolverTests(TestCase):
         untouched.append(self._hasTimeRangeObject('2020-06-01', '2020-06-15'))
         untouched.append(self._hasTimeRangeObject('2020-05-01', '2020-05-15'))
         untouched.append(self._hasTimeRangeObject('2020-08-05', '2020-08-12'))
-        overlap_actions = ",".join(map(lambda o: F"{o[0].id}:{o[1]}", objects))
+        overlap_actions = map(lambda o: F"{o[0].id}:{o[1]}", objects)
         highestId = TimeRange.objects.all().order_by('-id').first().id
 
         c = Client()

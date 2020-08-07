@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import pgettext_lazy
 
+from .fields import OverlapActionsField
 from .models import OrgUnit, OrgUnitDelegate, TimeRange, TeamMember, user_display_name
 from .config import RuntimeConfig
 
@@ -113,8 +114,7 @@ class AddTimeRangeForm(forms.Form):
             ('f', pgettext_lazy('AddTimeRangeForm', 'Forenoon')),
             ('a', pgettext_lazy('AddTimeRangeForm', 'Afternoon'))
         ])
-    overlap_actions = forms.CharField(
-        widget=forms.widgets.HiddenInput,
+    overlap_actions = OverlapActionsField(
         required=False
     )
 

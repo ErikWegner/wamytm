@@ -143,7 +143,7 @@ def add(request):
         overlaps_map = {}
         for m in overlaps['mods']:
             overlaps_map[m['item']['id']] = m['res']
-        form_overlap_map = form.cleaned_data['overlap_actions'].split(',')
+        form_overlap_map = form.cleaned_data['overlap_actions']
         for f in form_overlap_map:
             fp = f.split(':')
             if len(fp) != 2:
