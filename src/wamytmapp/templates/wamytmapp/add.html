@@ -1,5 +1,6 @@
 {% extends 'wamytmapp/base.html' %}
 {% load i18n %}
+{% load static %}
 {% load bootstrap4 %}
 
 {% block content %}
@@ -13,7 +14,7 @@
 
 {% bootstrap_form_errors form layout='inline' %}
 <form action="{% url 'wamytmapp:add' %}" method="post" role="form">
-    {% csrf_token %}
+    {% csrf_token %}{{ form.overlap_actions }}
     <div class="row">
         <div class="col-md-7">
             {% bootstrap_field form.start %}
@@ -33,12 +34,66 @@
             {% bootstrap_field form.part_of_day %}
         </div>
     </div>
+    <div class="row" style="display: none;" id="overlappingcontainer">
+        <div class="col-md-12">
+            {% trans "Overlapping items" context "AddTimeRangeForm" %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">{% trans "Begin date" context "AddTimeRangeFormOverlapTable" %}</th>
+                        <th scope="col">{% trans "End date" context "AddTimeRangeFormOverlapTable" %}</th>
+                        <th scope="col">{% trans "Action" context "AddTimeRangeFormOverlapTable" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>Mark</td>
+                        <td>Otto</td>
+                        <td>
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="customCheck1">
+                                <label class="custom-control-label" for="customCheck1">Trim to new end date</label>
+                            </div>
+                        </td>
+                        <!--<td>
+                            <select class="custom-select custom-select-sm">
+                                <option value="nop">Do not change</option>
+                                <option value="end">Trim to new end date</option>
+                                <option value="beg">Trim to new begin date</option>
+                                <option value="spl">Split (insert new item in between)</option>
+                                <option value="del">Remove existing item</option>
+                              </select>
+                        </td>-->
+                      </tr>
+                      <tr>
+                        <th scope="row">2</th>
+                        <td>Jacob</td>
+                        <td>Thornton</td>
+                        <td>@fat</td>
+                      </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+    <div class="col-12">
     {% buttons %}
     <button type="submit" class="btn btn-primary">
+        <span id="submitspinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
         {% trans "Submit" context "AddTimeRangeForm" %}
     </button>
     <a href="{% url 'wamytmapp:index' %}" class="btn btn-secondary">{% trans "Cancel" context "AddTimeRangeForm" %}</a>
     {% endbuttons %}
+    </div>
+    </div>
 </form>
-
+<script>
+    wamytmi18n['res_beg'] = '{% trans "Set new start date" context "AddTimeRangeForm" %}';
+    wamytmi18n['res_end'] = '{% trans "Set new end date" context "AddTimeRangeForm" %}';
+    wamytmi18n['res_spl'] = '{% trans "Split item" context "AddTimeRangeForm" %}';
+    wamytmi18n['res_del'] = '{% trans "Delete item" context "AddTimeRangeForm" %}';
+</script>
+<script src="{% static 'wamytmapp/js/add.js' %}"></script>
 {% endblock %}

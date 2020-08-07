@@ -134,7 +134,7 @@ def index(request):
 @login_required
 def add(request):
     def handle_overlaps(form: AddTimeRangeForm):
-        if form.cleaned_data['overlap_actions'] is None or form.cleaned_data['overlap_actions'] is "":
+        if form.cleaned_data['overlap_actions'] is None or form.cleaned_data['overlap_actions'] == "":
             return
         overlaps = TimeRange.objects.overlapResolution(
             form.cleaned_data['start'],
