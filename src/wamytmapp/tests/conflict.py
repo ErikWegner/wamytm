@@ -223,3 +223,24 @@ class ConflictResolverTests(TestCase):
         for untouched_object in untouched:
             item = TimeRange.objects.get(id=untouched_object.id)
             self.assertEquals(item, untouched_object)
+
+    def test_adding_new_timerange_without_end_date(self):
+        existing_item = self._hasTimeRangeObject('2020-08-01', '2020-08-15')
+
+        c = Client()
+        c.force_login(self.user)
+        response = c.post(
+            '/cal/add', {
+                'start': '2020-08-05',
+                'orgunit_id': self.org_unit.id,
+                'kind': 'a_',
+                'overlap_actions': [F"{existing_item.id}:{TimeRangeManager.OVERLAP_SPLIT}"]
+            })
+
+        self.assertEquals(302, response.status_code)
+        self.assertEquals("/cal/", response.get("Location"))
+        new_split1 = TimeRange.objects.get(id=existing_item.id)
+        self.assertEquals(new_split1.end, d('2020-08-04').date())
+        self.assertNotEqual(new_split1.end, existing_item.end.date())
+        self.assertEqual(new_split1.start, existing_item.start.date())
+        del(new_split1)

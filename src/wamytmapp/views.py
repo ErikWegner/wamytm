@@ -136,9 +136,11 @@ def add(request):
     def handle_overlaps(form: AddTimeRangeForm):
         if form.cleaned_data['overlap_actions'] is None or form.cleaned_data['overlap_actions'] == "":
             return
+        start = form.cleaned_data['start']
+        end = form.cleaned_data['end'] if form.cleaned_data['end'] is not None else start
         overlaps = TimeRange.objects.overlapResolution(
-            form.cleaned_data['start'],
-            form.cleaned_data['end'],
+            start,
+            end,
             form.cleaned_data['user_id'])
         overlaps_map = {}
         for m in overlaps['mods']:
@@ -157,22 +159,18 @@ def add(request):
                 TimeRange.objects.get(id=itemid).delete()
             elif action == TimeRangeManager.OVERLAP_NEW_END:
                 item = TimeRange.objects.get(id=itemid)
-                item.end = form.cleaned_data['start'] + \
-                    datetime.timedelta(days=-1)
+                item.end = start + datetime.timedelta(days=-1)
                 item.save()
             elif action == TimeRangeManager.OVERLAP_NEW_START:
                 item = TimeRange.objects.get(id=itemid)
-                item.start = form.cleaned_data['end'] + \
-                    datetime.timedelta(days=1)
+                item.start = end + datetime.timedelta(days=1)
                 item.save()
             elif action == TimeRangeManager.OVERLAP_SPLIT:
                 prev_item = TimeRange.objects.get(id=itemid)
                 next_item = TimeRange.objects.get(id=itemid)
                 next_item.pk = None
-                prev_item.end = form.cleaned_data['start'] + \
-                    datetime.timedelta(days=-1)
-                next_item.start = form.cleaned_data['end'] + \
-                    datetime.timedelta(days=1)
+                prev_item.end = start + datetime.timedelta(days=-1)
+                next_item.start = end + datetime.timedelta(days=1)
                 prev_item.save()
                 next_item.save()
 
