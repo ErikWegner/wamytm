@@ -1,6 +1,7 @@
 # Version 14
 
   * When creating a new time range entry, overlapping conflicts are detected and an action is proposed.
+  * TravisCI build for test execution
 
 # Version 13
 
