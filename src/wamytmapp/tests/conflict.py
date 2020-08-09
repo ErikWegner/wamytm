@@ -455,7 +455,7 @@ class ConflictResolverTests(TestCase):
         untouched.append(self._hasTimeRangeObject('2020-06-01', '2020-06-15'))
         untouched.append(self._hasTimeRangeObject('2020-05-01', '2020-05-15'))
         untouched.append(self._hasTimeRangeObject('2020-08-05', '2020-08-12'))
-        overlap_actions = map(lambda o: F"{o[0].id}:{o[1]}", objects)
+        overlap_actions = list(map(lambda o: F"{o[0].id}:{o[1]}", objects))
         highestId = TimeRange.objects.all().order_by('-id').first().id
         otheruser = User.objects.create_user('unittestuser2')
         otheruser.save()
@@ -475,7 +475,7 @@ class ConflictResolverTests(TestCase):
                 'overlap_actions': overlap_actions,
                 'user': self.user.id
             })
-        self.assertEquals(403, response.status_code, response.content)
+        self.assertEquals(400, response.status_code, response.content)
 
     def test_user_cannot_submit_conflict_actions_for_other_user(self):
         """
@@ -488,7 +488,6 @@ class ConflictResolverTests(TestCase):
         untouched.append(self._hasTimeRangeObject('2020-05-01', '2020-05-15'))
         untouched.append(self._hasTimeRangeObject('2020-08-05', '2020-08-12'))
         overlap_actions = map(lambda o: F"{o[0].id}:{o[1]}", objects)
-        highestId = TimeRange.objects.all().order_by('-id').first().id
         otheruser = User.objects.create_user('unittestuser2')
         otheruser.save()
 
@@ -503,4 +502,4 @@ class ConflictResolverTests(TestCase):
                 'overlap_actions': overlap_actions,
                 'user': self.user.id
             })
-        self.assertEquals(403, response.status_code, response.content)
+        self.assertEquals(400, response.status_code, response.content)
