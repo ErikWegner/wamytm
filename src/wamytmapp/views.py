@@ -1,7 +1,7 @@
 import csv
 import datetime
-from django.core.exceptions import ValidationError
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.core.exceptions import ValidationError, PermissionDenied, SuspiciousOperation
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.views.generic import FormView
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -14,8 +14,8 @@ from rest_framework.views import APIView
 from typing import List
 
 from .config import RuntimeConfig
-from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name
-from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm
+from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name, TimeRangeManager
+from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
 from .serializers import TimeRangeSerializer
 
 
@@ -133,12 +133,54 @@ def index(request):
 
 @login_required
 def add(request):
+    def handle_overlaps(form: AddTimeRangeForm):
+        if form.cleaned_data['overlap_actions'] is None or form.cleaned_data['overlap_actions'] == "":
+            return
+        start = form.cleaned_data['start']
+        end = form.cleaned_data['end'] if form.cleaned_data['end'] is not None else start
+        overlaps = TimeRange.objects.overlapResolution(
+            start,
+            end,
+            form.cleaned_data['user_id'])
+        overlaps_map = {}
+        for m in overlaps['mods']:
+            overlaps_map[m['item']['id']] = m['res']
+        form_overlap_map = form.cleaned_data['overlap_actions']
+        for f in form_overlap_map:
+            fp = f.split(':')
+            if len(fp) != 2:
+                raise SuspiciousOperation()
+            action = fp[1].lower()
+            itemid = int(fp[0])
+            if not itemid in overlaps_map or overlaps_map[itemid] != action:
+                raise SuspiciousOperation()
+            del(overlaps_map[itemid])
+            if action == TimeRangeManager.OVERLAP_DELETE:
+                TimeRange.objects.get(id=itemid).delete()
+            elif action == TimeRangeManager.OVERLAP_NEW_END:
+                item = TimeRange.objects.get(id=itemid)
+                item.end = start + datetime.timedelta(days=-1)
+                item.save()
+            elif action == TimeRangeManager.OVERLAP_NEW_START:
+                item = TimeRange.objects.get(id=itemid)
+                item.start = end + datetime.timedelta(days=1)
+                item.save()
+            elif action == TimeRangeManager.OVERLAP_SPLIT:
+                prev_item = TimeRange.objects.get(id=itemid)
+                next_item = TimeRange.objects.get(id=itemid)
+                next_item.pk = None
+                prev_item.end = start + datetime.timedelta(days=-1)
+                next_item.start = end + datetime.timedelta(days=1)
+                prev_item.save()
+                next_item.save()
+
     if request.method == 'POST':
         form = AddTimeRangeForm(data=request.POST, user=request.user)
         if form.is_valid():
             time_range = form.get_time_range()
             try:
                 time_range.full_clean()
+                handle_overlaps(form)
                 time_range.save()
                 return HttpResponseRedirect(reverse('wamytmapp:index'))
             except ValidationError as e:
@@ -254,6 +296,21 @@ class TimeRangesList(APIView):
         timerangeItems = TimeRange.objects.all()
         serializer = TimeRangeSerializer(timerangeItems, many=True)
         return Response(serializer.data)
+
+
+def conflict_check(request):
+    if not request.user.is_authenticated:
+        raise PermissionDenied()
+    if request.method == 'POST':
+        form = ConflictCheckForm(data=request.POST, request=request)
+        if not form.is_valid():
+            return JsonResponse(form.errors, status=400)
+        responseData = TimeRange.objects.overlapResolution(
+            form.cleaned_data['start'],
+            form.cleaned_data['end'],
+            form.cleaned_data['uid'])
+        return JsonResponse(responseData)
+    return HttpResponseBadRequest()
 
 
 class TeamFeed(ICalFeed):

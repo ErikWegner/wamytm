@@ -12,15 +12,6 @@
 <script>
     $(function () {
 
-        var e$ = $('input[name="end"]');
-        var s$ = $('input[name="start"]');
-        s$.datepicker().on('changeDate', function(e) {
-            e$.datepicker('setStartDate', (s$.datepicker('getDate')));
-        });
-        e$.datepicker().on('changeDate', function(e) {
-            s$.datepicker('setEndDate', (e$.datepicker('getDate')));
-        });
-
         $('.partial-f').each(function (n, e) {
             $(e).prop('title', '{% trans "Forenoon" context "Tooltip" %}');
         });

@@ -1,6 +1,9 @@
 from django import forms
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.models import User
 from django.utils.translation import pgettext_lazy
 
+from .fields import OverlapActionsField
 from .models import OrgUnit, OrgUnitDelegate, TimeRange, TeamMember, user_display_name
 from .config import RuntimeConfig
 
@@ -113,6 +116,9 @@ class AddTimeRangeForm(forms.Form):
             ('f', pgettext_lazy('AddTimeRangeForm', 'Forenoon')),
             ('a', pgettext_lazy('AddTimeRangeForm', 'Afternoon'))
         ])
+    overlap_actions = OverlapActionsField(
+        required=False
+    )
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
@@ -209,3 +215,33 @@ class ProfileForm(forms.Form):
         self.fields['orgunit'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit'].initial = TeamMember.objects.get(
             pk=self.user.id).orgunit_id
+
+
+class ConflictCheckForm(forms.Form):
+    start = forms.DateField(
+        label=pgettext_lazy('ConflictCheckForm', 'Start'),
+        required=True)
+    end = forms.DateField(
+        label=pgettext_lazy('ConflictCheckForm', 'End'),
+        required=True)
+    uid = forms.IntegerField(
+        required=False
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request")
+        super(ConflictCheckForm, self).__init__(*args, **kwargs)
+
+    def clean_uid(self):
+        conflict_check_user_id = self.cleaned_data['uid']
+        if conflict_check_user_id is None:
+            self.cleaned_data['uid'] = self.request.user.id
+            return
+        logged_in_user_id = self.request.user.id
+        if self.cleaned_data['uid'] == logged_in_user_id:
+            return conflict_check_user_id
+        if OrgUnitDelegate.objects.isDelegateForUser(
+                self.request,
+                User.objects.get(pk=conflict_check_user_id)):
+            return self.cleaned_data['uid']
+        raise PermissionDenied('uid invalid')

@@ -4,7 +4,7 @@ from ..models import User, TimeRange, OrgUnit
 
 
 def d(s: str):
-    """ Convert the string to a date object """
+    """ Convert the string to a datetime object """
     return datetime.datetime.strptime(s, "%Y-%m-%d")
 
 

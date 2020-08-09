@@ -11,5 +11,6 @@ urlpatterns = [
     path('add', views.add, name='add'),
     path('list', views.list1, name='list1'),
     path('profile', views.profile, name="profile"),
-    path('timeranges', views.TimeRangesList.as_view())
+    path('timeranges', views.TimeRangesList.as_view()),
+    path('check', views.conflict_check),
 ]

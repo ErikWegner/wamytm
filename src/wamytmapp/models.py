@@ -1,6 +1,5 @@
 import datetime
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
@@ -113,6 +112,11 @@ def save_teammember(sender, instance, **kwargs):
 
 
 class TimeRangeManager(models.Manager):
+    OVERLAP_NEW_END = 'end'
+    OVERLAP_NEW_START = 'beg'
+    OVERLAP_SPLIT = 'spl'
+    OVERLAP_DELETE = 'del'
+
     def list1(self, start, end, orgunit=None):
         if start is None:
             start = datetime.date.today()
@@ -132,7 +136,11 @@ class TimeRangeManager(models.Manager):
         friday = monday + datetime.timedelta(days=4)
         return self.eventsInRange(monday, friday)
 
-    def eventsInRange(self, start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):
+    def eventsInRange(self,
+                      start: datetime.date,
+                      end: datetime.date,
+                      orgunits: List[OrgUnit] = None,
+                      userid: int = None):
         """
             Return all TimeRange objects that overlap with the
             start and end date
@@ -153,7 +161,28 @@ class TimeRangeManager(models.Manager):
         if orgunits is not None:
             query = query.filter(orgunit__in=orgunits)
 
+        if userid is not None:
+            query = query.filter(user__id=userid)
+
         return query
+
+    def overlapResolution(self, start: datetime.date, end: datetime.date, userid: int):
+        r = {'mods': []}
+
+        overlapping_items = self.eventsInRange(start, end, userid=userid)
+        for item in overlapping_items:
+            mod = {'res': None, 'item': item.buildConflictJsonStructure()}
+            if item.start >= start and item.end <= end:
+                mod['res'] = TimeRangeManager.OVERLAP_DELETE
+            elif item.start < start and item.end > end:
+                mod['res'] = TimeRangeManager.OVERLAP_SPLIT
+            elif item.start < start:
+                mod['res'] = TimeRangeManager.OVERLAP_NEW_END
+            elif item.end > end:
+                mod['res'] = TimeRangeManager.OVERLAP_NEW_START
+            r['mods'].append(mod)
+
+        return r
 
 
 class TimeRange(models.Model):
@@ -177,7 +206,7 @@ class TimeRange(models.Model):
         blank=True, verbose_name=pgettext_lazy('TimeRange', 'End'))
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT,
                             verbose_name=pgettext_lazy('TimeRange', 'Kind of time range'))
-    data = JSONField(encoder=DjangoJSONEncoder)
+    data = models.JSONField(encoder=DjangoJSONEncoder)
     history = HistoricalRecords()
 
     objects = TimeRangeManager()
@@ -212,6 +241,14 @@ class TimeRange(models.Model):
         if self.data and TimeRange.DATA_KINDDETAIL in self.data:
             r = r + self.data[TimeRange.DATA_KINDDETAIL]
         return r
+
+    def buildConflictJsonStructure(self):
+
+        return {
+            'id': self.id,
+            'start': (self.start if isinstance(self.start, datetime.date) else self.start.date()).strftime('%Y-%m-%d'),
+            'end': (self.end if isinstance(self.end, datetime.date) else self.end.date()).strftime('%Y-%m-%d'),
+        }
 
 
 class AllDayEventsManager(models.Manager):
@@ -250,6 +287,18 @@ class AllDayEvent(models.Model):
 
 
 class OrgUnitDelegateManager(models.Manager):
+    def isDelegateForUser(self, request, otheruser):
+        if otheruser is None or request.user is None:
+            return False
+        if otheruser.id == request.user.id:
+            return True
+        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(
+            request.user.id)
+        teammember = TeamMember.objects.get(pk=otheruser.id)
+        if teammember.orgunit_id in delegatedOUList:
+            return True
+        return False
+
     def delegatedOUIdList(self, user_id):
         delegatedOUList = list(super().filter(
             user__id=user_id).values_list('orgunit_id', flat=True))
@@ -291,7 +340,7 @@ class OrgUnitDelegate(models.Model):
 
 def query_events_timeranges(start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):
     alldayevents = AllDayEvent.objects.eventsInRange(start, end)
-    timeranges = TimeRange.objects.eventsInRange(start, end, orgunits)
+    timeranges = TimeRange.objects.eventsInRange(start, end, orgunits=orgunits)
     return timeranges, alldayevents
 
 

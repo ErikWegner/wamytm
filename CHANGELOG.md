@@ -1,3 +1,8 @@
+# Version 14
+
+  * When creating a new time range entry, overlapping conflicts are detected and an action is proposed.
+  * TravisCI build for test execution
+
 # Version 13
 
   * Remove fields _kind_ and _data_ from admin [ModelForm](https://docs.djangoproject.com/en/dev/topics/forms/modelforms/)
