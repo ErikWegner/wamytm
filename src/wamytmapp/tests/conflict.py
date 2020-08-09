@@ -270,7 +270,6 @@ class ConflictResolverTests(TestCase):
         self.maxDiff = None
         self.assertJSONEqual(response.content, {'mods': mods})
 
-
     def test_user_can_query_conflicts_as_delegate(self):
         """
         Check that otheruser can query first user's items
@@ -301,7 +300,6 @@ class ConflictResolverTests(TestCase):
         self.maxDiff = None
         self.assertJSONEqual(response.content, {'mods': mods})
 
-
     def test_user_cannot_query_conflicts(self):
         """
         Check that otheruser cannot query first user's items
@@ -325,5 +323,184 @@ class ConflictResolverTests(TestCase):
                 'start': '2020-08-05',
                 'end': '2020-08-12',
                 'uid': self.user.id,
+            })
+        self.assertEquals(403, response.status_code, response.content)
+
+    def test_user_can_submit_own_conflict_actions(self):
+        objects = self._createAllKinds()
+        untouched = []
+        untouched.append(self._hasTimeRangeObject('2020-06-01', '2020-06-15'))
+        untouched.append(self._hasTimeRangeObject('2020-05-01', '2020-05-15'))
+        untouched.append(self._hasTimeRangeObject('2020-08-05', '2020-08-12'))
+        overlap_actions = map(lambda o: F"{o[0].id}:{o[1]}", objects)
+        highestId = TimeRange.objects.all().order_by('-id').first().id
+
+        c = Client()
+        c.force_login(self.user)
+        response = c.post(
+            '/cal/add', {
+                'start': '2020-08-05',
+                'end': '2020-08-12',
+                'orgunit_id': self.org_unit.id,
+                'kind': 'a_',
+                'overlap_actions': overlap_actions,
+                'user': self.user.id
+            })
+
+        self.assertEquals(302, response.status_code)
+        self.assertEquals("/cal/", response.get("Location"))
+        # deleteItem should have been deleted
+        with self.assertRaisesMessage(TimeRange.DoesNotExist, 'TimeRange matching query does not exist.'):
+            TimeRange.objects.get(id=objects.deleteItem.id)
+        # endItem has its end date set one day earlier than the new item starts
+        new_end = TimeRange.objects.get(id=objects.endItem.id)
+        self.assertEquals(new_end.end, d('2020-08-04').date())
+        self.assertNotEqual(new_end.end, objects.endItem.end.date())
+        del(new_end)
+        # startItem has its start date set one day after the new item ends
+        new_start = TimeRange.objects.get(id=objects.beginItem.id)
+        self.assertEquals(new_start.start, d('2020-08-13').date())
+        self.assertNotEqual(new_start.start, objects.beginItem.start.date())
+        del(new_start)
+        # (1) splitItem: should have a new end and
+        new_split1 = TimeRange.objects.get(id=objects.splitItem.id)
+        self.assertEquals(new_split1.end, d('2020-08-04').date())
+        self.assertNotEqual(new_split1.end, objects.splitItem.end.date())
+        self.assertEqual(new_split1.start, objects.splitItem.start.date())
+        del(new_split1)
+        # (2) splitItem: should create a new item afterwards
+        new_items = TimeRange.objects.filter(id__gt=highestId)
+        # the splitted item and the post'ed item are 2 items
+        self.assertEquals(2, len(new_items))
+        new_split2 = new_items[0]
+        self.assertEquals(new_split2.start, d('2020-08-13').date())
+        self.assertNotEqual(new_split2.start, objects.splitItem.start.date())
+        self.assertEqual(new_split2.end, objects.splitItem.end.date())
+        del(new_split2)
+        del(new_items)
+        # assert objects have not changed
+        for untouched_object in untouched:
+            item = TimeRange.objects.get(id=untouched_object.id)
+            self.assertEquals(item, untouched_object)
+
+    def test_user_can_submit_conflict_actions_as_delegate(self):
+        objects = self._createAllKinds()
+        untouched = []
+        untouched.append(self._hasTimeRangeObject('2020-06-01', '2020-06-15'))
+        untouched.append(self._hasTimeRangeObject('2020-05-01', '2020-05-15'))
+        untouched.append(self._hasTimeRangeObject('2020-08-05', '2020-08-12'))
+        overlap_actions = map(lambda o: F"{o[0].id}:{o[1]}", objects)
+        highestId = TimeRange.objects.all().order_by('-id').first().id
+        otheruser = User.objects.create_user('unittestuser2')
+        otheruser.save()
+        ouDelegate = OrgUnitDelegate(orgunit=self.org_unit, user=otheruser)
+        ouDelegate.save()
+
+        c = Client()
+        c.force_login(otheruser)
+        response = c.post(
+            '/cal/add', {
+                'start': '2020-08-05',
+                'end': '2020-08-12',
+                'orgunit_id': self.org_unit.id,
+                'kind': 'a_',
+                'overlap_actions': overlap_actions,
+                'user': self.user.id
+            })
+            
+        self.assertEquals(302, response.status_code)
+        self.assertEquals("/cal/", response.get("Location"))
+        # deleteItem should have been deleted
+        with self.assertRaisesMessage(TimeRange.DoesNotExist, 'TimeRange matching query does not exist.'):
+            TimeRange.objects.get(id=objects.deleteItem.id)
+        # endItem has its end date set one day earlier than the new item starts
+        new_end = TimeRange.objects.get(id=objects.endItem.id)
+        self.assertEquals(new_end.end, d('2020-08-04').date())
+        self.assertNotEqual(new_end.end, objects.endItem.end.date())
+        del(new_end)
+        # startItem has its start date set one day after the new item ends
+        new_start = TimeRange.objects.get(id=objects.beginItem.id)
+        self.assertEquals(new_start.start, d('2020-08-13').date())
+        self.assertNotEqual(new_start.start, objects.beginItem.start.date())
+        del(new_start)
+        # (1) splitItem: should have a new end and
+        new_split1 = TimeRange.objects.get(id=objects.splitItem.id)
+        self.assertEquals(new_split1.end, d('2020-08-04').date())
+        self.assertNotEqual(new_split1.end, objects.splitItem.end.date())
+        self.assertEqual(new_split1.start, objects.splitItem.start.date())
+        del(new_split1)
+        # (2) splitItem: should create a new item afterwards
+        new_items = TimeRange.objects.filter(id__gt=highestId)
+        # the splitted item and the post'ed item are 2 items
+        self.assertEquals(2, len(new_items))
+        new_split2 = new_items[0]
+        self.assertEquals(new_split2.start, d('2020-08-13').date())
+        self.assertNotEqual(new_split2.start, objects.splitItem.start.date())
+        self.assertEqual(new_split2.end, objects.splitItem.end.date())
+        del(new_split2)
+        del(new_items)
+        # assert objects have not changed
+        for untouched_object in untouched:
+            item = TimeRange.objects.get(id=untouched_object.id)
+            self.assertEquals(item, untouched_object)
+
+
+    def test_user_cannot_submit_conflict_actions_mixed(self):
+        """
+        User1 has time range items.
+        User2 is delegate for User1.
+        """
+        objects = self._createAllKinds()
+        untouched = []
+        untouched.append(self._hasTimeRangeObject('2020-06-01', '2020-06-15'))
+        untouched.append(self._hasTimeRangeObject('2020-05-01', '2020-05-15'))
+        untouched.append(self._hasTimeRangeObject('2020-08-05', '2020-08-12'))
+        overlap_actions = map(lambda o: F"{o[0].id}:{o[1]}", objects)
+        highestId = TimeRange.objects.all().order_by('-id').first().id
+        otheruser = User.objects.create_user('unittestuser2')
+        otheruser.save()
+        ouDelegate = OrgUnitDelegate(orgunit=self.org_unit, user=otheruser)
+        ouDelegate.save()
+        mixedObject = createAbsentTimeRangeObject('2020-08-01', '2020-08-10', otheruser, self.org_unit)
+        overlap_actions.append(F"{mixedObject.id}:{TimeRangeManager.OVERLAP_DELETE}")
+
+        c = Client()
+        c.force_login(otheruser)
+        response = c.post(
+            '/cal/add', {
+                'start': '2020-08-05',
+                'end': '2020-08-12',
+                'orgunit_id': self.org_unit.id,
+                'kind': 'a_',
+                'overlap_actions': overlap_actions,
+                'user': self.user.id
+            })
+        self.assertEquals(403, response.status_code, response.content)
+
+    def test_user_cannot_submit_conflict_actions_for_other_user(self):
+        """
+        User1 has time range items.
+        User2 submits changes for User1's time range items, without being a delegate.
+        """
+        objects = self._createAllKinds()
+        untouched = []
+        untouched.append(self._hasTimeRangeObject('2020-06-01', '2020-06-15'))
+        untouched.append(self._hasTimeRangeObject('2020-05-01', '2020-05-15'))
+        untouched.append(self._hasTimeRangeObject('2020-08-05', '2020-08-12'))
+        overlap_actions = map(lambda o: F"{o[0].id}:{o[1]}", objects)
+        highestId = TimeRange.objects.all().order_by('-id').first().id
+        otheruser = User.objects.create_user('unittestuser2')
+        otheruser.save()
+
+        c = Client()
+        c.force_login(otheruser)
+        response = c.post(
+            '/cal/add', {
+                'start': '2020-08-05',
+                'end': '2020-08-12',
+                'orgunit_id': self.org_unit.id,
+                'kind': 'a_',
+                'overlap_actions': overlap_actions,
+                'user': self.user.id
             })
         self.assertEquals(403, response.status_code, response.content)
