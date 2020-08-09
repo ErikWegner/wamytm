@@ -2,6 +2,9 @@
 
 This app allows every user to plan her/his office days and days off.
 
+[![Build Status](https://travis-ci.com/ErikWegner/wamytm.svg?branch=master)](https://travis-ci.com/ErikWegner/wamytm)
+[![Coverage Status](https://coveralls.io/repos/github/ErikWegner/wamytm/badge.svg?branch=master)](https://coveralls.io/github/ErikWegner/wamytm?branch=master)
+
 ## Running
 
 ### Using docker-compose
@@ -24,7 +27,11 @@ This app allows every user to plan her/his office days and days off.
 
 ## Development
 
-- Checkout `dev` branch from repository
+[![Build Status](https://travis-ci.com/ErikWegner/wamytm.svg?branch=dev)](https://travis-ci.com/ErikWegner/wamytm)
+[![Coverage Status](https://coveralls.io/repos/github/ErikWegner/wamytm/badge.svg?branch=dev)](https://coveralls.io/github/ErikWegner/wamytm?branch=dev)
+
+
+- Checkout `dev` branch from repository 
 - Start required containers: `docker-compose -f docker-compose-dev.yml up -d`
 - Database
   - Connect to database server: `docker-compose -f docker-compose-dev.yml exec db psql -U postgres`
