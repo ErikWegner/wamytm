@@ -1,8 +1,9 @@
 (function ($) {
+    const log = function() {};
 
     const e$ = $('input[name="end"]');
     const s$ = $('input[name="start"]');
-    const oa$ = $('input[name="id_overlap_actions"]');
+    const uid$ = $('select[name="user"]');
     const csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
     const spinner$ = $('#submitspinner');
     const overlappingcontainer$ = $('#overlappingcontainer');
@@ -19,15 +20,14 @@
     }
 
     function updateTable(data) {
-        oa$.val("");
+        overlappingcontainer$.hide();
+        tbody$ = $('tbody', overlappingcontainer$);
+        tbody$.empty();
+
         if (!data || !data.mods || data.mods.length === 0) {
-            overlappingcontainer$.hide();
             return
         }
         overlappingcontainer$.show();
-
-        tbody$ = $('tbody', overlappingcontainer$);
-        tbody$.empty();
 
         let newrow;
         data.mods.forEach(element => {
@@ -56,7 +56,7 @@
         }
 
         const endDate = e$.datepicker('getDate') || startDate;
-        console.log("query for conflicts", startDate, endDate);
+        log("query for conflicts", startDate, endDate);
 
         $.ajax({
             url: wamytmroot + 'check',
@@ -69,6 +69,7 @@
             data: {
                 start: dateToPostStr(startDate),
                 end: dateToPostStr(endDate),
+                uid: uid$.val()
             },
             xhrFields: {
                 withCredentials: true
@@ -76,7 +77,7 @@
         }).done(updateTable)
             .fail(console.error)
             .always(function () {
-                console.log("complete");
+                log("complete");
                 spinner$.hide();
             });;
     }
@@ -89,6 +90,7 @@
     });
     s$.on('change', queryForConflicts);
     e$.on('change', queryForConflicts);
+    uid$.on('change', queryForConflicts);
 
 
 })(jQuery)

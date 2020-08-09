@@ -4,7 +4,7 @@ from django.test import Client, TestCase
 from django.contrib.auth.models import User
 
 from .helpers import d, createAbsentTimeRangeObject
-from ..models import OrgUnit, TimeRange, TimeRangeManager
+from ..models import OrgUnit, TimeRange, TimeRangeManager, OrgUnitDelegate, TeamMember
 
 
 @dataclass
@@ -25,8 +25,11 @@ class AllKindRanges:
 class ConflictResolverTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user('unittestuser1')
+        self.user.save()
         self.org_unit = OrgUnit(name='unittestou')
         self.org_unit.save()
+        tm = TeamMember(user=self.user, orgunit=self.org_unit)
+        tm.save()
 
     def _hasTimeRangeObject(self, start: str, end: str):
         return createAbsentTimeRangeObject(start, end, self.user, self.org_unit)
@@ -244,3 +247,83 @@ class ConflictResolverTests(TestCase):
         self.assertNotEqual(new_split1.end, existing_item.end.date())
         self.assertEqual(new_split1.start, existing_item.start.date())
         del(new_split1)
+
+    def test_user_can_query_own_conflicts(self):
+        objects = self._createAllKinds()
+        sorted_objects = sorted(objects, key=lambda t: t[0].id)
+        mods = list(
+            map(
+                lambda t: {
+                    'item': t[0].buildConflictJsonStructure(),
+                    'res': t[1]},
+                sorted_objects))
+
+        c = Client()
+        c.force_login(self.user)
+        response = c.post(
+            '/cal/check', {
+                'start': '2020-08-05',
+                'end': '2020-08-12',
+                'uid': self.user.id,
+            })
+        self.assertEquals(200, response.status_code, response.content)
+        self.maxDiff = None
+        self.assertJSONEqual(response.content, {'mods': mods})
+
+
+    def test_user_can_query_conflicts_as_delegate(self):
+        """
+        Check that otheruser can query first user's items
+        """
+        otheruser = User.objects.create_user('unittestuser2')
+        otheruser.save()
+        ouDelegate = OrgUnitDelegate(orgunit=self.org_unit, user=otheruser)
+        ouDelegate.save()
+
+        objects = self._createAllKinds()
+        sorted_objects = sorted(objects, key=lambda t: t[0].id)
+        mods = list(
+            map(
+                lambda t: {
+                    'item': t[0].buildConflictJsonStructure(),
+                    'res': t[1]},
+                sorted_objects))
+
+        c = Client()
+        c.force_login(otheruser)
+        response = c.post(
+            '/cal/check', {
+                'start': '2020-08-05',
+                'end': '2020-08-12',
+                'uid': self.user.id,
+            })
+        self.assertEquals(200, response.status_code, response.content)
+        self.maxDiff = None
+        self.assertJSONEqual(response.content, {'mods': mods})
+
+
+    def test_user_cannot_query_conflicts(self):
+        """
+        Check that otheruser cannot query first user's items
+        """
+        otheruser = User.objects.create_user('unittestuser2')
+        otheruser.save()
+
+        objects = self._createAllKinds()
+        sorted_objects = sorted(objects, key=lambda t: t[0].id)
+        mods = list(
+            map(
+                lambda t: {
+                    'item': t[0].buildConflictJsonStructure(),
+                    'res': t[1]},
+                sorted_objects))
+
+        c = Client()
+        c.force_login(otheruser)
+        response = c.post(
+            '/cal/check', {
+                'start': '2020-08-05',
+                'end': '2020-08-12',
+                'uid': self.user.id,
+            })
+        self.assertEquals(403, response.status_code, response.content)

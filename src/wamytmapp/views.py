@@ -302,13 +302,13 @@ def conflict_check(request):
     if not request.user.is_authenticated:
         raise PermissionDenied()
     if request.method == 'POST':
-        form = ConflictCheckForm(data=request.POST)
+        form = ConflictCheckForm(data=request.POST, request=request)
         if not form.is_valid():
             return JsonResponse(form.errors, status=400)
         responseData = TimeRange.objects.overlapResolution(
             form.cleaned_data['start'],
             form.cleaned_data['end'],
-            request.user.id)
+            form.cleaned_data['uid'])
         return JsonResponse(responseData)
     return HttpResponseBadRequest()
 

@@ -288,6 +288,18 @@ class AllDayEvent(models.Model):
 
 
 class OrgUnitDelegateManager(models.Manager):
+    def isDelegateForUser(self, request, otheruser):
+        if otheruser is None or request.user is None:
+            return False
+        if otheruser.id == request.user.id:
+            return True
+        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(
+            request.user.id)
+        teammember = TeamMember.objects.get(pk=otheruser.id)
+        if teammember.orgunit_id in delegatedOUList:
+            return True
+        return False
+
     def delegatedOUIdList(self, user_id):
         delegatedOUList = list(super().filter(
             user__id=user_id).values_list('orgunit_id', flat=True))
