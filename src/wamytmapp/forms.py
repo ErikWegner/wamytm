@@ -169,6 +169,7 @@ class AddTimeRangeForm(forms.Form):
 
 
 class FrontPageFilterForm(forms.Form):
+    embed = forms.BooleanField(required=False, widget=forms.HiddenInput())
     weekdelta = forms.IntegerField(required=False, widget=forms.HiddenInput())
     orgunit = forms.ChoiceField(
         required=False,
@@ -188,6 +189,7 @@ class FrontPageFilterForm(forms.Form):
 
 
 class OrgUnitFilterForm(forms.Form):
+    embed = forms.BooleanField(required=False, widget=forms.HiddenInput())
     fd = forms.CharField(required=False, widget=forms.HiddenInput())
     td = forms.CharField(required=False, widget=forms.HiddenInput())
     orgunit = forms.ChoiceField(

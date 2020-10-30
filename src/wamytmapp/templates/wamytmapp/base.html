@@ -25,28 +25,33 @@
     </script>
 </head>
 
-<body>
+<body{% if embeded %} class="embedded" {% endif %}>
     <div class="content container">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light hide-embedded">
             <a class="navbar-brand" href="{% url 'wamytmapp:index' %}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20">
                     <path d="M0 0h20v20H0z" fill="#ccc" fill-opacity=".992" paint-order="fill markers stroke" />
                     <path
                         d="M15.127 1.763l-2.102.025c-3.27 2.907-5.45 4.68-8.75 7.546l-1.283 9.95h3.86l-.05-4.22 5.885 4.197 4.325.028-10.16-8.737v-.057zM4.274.813v5.603L6.85 4.182V.376z"
                         fill="#00ab00" fill-opacity=".992" paint-order="fill markers stroke" /></svg>
-                        {% trans "Korporator" context "BaseTemplate" %}</a>
+                {% trans "Korporator" context "BaseTemplate" %}</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
                 aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                    <a class="nav-item nav-link" href="{% url 'wamytmapp:index' %}">{% trans "Start" context "BaseTemplate" %}</a>
-                    <a class="nav-item nav-link" href="{% url 'wamytmapp:add' %}">{% trans "Add date" context "BaseTemplate" %}</a>
-                    <a class="nav-item nav-link" href="{% url 'wamytmapp:list1' %}">{% trans "3 months ahead view" context "BaseTemplate" %}</a>
-                    <a class="nav-item nav-link" href="{% url 'wamytmapp:profile' %}">{% trans "Profile" context "BaseTemplate" %}</a>
+                    <a class="nav-item nav-link"
+                        href="{% url 'wamytmapp:index' %}">{% trans "Start" context "BaseTemplate" %}</a>
+                    <a class="nav-item nav-link"
+                        href="{% url 'wamytmapp:add' %}">{% trans "Add date" context "BaseTemplate" %}</a>
+                    <a class="nav-item nav-link"
+                        href="{% url 'wamytmapp:list1' %}">{% trans "3 months ahead view" context "BaseTemplate" %}</a>
+                    <a class="nav-item nav-link"
+                        href="{% url 'wamytmapp:profile' %}">{% trans "Profile" context "BaseTemplate" %}</a>
                     {% if user.is_authenticated %}
-                    <a class="nav-item nav-link" href="{% url 'ka:index' %}">{% trans "Administration" context "BaseTemplate" %}</a>
+                    <a class="nav-item nav-link"
+                        href="{% url 'ka:index' %}">{% trans "Administration" context "BaseTemplate" %}</a>
                     {% endif %}
                 </div>
             </div>
@@ -59,8 +64,8 @@
         </div>
     </div>
 
-{% include 'wamytmapp/footer.html' %}
+    {% include 'wamytmapp/footer.html' %}
 
-</body>
+    </body>
 
 </html>
