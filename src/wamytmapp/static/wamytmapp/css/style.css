@@ -36,3 +36,7 @@ body {
 .form-group.required label::after {
     content: " *"
 }
+
+.embedded .hide-embedded {
+    display: none;
+}

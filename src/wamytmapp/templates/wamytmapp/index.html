@@ -7,7 +7,7 @@
 
 {% block content %}
 {% get_current_language as LANGUAGE_CODE %}
-<h2>{% trans "Week view" context "IndexTemplate" %}</h2>
+<h2 class="hide-embedded">{% trans "Week view" context "IndexTemplate" %}</h2>
 
 <button type="button" onclick="go_week(-1);" class="btn btn-dark"
     role="button">{% trans "Previous week" context "IndexTemplate" %}</button>
@@ -22,6 +22,7 @@
 
 
 <form action="{% url 'wamytmapp:index' %}" method="get" role="form" id="filterform">
+    {% if embeded %}{% bootstrap_field filterform.embed %}{% endif %}
     {% bootstrap_field filterform.weekdelta %}
     <div class="collapse mt-2" id="collapseFilter">
         <div class="card card-body d-flex flex-row">
@@ -86,7 +87,7 @@
 </table>
 {% endspaceless %}
 
-<a class="" href="{% url 'wamytmapp:weekCSV' %}?kind=m&weekdelta={{ weekdelta }}"
+<a class="hide-embedded" href="{% url 'wamytmapp:weekCSV' %}?kind=m&weekdelta={{ weekdelta }}"
     role="">{% trans "Report Mobile Workers" context "IndexTemplate" %}</a>
 
 

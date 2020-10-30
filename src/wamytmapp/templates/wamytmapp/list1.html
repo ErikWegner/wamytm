@@ -8,7 +8,10 @@
 {% block content %}
 
 <form action="{% url 'wamytmapp:list1' %}" method="get" role="form" id="filterform">
-    {% bootstrap_form ouselect %}
+    {% if embeded %}{% bootstrap_field ouselect.embed %}{% endif %}
+    {% bootstrap_field ouselect.orgunit %}
+    {% bootstrap_field ouselect.fd %}
+    {% bootstrap_field ouselect.td %}
 </form>
 
 {% spaceless %}
@@ -45,7 +48,7 @@
 </table>
 {% endspaceless %}
 
-<a class="" href="{% url 'wamytmapp:icalfeed-by-orgunit' orgunit=orgunit %}"
+<a class="hide-embedded" href="{% url 'wamytmapp:icalfeed-by-orgunit' orgunit=orgunit %}"
     role="">{% trans "iCal calendar sync" context "IndexTemplate" %}</a>
 
 {% endblock %}

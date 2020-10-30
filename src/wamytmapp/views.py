@@ -1,13 +1,14 @@
 import csv
 import datetime
+from django_ical.views import ICalFeed
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError, PermissionDenied, SuspiciousOperation
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseBadRequest
-from django.views.generic import FormView
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.utils.translation import get_language_from_request
-from django_ical.views import ICalFeed
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.generic import FormView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -102,6 +103,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
     return {'lines': lines, 'users': users}
 
 
+@xframe_options_exempt
 def index(request):
     filterform = FrontPageFilterForm(request.GET)
     if filterform.is_valid():
@@ -128,6 +130,7 @@ def index(request):
         'weekdelta': weekdelta,
         'filterform': filterform
     }
+    context['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
     return render(request, 'wamytmapp/index.html', context)
 
 
@@ -197,6 +200,7 @@ def add(request):
     return render(request, 'wamytmapp/add.html', {'form': form})
 
 
+@xframe_options_exempt
 def list1(request):
     filterformvalues = request.GET.copy()
     if request.user is not None and request.user.is_authenticated and 'orgunit' not in filterformvalues:
@@ -227,6 +231,7 @@ def list1(request):
     viewdata['ouselect'] = filterform
     viewdata['orgunit'] = 0 if orgunit is None else orgunit
     viewdata['trc'] = RuntimeConfig.TimeRangeViewsLegend
+    viewdata['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
 
     return render(request, 'wamytmapp/list1.html', viewdata)
 
