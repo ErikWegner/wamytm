@@ -1,4 +1,6 @@
-# WAMYTM – Korporator
+# Korporator
+
+Delevoped as WAMYTM: Where Are My Team Members?
 
 This app allows every user to plan her/his office days and days off.
 

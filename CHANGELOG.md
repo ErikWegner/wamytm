@@ -1,3 +1,11 @@
+# Next Version
+
+tba
+
+# Version 15
+
+Allow list views to be embedded
+
 # Version 14
 
   * When creating a new time range entry, overlapping conflicts are detected and an action is proposed.
