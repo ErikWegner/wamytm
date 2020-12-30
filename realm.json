@@ -586,7 +586,10 @@
     "alwaysDisplayInConsole" : false,
     "clientAuthenticatorType" : "client-secret",
     "secret" : "6fd1a212-deed-450c-b28d-3170a0c6102c",
-    "redirectUris" : [ "http://127.0.0.1/*", "http://localhost:8000/*" ],
+    "redirectUris": [
+      "http://127.0.0.1:8000/*",
+      "http://localhost:8000/*"
+    ],
     "webOrigins" : [ ],
     "notBefore" : 0,
     "bearerOnly" : false,

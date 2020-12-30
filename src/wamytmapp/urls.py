@@ -13,4 +13,5 @@ urlpatterns = [
     path('profile', views.profile, name="profile"),
     path('timeranges', views.TimeRangesList.as_view()),
     path('check', views.conflict_check),
+    path('index2', views.index2, name='index2'),
 ]

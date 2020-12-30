@@ -106,6 +106,17 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 @xframe_options_exempt
 def index(request):
     filterform = FrontPageFilterForm(request.GET)
+
+    context = {
+        'filterform': filterform
+    }
+
+    return render(request, 'wamytmapp/index.html', context)
+
+
+@xframe_options_exempt
+def index2(request):
+    filterform = FrontPageFilterForm(request.GET)
     if filterform.is_valid():
         orgunitparamvalue = filterform.cleaned_data['orgunit']
     weekdelta = filterform.cleaned_data['weekdelta']
@@ -131,7 +142,7 @@ def index(request):
         'filterform': filterform
     }
     context['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
-    return render(request, 'wamytmapp/index.html', context)
+    return render(request, 'wamytmapp/index2.html', context)
 
 
 @login_required
