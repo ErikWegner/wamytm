@@ -7,3 +7,4 @@
 /src/wamytmsite/staticfiles
 /src/htmlcov/
 /src/.coverage
+/src/node_modules/

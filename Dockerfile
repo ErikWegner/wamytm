@@ -11,6 +11,7 @@ COPY src/ .
 
 RUN mkdir -p /usr/src/app/wamytmsite/staticfiles/
 
+RUN DJANGO_SETTINGS_MODULE=wamytmsite.settings.build ./manage.py compress
 RUN DJANGO_SETTINGS_MODULE=wamytmsite.settings.build ./manage.py collectstatic
 RUN /bin/bash -c "sed -i \"s/Version: [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}/Version: $(date '+%Y-%m-%d')/g\" wamytmapp/templates/wamytmapp/footer.html"
 
