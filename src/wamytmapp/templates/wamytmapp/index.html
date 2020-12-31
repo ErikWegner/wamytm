@@ -87,6 +87,13 @@
 </table>
 {% endspaceless %}
 
+{{ alldayevents | json_script:"alldayevents" }}
+{{ timeranges | json_script:"timeranges" }}
+
+<div id="counter">
+    Counter: {{ '{{' }} counter }}
+</div>
+
 <a class="hide-embedded" href="{% url 'wamytmapp:weekCSV' %}?kind=m&weekdelta={{ weekdelta }}"
     role="">{% trans "Report Mobile Workers" context "IndexTemplate" %}</a>
 

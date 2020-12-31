@@ -3,6 +3,7 @@ import datetime
 from django_ical.views import ICalFeed
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError, PermissionDenied, SuspiciousOperation
+from django.forms.models import model_to_dict
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.urls import reverse
@@ -106,9 +107,18 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 @xframe_options_exempt
 def index(request):
     filterform = FrontPageFilterForm(request.GET)
+    if filterform.is_valid():
+        orgunitparamvalue = filterform.cleaned_data['orgunit']
+    weekdelta = filterform.cleaned_data['weekdelta']
+    orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
+    today = datetime.date.today()
+    monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
+    timeranges, alldayevents = query_events_timeranges_in_week(monday, orgunit)
 
     context = {
-        'filterform': filterform
+        'filterform': filterform,
+        'timeranges': list(map(lambda t: model_to_dict(t), timeranges)),
+        'alldayevents': list(map(lambda t: model_to_dict(t), alldayevents)),
     }
 
     return render(request, 'wamytmapp/index.html', context)

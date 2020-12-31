@@ -24,6 +24,7 @@ django-ical = "*"
 django-simple-history = "*"
 django-compressor = "*"
 django-compressor-toolkit = "*"
+uvicorn = {extras = ["standard"], version = "*"}
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"

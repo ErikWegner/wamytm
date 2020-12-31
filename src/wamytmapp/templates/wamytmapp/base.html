@@ -7,18 +7,19 @@
     <title>{% trans "Korporator" context "BaseTemplate" %}</title>
     {% compress js %}
     <script src="{% static 'wamytmapp/js/jquery-3.5.1.min.js' %}"></script>
+    <script src="{% static 'wamytmapp/js/vue-3.0.5.js' %}"></script>
+    <script src="{% static 'wamytmapp/js/vue-integration.js' %}"></script>
     <script src="{% static 'wamytmapp/js/bootstrap.bundle.js' %}"></script>
     <script src="{% static 'wamytmapp/js/bootstrap-datepicker.min.js' %}"></script>
     <script src="{% static 'wamytmapp/js/bootstrap-datepicker.de.min.js' %}"></script>
     {% endcompress %}
-    {% compress css inline %}
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/bootstrap.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/bootstrap-datepicker.standalone.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/style.css' %}">
-    {% endcompress %}
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'wamytmapp/favicon/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'wamytmapp/favicon/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'wamytmapp/favicon/favicon-16x16.png' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'wamytmapp/favicon/favicon.ico' %}">
     <link rel="manifest" href="{% static 'wamytmapp/favicon/site.webmanifest' %}">
     <link rel="mask-icon" href="{% static 'wamytmapp/favicon/safari-pinned-tab.svg' %}" color="#5bbad5">
     <meta name="msapplication-TileColor" content="#da532c">
