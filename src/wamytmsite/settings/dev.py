@@ -20,13 +20,13 @@ ALLOWED_HOSTS = ['*']
 
 DATABASES = {
 
-# SQLite
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#    }
+    # SQLite
+    #    'default': {
+    #        'ENGINE': 'django.db.backends.sqlite3',
+    #        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    #    }
 
-# Postgres
+    # Postgres
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'wamytmdb',
@@ -57,11 +57,8 @@ VERIFY_SSL = False
 # LOGGING = { 'version': 1, 'disable_existing_loggers': False, 'handlers': { 'file': { 'level': 'DEBUG', 'class': 'logging.FileHandler', 'filename': '/tmp/debug.log', }, }, 'loggers': { 'django': { 'handlers': ['file'], 'level': 'DEBUG', 'propagate': True, }, }, }
 # LOCALE_PATHS = [
 #     os.path.join(BASE_DIR, "locale"),
-#     os.path.join(BASE_DIR, "wamytmapp/locale"), 
+#     os.path.join(BASE_DIR, "wamytmapp/locale"),
 # ]
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = False

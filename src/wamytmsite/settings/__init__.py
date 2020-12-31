@@ -23,8 +23,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'simple_history',
-    'compressor',
-    'compressor_toolkit',
 ]
 
 MIDDLEWARE = [
@@ -41,27 +39,6 @@ MIDDLEWARE = [
 ]
 
 # Application definition
-
-STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'compressor.finders.CompressorFinder',
-]
-
-COMPRESS_CSS_FILTERS = [
-    'compressor.filters.css_default.CssAbsoluteFilter',
-    'compressor.filters.cssmin.CSSMinFilter',
-    'compressor.filters.template.TemplateFilter'
-]
-COMPRESS_JS_FILTERS = [
-    'compressor.filters.jsmin.JSMinFilter',
-]
-COMPRESS_PRECOMPILERS = (
-    ('module', 'compressor_toolkit.precompilers.ES6Compiler'),
-    ('css', 'compressor_toolkit.precompilers.SCSSCompiler'),
-)
-COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = True
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -163,7 +140,7 @@ SOCIAL_AUTH_KEYCLOAK_KEY = "wamytm"
 
 SOCIAL_AUTH_KEYCLOAK_ID_KEY = "username"
 
-SIMPLE_HISTORY_REVERT_DISABLED=True
+SIMPLE_HISTORY_REVERT_DISABLED = True
 
 # Can be set to False for development
 VERIFY_SSL = True
