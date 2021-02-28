@@ -152,6 +152,33 @@ class ViewsTests(TestCase):
         self.assertEquals(self.users[4].id, queryResult[2].user_id)
         self.assertEquals(self.users[1].id, queryResult[3].user_id)
 
+    def test_index_filters_for_users(self):
+        # Assign first name and last name
+        self.user_has_full_name(4, "Tim", "Smith")
+        self.user_has_full_name(1, "Tina", "Smith")
+        self.user_has_full_name(2, "Daniel", "Radis")
+        self.user_has_full_name(3, "Eva", "Jones")
+
+        # Create date items
+        self.hasTimeRangeObject(datetime.date(
+            2020, 2, 25), datetime.date(2020, 2, 26), self.users[4])
+        self.hasTimeRangeObject(datetime.date(
+            2020, 2, 25), datetime.date(2020, 2, 26), self.users[2])
+        self.hasTimeRangeObject(datetime.date(
+            2020, 2, 25), datetime.date(2020, 2, 26), self.users[1])
+        self.hasTimeRangeObject(datetime.date(
+            2020, 2, 25), datetime.date(2020, 2, 26), self.users[3])
+
+        queryResult, _ = query_events_timeranges_in_week(
+            datetime.date(2020, 2, 24), users=['unittestuser3', 'unittestuser1'])
+        self.assertEquals(2, len(queryResult), "It has only two results")
+
+        # Filtered results
+        self.assertEquals(
+            self.users[3].id, queryResult[0].user_id, "First result matches user 3")
+        self.assertEquals(
+            self.users[1].id, queryResult[1].user_id, "Second result matches user 1")
+
     def test_week_view_contains_all_possible_kinds(self):
         # Create date items
         today = datetime.date.today()

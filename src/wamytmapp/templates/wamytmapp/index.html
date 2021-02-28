@@ -24,6 +24,7 @@
 <form action="{% url 'wamytmapp:index' %}" method="get" role="form" id="filterform">
     {% if embeded %}{% bootstrap_field filterform.embed %}{% endif %}
     {% bootstrap_field filterform.weekdelta %}
+    {% if users %}{% bootstrap_field filterform.users %}{% endif %}
     <div class="collapse mt-2" id="collapseFilter">
         <div class="card card-body d-flex flex-row">
             <div class="row">

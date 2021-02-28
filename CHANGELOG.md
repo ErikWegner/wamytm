@@ -1,3 +1,18 @@
+# Next Version
+
+tba
+
+# Version 16
+
+* Filter index view with user names
+* Python 3.9
+* Health check endpoint
+* New documentation with [mkdocs](https://www.mkdocs.org/) at https://erikwegner.github.io/wamytm/
+
+# Version 15
+
+Allow list views to be embedded
+
 # Version 14
 
   * When creating a new time range entry, overlapping conflicts are detected and an action is proposed.
