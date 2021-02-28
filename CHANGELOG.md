@@ -2,6 +2,13 @@
 
 tba
 
+# Version 16
+
+* Filter index view with user names
+* Python 3.9
+* Health check endpoint
+* New documentation with [mkdocs](https://www.mkdocs.org/) at https://erikwegner.github.io/wamytm/
+
 # Version 15
 
 Allow list views to be embedded
