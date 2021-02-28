@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Development - Korporator</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">Korporator</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href=".." class="dropdown-item">User Guide</a>
+</li>
+                                    
+<li>
+    <a href="../user-guide/frontpage/" class="dropdown-item">Frontpage</a>
+</li>
+                                    
+<li>
+    <a href="../user-guide/list/" class="dropdown-item">3 months ahead view</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="navitem">
+                                <a href="../install/" class="nav-link">Install guide</a>
+                            </li>
+                            <li class="navitem active">
+                                <a href="./" class="nav-link">Development</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../install/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" class="nav-link disabled">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://github.com/ErikWegner/wamytm/edit/master/docs/development.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#development" class="nav-link">Development</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#preparations" class="nav-link">Preparations</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#running" class="nav-link">Running</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#tests" class="nav-link">Tests</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#database-setup-commands" class="nav-link">Database setup commands:</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="development">Development</h1>
+<h2 id="preparations">Preparations</h2>
+<ul>
+<li>Checkout <code>dev</code> branch from repository </li>
+<li>Start required containers: <code>docker-compose -f docker-compose-dev.yml up -d</code></li>
+<li>Database</li>
+<li>Connect to database server: <code>docker-compose -f docker-compose-dev.yml exec db psql -U postgres</code></li>
+<li>Setup database (see <a href="#database-setup-commands">commands</a>)</li>
+<li>Keycloak identity server</li>
+<li>Open Keycloak by visiting https://localhost:8443/auth/</li>
+<li>Temporarily accept certificate</li>
+<li>Korporator setup</li>
+<li>Install <a href="https://www.python.org/downloads/">Python 3.9</a></li>
+<li>Install <a href="https://pipenv.readthedocs.io/">pipenv</a>: <code>pip install pipenv</code></li>
+<li>Enter pipenv environment: <code>pipenv shell</code></li>
+<li>Install dependencies: <code>pipenv install</code></li>
+<li>Initialize database: <code>cd src &amp;&amp; DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py migrate</code></li>
+<li>Create super user: <code>cd src &amp;&amp; DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py createsuperuser</code></li>
+<li>(Optional) Remove existing data and create new example data: <code>cd src &amp;&amp; DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py example_data</code></li>
+</ul>
+<h2 id="running">Running</h2>
+<ul>
+<li>Run korporator</li>
+<li>Run application in development mode: <code>cd src &amp;&amp; DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py runserver</code></li>
+<li>Access the backend at http://localhost:8000/admin/</li>
+<li>Access the frondend at http://localhost:8000/</li>
+<li>Example users:
+    user1:3itsvxks, user2:Fq5vnMfj</li>
+</ul>
+<h2 id="tests">Tests</h2>
+<h3 id="run-tests">Run tests:</h3>
+<ul>
+<li>Bash:</li>
+</ul>
+<pre><code class="language-bash"># setup environment
+export DJANGO_SETTINGS_MODULE=wamytmsite.settings.test
+cd src
+./manage.py collectstatic
+
+# run tests
+./manage.py test
+</code></pre>
+<ul>
+<li>PowerShell: </li>
+</ul>
+<pre><code class="language-pwsh"># setup environment
+$env:DJANGO_SETTINGS_MODULE=&quot;wamytmsite.settings.test&quot;
+cd src
+python manage.py collectstatic
+
+# run tests
+python manage.py test
+</code></pre>
+<h3 id="run-tests-with-coverage">Run tests with coverage:</h3>
+<pre><code class="language-bash">cd src
+DJANGO_SETTINGS_MODULE=wamytmsite.settings.test coverage run --source='.' manage.py test wamytmapp
+coverage html
+python -m http.server --directory htmlcov/ 8008
+</code></pre>
+<h2 id="database-setup-commands">Database setup commands:</h2>
+<pre><code>create user wamytm with encrypted password 'Stw9nUvm';
+alter role wamytm set client_encoding to 'utf8';
+alter role wamytm set default_transaction_isolation to 'read committed';
+alter role wamytm set timezone to 'UTC';
+create database wamytmdb;
+revoke CONNECT on DATABASE wamytmdb from public;
+grant all on DATABASE wamytmdb to wamytm;
+alter database wamytmdb owner to wamytm;
+\c wamytmdb
+alter schema public owner to wamytm;
+\q
+</code></pre>
+<p>To run tests, execute this command:</p>
+<pre><code>ALTER USER wamytm CREATEDB;
+</code></pre></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
