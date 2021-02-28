@@ -35,6 +35,35 @@ def _prepareWeekdata(weekdata: List[TimeRange]):
         It is a list of objects, each with:
         - user
         - days
+        - events on that day
+    """
+    collector = {}
+    for item in weekdata:
+        if item.user not in collector:
+            days = []
+            for _ in range(5):
+                days.append([])
+            collector[item.user] = {"days": days}
+        for d in range(item.start_trim.weekday(), 1 + item.end_trim.weekday()):
+            daydata = item.data
+            daydata['k'] = item.kind_with_details()
+            collector[item.user]["days"][d].append(daydata)
+    result = []
+    for user in collector:
+        result.append({
+            "user": user,
+            "username": user_display_name(user),
+            "days": collector[user]["days"]})
+    return result
+
+
+def _prepareWeekdata2(weekdata: List[TimeRange]):
+    """
+        Prepare a week representation.
+
+        It is a list of objects, each with:
+        - user
+        - days
     """
     collector = {}
     for item in weekdata:
@@ -113,13 +142,24 @@ def index(request):
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
+    days = []
+    for weekday in range(5):
+        dh = DayHeader(monday + datetime.timedelta(days=weekday))
+        days.append(dh)
     timeranges, alldayevents = query_events_timeranges_in_week(monday, orgunit)
-
+    for alldayevent in alldayevents:
+        for dh in days:
+            if dh.day == alldayevent.day:
+                dh.allday = alldayevent
+    timeranges_thisweek = _prepareWeekdata(timeranges)
     context = {
-        'filterform': filterform,
-        'timeranges': list(map(lambda t: model_to_dict(t), timeranges)),
-        'alldayevents': list(map(lambda t: model_to_dict(t), alldayevents)),
+        'this_week': timeranges_thisweek[1:5],  # DEBUG: remove
+        'days': days,
+        'trc': RuntimeConfig.TimeRangeViewsLegend,
+        'weekdelta': weekdelta,
+        'filterform': filterform
     }
+    context['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
 
     return render(request, 'wamytmapp/index.html', context)
 
@@ -143,7 +183,7 @@ def index2(request):
         for dh in days:
             if dh.day == alldayevent.day:
                 dh.allday = alldayevent
-    timeranges_thisweek = _prepareWeekdata(timeranges)
+    timeranges_thisweek = _prepareWeekdata2(timeranges)
     context = {
         'this_week': timeranges_thisweek,
         'days': days,

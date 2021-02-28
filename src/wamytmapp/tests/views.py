@@ -3,7 +3,7 @@ from django.test import Client, TestCase
 from django.contrib.auth.models import User
 from django.test.utils import setup_test_environment, teardown_test_environment
 from ..models import TimeRange, OrgUnit, AllDayEvent, query_events_timeranges_in_week, user_display_name
-from ..views import _prepareWeekdata, _prepareList1Data
+from ..views import _prepareWeekdata2, _prepareList1Data
 
 
 class ViewsTests(TestCase):
@@ -58,6 +58,64 @@ class ViewsTests(TestCase):
     def test_prepareWeekData(self):
         today = datetime.date.today()
         monday = today - datetime.timedelta(days=today.weekday())
+        tuesday = monday + datetime.timedelta(days=1)
+        wednesday = monday + datetime.timedelta(days=2)
+        thursday = monday + datetime.timedelta(days=3)
+        friday = monday + datetime.timedelta(days=4)
+
+        # Monday: 1 partial entry forenoon
+        self.hasDayTimeRangeObjects(monday, self.user[1], 'f')
+        # Tuesday: 1 partial entry afternoon
+        self.hasDayTimeRangeObjects(tuesday, self.user[1], 'a')
+        # Wednesday: 1 partial entry afternoon, 1 partial entry forenoon
+        self.hasDayTimeRangeObjects(wednesday, self.user[1], 'af')
+        # Thursday: afternoon, whole day, forenoon, afternoon, whole day
+        self.hasDayTimeRangeObjects(thursday, self.user[1], 'awfaw')
+        # Thurday to Friday
+        self.hasTimeRangeObject(
+            thursday, friday, self.users[4], kind=TimeRange.PRESENT)
+        # Friday forenoon
+        self.hasDayTimeRangeObjects(friday, self.user[1], 'f')
+
+        # Act
+        queryResult, allDayEventsResult = query_events_timeranges_in_week()
+        result = _prepareWeekdata(queryResult)
+
+        # Assert
+        self.assertSequenceEqual(
+            result, [
+                {
+                    'days': [
+                        # Monday forenoon
+                        {'k': 'a'},
+                        # Monday afternoon
+                        0,
+                        # Tuesday forenoon
+                        0,
+                        # Tuesday afternoon
+                        {'k': 'a'},
+                        # Wednesday forenoon
+                        {'k': 'a'},
+                        # Wednesday afternoon
+                        {'k': 'a'},
+                        # Thursday forenoon
+                        [{'k': 'a'}, {'k': 'a'}, {'k': 'a'}, {'k': 'p'}],
+                        # Thursday afternoon
+                        [{'k': 'a'}, {'k': 'a'}, {'k': 'a'},
+                            {'k': 'a'}, {'k': 'p'}],
+                        # Friday forenoon
+                        [{'k': 'p'}, {'k': 'a'}],
+                        # Friday afternoon
+                        {'k': 'p'},
+                    ],
+                    'user': self.users[1],
+                    'username': user_display_name(self.users[1])
+                },
+            ])
+
+    def test_prepareWeekData2(self):
+        today = datetime.date.today()
+        monday = today - datetime.timedelta(days=today.weekday())
         wednesday = monday + datetime.timedelta(days=2)
         friday_before = monday - datetime.timedelta(days=3)
         tuesday_after = monday + datetime.timedelta(days=8)
@@ -86,7 +144,7 @@ class ViewsTests(TestCase):
 
         # Act
         queryResult, allDayEventsResult = query_events_timeranges_in_week()
-        result = _prepareWeekdata(queryResult)
+        result = _prepareWeekdata2(queryResult)
 
         # Assert
         self.assertSequenceEqual(
@@ -386,6 +444,19 @@ class ViewsTests(TestCase):
                               data=data)
         timeRange.save()
         return timeRange
+
+    def hasDayTimeRangeObjects(self, day: datetime.date, user: User, description):
+        '''
+        Create a number of TimeRange objects defined by description.
+
+        Desciption is a string, each letter is either _a_ for an afternoon entry,
+        _f_ for a forenoon entry, or _w_ for an entry for the whole day.
+        '''
+        for d in description:
+            data = {}
+            if d == 'a' or d == 'f':
+                data[TimeRange.DATA_PARTIAL] = d
+            self.hasTimeRangeObject(day, day, user, kind=TimeRange.ABSENT, data)
 
     def hasAllDayEvent(self, day: datetime.date, description: str):
         allDayEvent = AllDayEvent(description=description, day=day)

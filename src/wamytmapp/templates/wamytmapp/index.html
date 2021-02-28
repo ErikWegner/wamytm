@@ -60,6 +60,33 @@
 </form>
 
 {% spaceless %}
+<div class="container presence">
+    <div class="row align-items-end">
+        <div class="col-2">{% trans "Person" context "IndexTemplate" %}</div>
+        {% for day in days %}
+        <div class="col-2{% if day.allday %} allday{% endif %}">
+            {% if day.allday %}{{ day.allday.description }}<br>{% endif %}{{ day.day }}</th>
+        </div>
+        {% endfor %}
+    </div>
+    {% for item in this_week %}
+    <div class="row">
+        <div class="col-2">{{ item.username }}</div>
+        {% for day in item.days %}
+        {% if day|length == 0 %}
+        <div class="col-2 empty"></div>
+        {% elif day|length == 1 %}
+        <div class="col-2">1</div>
+        {% else %}
+        <div class="col-2">n</div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endspaceless %}
+
+{% spaceless %}
 <table class="table table-sm presence mt-3">
     <thead>
         <tr>
@@ -75,10 +102,18 @@
         <tr>
             <th scope="row">{{ item.username }}</th>
             {% for day in item.days %}
-            {% if day == 0%}
+            {% if day|length == 0%}
             <td class="empty"></td>
             {% else %}
-            <td class="kind-{{ day.k }}">{{ trc|get_value_from_dict:day.k }}{{ day|get_partial_symbol }}{{ day|get_description_tooltip }}</td>
+            <td>
+                {% for entry in day %}
+                kind-{{ entry.k }}:
+                {{ trc|get_value_from_dict:entry.k }}
+                {{ entry|get_partial_symbol }}
+                {{entry|get_description_tooltip}}
+                <br />
+                {% endfor %}
+            </td>
             {% endif %}
             {% endfor %}
         </tr>
