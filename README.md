@@ -1,9 +1,16 @@
-# WAMYTM – Korporator
+# Korporator
+
+Delevoped as WAMYTM: Where Are My Team Members?
 
 This app allows every user to plan her/his office days and days off.
 
 [![Build Status](https://travis-ci.com/ErikWegner/wamytm.svg?branch=master)](https://travis-ci.com/ErikWegner/wamytm)
 [![Coverage Status](https://coveralls.io/repos/github/ErikWegner/wamytm/badge.svg?branch=master)](https://coveralls.io/github/ErikWegner/wamytm?branch=master)
+
+
+# Documentation
+
+New documentation is avalable at https://erikwegner.github.io/wamytm/
 
 ## Running
 

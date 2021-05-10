@@ -1,0 +1,10 @@
+site_name: Korporator
+repo_url: https://github.com/ErikWegner/wamytm
+remote_name: github
+nav:
+    - 'User Guide':
+      - 'User Guide': index.md
+      - 'user-guide/frontpage.md'
+      - 'user-guide/list.md'
+    - 'install.md'
+    - 'development.md'

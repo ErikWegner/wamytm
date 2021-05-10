@@ -142,7 +142,8 @@ class TimeRangeManager(models.Manager):
                       start: datetime.date,
                       end: datetime.date,
                       orgunits: List[OrgUnit] = None,
-                      userid: int = None):
+                      userid: int = None,
+                      users: List[str] = None):
         """
             Return all TimeRange objects that overlap with the
             start and end date
@@ -167,6 +168,10 @@ class TimeRangeManager(models.Manager):
 
         if userid is not None:
             query = query.filter(user__id=userid)
+
+        if users is not None and len(users) > 0:
+            users_qs = User.objects.filter(username__in=users)
+            query = query.filter(user__in=users_qs)
 
         return query
 
@@ -342,13 +347,23 @@ class OrgUnitDelegate(models.Model):
         ]
 
 
-def query_events_timeranges(start: datetime.date, end: datetime.date, orgunits: List[OrgUnit] = None):
+def query_events_timeranges(
+        start: datetime.date,
+        end: datetime.date,
+        orgunits: List[OrgUnit] = None,
+        users: List[str] = None
+):
     alldayevents = AllDayEvent.objects.eventsInRange(start, end)
-    timeranges = TimeRange.objects.eventsInRange(start, end, orgunits=orgunits)
+    timeranges = TimeRange.objects.eventsInRange(
+        start, end, orgunits=orgunits, users=users)
     return timeranges, alldayevents
 
 
-def query_events_timeranges_in_week(day_of_week: datetime.date = None, orgunit: OrgUnit = None):
+def query_events_timeranges_in_week(
+    day_of_week: datetime.date = None,
+    orgunit: OrgUnit = None,
+    users: List[str] = None
+):
     """
         Return all TimeRange objects that start during this week or
         that end during this week.
@@ -358,7 +373,7 @@ def query_events_timeranges_in_week(day_of_week: datetime.date = None, orgunit: 
     friday = monday + datetime.timedelta(days=4)
     orgunits = OrgUnit.objects.listDescendants(
         orgunit) if orgunit is not None else None
-    return query_events_timeranges(monday, friday, orgunits)
+    return query_events_timeranges(monday, friday, orgunits=orgunits, users=users)
 
 
 def query_events_list1(start, end, orgunit=None):

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Install guide - Korporator</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">Korporator</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href=".." class="dropdown-item">User Guide</a>
+</li>
+                                    
+<li>
+    <a href="../user-guide/frontpage/" class="dropdown-item">Frontpage</a>
+</li>
+                                    
+<li>
+    <a href="../user-guide/list/" class="dropdown-item">3 months ahead view</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="navitem active">
+                                <a href="./" class="nav-link">Install guide</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../development/" class="nav-link">Development</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../user-guide/list/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../development/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://github.com/ErikWegner/wamytm/edit/master/docs/install.md" class="nav-link"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#install-guide" class="nav-link">Install guide</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#requirements" class="nav-link">Requirements</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#running" class="nav-link">Running</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#database-setup-commands" class="nav-link">Database setup commands:</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#configure-login-with-keycloak" class="nav-link">Configure login with Keycloak</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="install-guide">Install guide</h1>
+<h2 id="requirements">Requirements</h2>
+<ul>
+<li>PostgresQL database</li>
+<li>OpenID Connect provider (optional), e. g. a <a href="https://hub.docker.com/r/jboss/keycloak">Keycloak</a> instance, for single sign on</li>
+</ul>
+<h2 id="running">Running</h2>
+<p>The application can be run using the provided container at <a href="https://hub.docker.com/r/erikwegner/korporator">Docker Hub</a>.</p>
+<p>Supported environment variables:</p>
+<ul>
+<li><code>SECRET_KEY</code> random value. Keep it secret. <a href="https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-SECRET_KEY">Details</a></li>
+<li><code>USE_X_FORWARDED_HOST</code> can be <code>True</code> to use a <em>X-Forwarded-Host</em> header to construct links</li>
+<li><code>WAMYTM_DEBUG</code> should be <code>False</code> in production to hide error details.</li>
+<li><code>WAMYTM_DATABASE_HOST</code> Database server name</li>
+<li><code>WAMYTM_DATABASE_NAME</code> Database name</li>
+<li><code>WAMYTM_DATABASE_USERNAME</code> Username for database connection</li>
+<li><code>WAMYTM_DATABASE_PASSWORD</code> Password  for database connection</li>
+<li><code>WAMYTM_KEYCLOAK_CLIENT_ID</code> OpenID client id (value is taken from OpenID provider)</li>
+<li><code>WAMYTM_KEYCLOAK_CLIENT_SECRET</code> OpenID client secret (value is taken from OpenID provider)</li>
+<li><code>WAMYTM_KEYCLOAK_PUBLIC_KEY</code> JWT public key (value is taken from OpenID provider)</li>
+<li><code>WAMYTM_KEYCLOAK_AUTH_URL</code> redirect uri for user logins</li>
+<li><code>WAMYTM_KEYCLOAK_TOKEN_URL</code> uri to exchange tokens from backend to OpenID connect provider</li>
+<li><code>WAMYTM_KEYCLOAK_VERIFY_SSL</code> should be <code>True</code> in production to verify provider connection</li>
+<li><code>WAMYTM_TRUST_X_FORWARDED_PROTO</code> can be <code>True</code> to trust a <em>X-Forwarded_Proto</em> header</li>
+</ul>
+<h3 id="running-from-repository-using-docker-compose">Running from repository using docker-compose</h3>
+<p>The following steps start a demonstration instance.</p>
+<ul>
+<li>Start required containers: <code>docker-compose up -d</code></li>
+<li>Database</li>
+<li>Connect to database server: <code>docker-compose exec db psql -U postgres</code></li>
+<li>Setup database (see <a href="#database-setup-commands">commands</a>)</li>
+<li>Keycloak identity server</li>
+<li>Open Keycloak by visiting https://localhost:8443/auth/</li>
+<li>Temporary accept certificate</li>
+<li>Korporator setup</li>
+<li>Connect to the app: <code>docker-compose exec korporator /bin/bash</code></li>
+<li>Run <code>python manage.py migrate</code> to initialize database</li>
+<li>Run <code>python manage.py createsuperuser</code> to create backend admin</li>
+<li>Access the backend at http://localhost:8000/admin/</li>
+<li>Access the frondend at http://localhost:8000/</li>
+<li>Example users:
+    user1:3itsvxks, user2:Fq5vnMfj</li>
+</ul>
+<h2 id="database-setup-commands">Database setup commands:</h2>
+<pre><code class="language-sql">create user wamytm with encrypted password 'Stw9nUvm';
+alter role wamytm set client_encoding to 'utf8';
+alter role wamytm set default_transaction_isolation to 'read committed';
+alter role wamytm set timezone to 'UTC';
+create database wamytmdb;
+revoke CONNECT on DATABASE wamytmdb from public;
+grant all on DATABASE wamytmdb to wamytm;
+alter database wamytmdb owner to wamytm;
+\c wamytmdb
+alter schema public owner to wamytm;
+\q
+</code></pre>
+<h2 id="configure-login-with-keycloak">Configure login with Keycloak</h2>
+<ol>
+<li>Create a new client <code>wamytm</code> in the realm's <em>Clients</em> section</li>
+<li>Configure client settings:<ul>
+<li>Settings &gt; Access Type &gt; confidential</li>
+<li>Settings &gt; Fine Grain OpenID Connect Configuration &gt; User Info Signed Response Algorithm &gt; RS256</li>
+<li>Settings &gt; Fine Grain OpenID Connect Configuration &gt; Request Object Signature Algorithm &gt; RS256</li>
+</ul>
+</li>
+<li>Use the <em>Client ID</em> (Settings tab) as value for <code>WAMYTM_KEYCLOAK_CLIENT_ID</code></li>
+<li>Use the <em>Secret</em> (Credentials tab) as value for <code>WAMYTM_KEYCLOAK_CLIENT_SECRET</code></li>
+<li>Get the public key from Realm Settings &gt; Keys &gt; Public key and put it into settings as <code>WAMYTM_KEYCLOAK_PUBLIC_KEY</code></li>
+<li>Update urls in <code>WAMYTM_KEYCLOAK_AUTH_URL</code> and <code>WAMYTM_KEYCLOAK_TOKEN_URL</code> with the correct hostname, port and realm name</li>
+<li>Configure username mapper: Clients &gt; Client ID &gt; Mappers: Create <em>User Property</em> mapper, set <em>Token Claim Name</em> to <code>username</code>, Property to <code>username</code> (or something equal, e. g. email)</li>
+<li>Open <em>Client Scopes</em> and add new scope <code>wamytm</code></li>
+<li>Open <em>Mappers</em> tab and add a new mapper: Name <code>wamytm-audience</code>, Mapper Type <code>Audience</code>, Included Client Audience: <code>wamytm</code>, Add to access token <code>on</code></li>
+<li>Open <em>Clients</em> &gt; wamytm &gt; Client Scopes and add <code>wamytm</code> from <em>Available client scopes</em> to <em>Assigned default client scopes</em></li>
+</ol></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

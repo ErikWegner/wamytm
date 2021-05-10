@@ -8,6 +8,7 @@ pylint = "*"
 autopep8 = "*"
 rope = "*"
 coverage = "*"
+mkdocs = "*"
 
 [packages]
 django = "*"

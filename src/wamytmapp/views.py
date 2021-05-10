@@ -110,14 +110,17 @@ def index(request):
         orgunitparamvalue = filterform.cleaned_data['orgunit']
     weekdelta = filterform.cleaned_data['weekdelta']
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
+    usersStr = filterform.cleaned_data['users'] if 'users' in filterform.cleaned_data else None
 
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
     days = []
+    users = usersStr.split(',') if usersStr else None
     for weekday in range(5):
         dh = DayHeader(monday + datetime.timedelta(days=weekday))
         days.append(dh)
-    timeranges, alldayevents = query_events_timeranges_in_week(monday, orgunit)
+    timeranges, alldayevents = query_events_timeranges_in_week(
+        day_of_week=monday, orgunit=orgunit, users=users)
     for alldayevent in alldayevents:
         for dh in days:
             if dh.day == alldayevent.day:
@@ -128,9 +131,11 @@ def index(request):
         'days': days,
         'trc': RuntimeConfig.TimeRangeViewsLegend,
         'weekdelta': weekdelta,
-        'filterform': filterform
+        'filterform': filterform,
     }
     context['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
+    if usersStr:
+        context['users'] = usersStr
     return render(request, 'wamytmapp/index.html', context)
 
 
