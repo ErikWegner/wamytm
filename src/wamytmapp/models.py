@@ -1,4 +1,5 @@
 import datetime
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
@@ -6,6 +7,7 @@ from django.db import models
 from django.db.models.functions import Greatest, Least
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 from django.utils.text import format_lazy
 from django.utils.translation import pgettext_lazy
 from simple_history.models import HistoricalRecords
@@ -151,8 +153,10 @@ class TimeRangeManager(models.Manager):
             start__lte=end,
             end__gte=start
         ).annotate(
-            start_trim=Greatest('start', start),
-            end_trim=Least('end', end)
+            start_trim=Greatest(
+                'start', start, output_field=models.DateField(default=datetime.datetime.now(tz=timezone.utc))),
+            end_trim=Least(
+                'end', end, output_field=models.DateField(default=datetime.datetime.now(tz=timezone.utc)))
         ).order_by(
             'user__last_name',
             'user__first_name',

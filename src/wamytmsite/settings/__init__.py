@@ -147,3 +147,6 @@ VERIFY_SSL = True
 
 DRFSO2_PROPRIETARY_BACKEND_NAME = "Keycloak"
 DRFSO2_URL_NAMESPACE = "social_core.backends"
+
+# Update to Django 3.2, see https://docs.djangoproject.com/en/3.2/releases/3.2/#customizing-type-of-auto-created-primary-keys
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
