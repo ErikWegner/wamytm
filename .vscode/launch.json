@@ -16,7 +16,8 @@
             "django": true,
             "env": {
                 "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.test"
-            }
+            },
+            "justMyCode": false
         },
         {
             "name": "Test selection",

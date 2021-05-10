@@ -1,11 +1,13 @@
 import datetime
 
+from django.utils.timezone import make_aware
+
 from ..models import User, TimeRange, OrgUnit
 
 
 def d(s: str):
     """ Convert the string to a datetime object """
-    return datetime.datetime.strptime(s, "%Y-%m-%d")
+    return make_aware(datetime.datetime.strptime(s, "%Y-%m-%d"))
 
 
 def createAbsentTimeRangeObject(start: str, end: str, user: User, orgunit: OrgUnit):
