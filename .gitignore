@@ -1,6 +1,5 @@
 /src/db.sqlite3
 .vscode/.ropeproject
-.vscode/settings.json
 *.pyc
 *.orig
 # static files for test
