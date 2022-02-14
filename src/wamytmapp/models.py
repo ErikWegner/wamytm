@@ -3,7 +3,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db import models
+from django.db import models, connection
 from django.db.models.functions import Greatest, Least
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -12,6 +12,25 @@ from django.utils.text import format_lazy
 from django.utils.translation import pgettext_lazy
 from simple_history.models import HistoricalRecords
 from typing import List
+
+class OMSManager(models.Manager):
+    def getMIT_ID(self, user_id):
+        return super().all().filter(user_id__exact=user_id)[0]
+
+    def getORG_ID(self,user_id):
+        qu = super().raw('''
+        select * from wamytmapp_oms t 
+join "ODB_MITARBEITER2STRUKT" g
+on t.mit_id=g."M2O_MIT_ID"
+and date_trunc('day',NOW()) between g."M2O_VON" and coalesce(g."M2O_BIS",date_trunc('day',NOW()))
+where t.user_id = %s
+        ''', params=[user_id])
+        return qu[0]
+
+class OMS(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    mit_id = models.IntegerField()
+    objects = OMSManager()
 
 
 class OrgUnitManager(models.Manager):
@@ -85,8 +104,142 @@ class OrgUnit(models.Model):
 
     def __str__(self):
         return self.name
+        
+        
+        
+def dictfetchall(cursor):
+    columns = [col[0] for col in cursor.description]
+    return [
+        dict(zip(columns, row))
+        for row in cursor.fetchall()
+    ]
+      
+def my_custom_sql(orgid,day_of_week):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+
+with recursive wt as
+ (select %s::date as level union select level + 1
+    from wt
+   where level < (%s::date + 4)),
+wertung_kind as
+ (select 'a' as kind,
+         1 as wertung union select 'p' as kind,
+         3 as wertung union select 'm' as kind,
+         2 as wertung),
+src as
+ (select t.*, u.last_name || ', ' || u.first_name as user_name
+    from wamytmapp_timerange t
+    left join auth_user u
+      on u.id = t.user_id
+   where --t.user_id in (30)
+   coalesce(t.org_id, -1) = coalesce(%s, t.org_id, -1)
+and t.start <= (%s::date + 4)
+and t.end >= %s::date),
+ce as
+ (select distinct wt.level, src.user_name from src cross join wt),
+asd as
+ (select t.*,
+         case
+           when coalesce(t.lag, 'yaa') != coalesce(t.kind, 'yaa') then
+            1
+         end as ca
+    from (select t.*,
+                 lag(t.kind, 1, 'easd') over(partition by t.user_name order by t.level) as lag
+            from (select t.level,
+                         g.id,
+                         t.user_name,
+                         g.kind,
+                         g.data,
+                         o.wertung,
+                         DENSE_RANK() OVER(partition by t.level, t.user_name order by o.wertung desc) as rn
+                    from ce t
+                    left join src g
+                      on t.user_name = g.user_name
+                     and t.level between g.start and g.end
+                    left join wertung_kind o
+                      on o.kind = g.kind) t
+           where rn = 1) t),
+baum as
+ (select t.*,
+         1 as lvl,
+         coalesce(t.id, to_char(t.level, 'YYYYMMDD') ::integer) as root
+    from asd t
+   where ca = 1
+  union
+  select t.*, lvl + 1, g.root
+    from asd t
+    join baum g
+      on t.user_name = g.user_name
+     and t.level = g.level + 1
+     and coalesce(t.kind, 'y') = coalesce(g.kind, 'y'))
+
+select user_name,
+       kind,
+       data->>'v' as data_v,
+       data->>'desc' as desc,
+       min(level),
+       max(lvl) as span,
+       dense_rank() over(partition by user_name order by min(level)) as dn
+  from baum
+ group by root, user_name, kind, data
+ order by user_name, min(level)
 
 
+ """, (day_of_week,day_of_week,orgid,day_of_week,day_of_week))
+        row = dictfetchall(cursor)
+	
+    return row
+    
+#class myBericht_Manager(models.Manager):
+#	def queryBericht(self):
+#		qu = super().raw('''
+#		with recursive wt as
+# (select cast('2021-12-06' as date) as level union select level + 1
+#    from wt
+#   where level < '2021-12-10'
+#  ),
+#data as
+# (select *
+#    from wamytmapp_timerange t
+#   where t.org_id = coalesce(9540,t.org_id)
+#     and t.start <= '2021-12-10'
+#     and t.end >= '2021-12-06'
+#     and t.id in (23400, 17770)
+# )
+#select g.id
+#from wt t
+#left join data g
+#on t.level between g.start and g.end
+#left join auth_user u 
+#on u.id = g.user_id
+#        	''')
+#		return qu
+
+#class myBericht(models.Model):
+#	level = models.DateField()
+#	kind = models.CharField(max_length=1)
+#	user_name = models.CharField(max_length=255)
+#	objects = myBericht_Manager()
+
+
+class odb_org_Manager(models.Manager):		
+	def selectListItemsWithAllChoice(self):
+	        all_org_units = super().all()
+	        toplevel = get_children(all_org_units)
+	        toplevel.insert(0, ("", pgettext_lazy('OrgUnitManager', "All")))
+	        return toplevel
+
+class odb_org(models.Model):
+	id = models.BigIntegerField(primary_key=True)
+	name = models.CharField(max_length=255)
+	parent = models.ForeignKey('self', on_delete=models.DO_NOTHING, blank=True, null=True)
+	objects = odb_org_Manager()
+	class Meta:
+		managed = False
+		db_table = 'mv_odb_org'
+	
+	
 class TeamMemberManager(models.Manager):
     pass
 
@@ -164,7 +317,8 @@ class TimeRangeManager(models.Manager):
         )
 
         if orgunits is not None:
-            query = query.filter(orgunit__in=orgunits)
+            #query = query.filter(orgunit__in=orgunits)
+            query = query.filter(org_id__in=orgunits)
 
         if userid is not None:
             query = query.filter(user__id=userid)
@@ -216,6 +370,7 @@ class TimeRange(models.Model):
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT,
                             verbose_name=pgettext_lazy('TimeRange', 'Kind of time range'))
     data = models.JSONField(encoder=DjangoJSONEncoder)
+    org_id = models.IntegerField(blank=True, null=True)
     history = HistoricalRecords()
 
     objects = TimeRangeManager()
@@ -243,7 +398,9 @@ class TimeRange(models.Model):
 
     def __str__(self):
         s = pgettext_lazy('TimeRangeStr', "TimeRange")
-        return str(format_lazy('{s}({start}, {end})', s=s, start=self.start, end=self.end))
+        #return str(format_lazy('{s}({start}, {end})', s=s, start=self.start, end=self.end))
+        return str(format_lazy('{s}({team}|{user}: {start}, {end})', s=s, team=self.org_id, user=self.user_id, start=self.start, end=self.end))
+        
 
     def kind_with_details(self):
         r = self.kind
@@ -427,5 +584,6 @@ def get_children(org_units: List[OrgUnit]):
 
 
 def user_display_name(user):
-    full_name = user.get_full_name()
+    #full_name = user.get_full_name()
+    full_name = user.last_name + ", " + user.first_name
     return full_name if full_name != "" else user.username

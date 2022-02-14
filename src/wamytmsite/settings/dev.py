@@ -25,7 +25,15 @@ DATABASES = {
 #        'ENGINE': 'django.db.backends.sqlite3',
 #        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #    }
-
+#  Oracle
+#	'default': {
+#		'ENGINE': 'django.db.backends.oracle',
+#        	'NAME': '(DESCRIPTION=(ADDRESS = (PROTOCOL = TCP)(HOST = ***REMOVED***)(PORT = 1521))(CONNECT_DATA=(SERVICE_NAME=***REMOVED***)))',
+#        	'USER': 'KO',
+#        	'PASSWORD': '***REMOVED***',
+#        	'HOST': '',
+#        	'PORT': '',
+#	}
 # Postgres
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',

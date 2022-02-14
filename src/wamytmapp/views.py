@@ -1,5 +1,7 @@
 import csv
 import datetime
+#import cProfile
+#import pstats
 from django_ical.views import ICalFeed
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError, PermissionDenied, SuspiciousOperation
@@ -15,10 +17,10 @@ from rest_framework.views import APIView
 from typing import List
 
 from .config import RuntimeConfig
-from .models import TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name, TimeRangeManager
+from .models import my_custom_sql, TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name, TimeRangeManager
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
 from .serializers import TimeRangeSerializer
-
+from .models import OrgUnit
 
 class DayHeader:
     def __init__(self, day: datetime.date):
@@ -119,14 +121,29 @@ def index(request):
     for weekday in range(5):
         dh = DayHeader(monday + datetime.timedelta(days=weekday))
         days.append(dh)
+    
+        
+    #p = cProfile.Profile()
+    #p.enable()
     timeranges, alldayevents = query_events_timeranges_in_week(
         day_of_week=monday, orgunit=orgunit, users=users)
+       
+                
+    timeranges_thisweek = _prepareWeekdata(timeranges)
+                
+    meins = my_custom_sql(orgid=orgunit,day_of_week=monday)
+    
+    #p.disable()
+    #stats = pstats.Stats(p).sort_stats('cumtime')
+    #stats.print_stats()
+   
     for alldayevent in alldayevents:
         for dh in days:
             if dh.day == alldayevent.day:
                 dh.allday = alldayevent
     timeranges_thisweek = _prepareWeekdata(timeranges)
     context = {
+        'meins' : meins,
         'this_week': timeranges_thisweek,
         'days': days,
         'trc': RuntimeConfig.TimeRangeViewsLegend,

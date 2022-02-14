@@ -6,3 +6,6 @@
 /src/wamytmsite/staticfiles
 /src/htmlcov/
 /src/.coverage
+
+.venv/
+*.swp
