@@ -40,3 +40,23 @@ body {
 .embedded .hide-embedded {
     display: none;
 }
+#grid_table {
+    display: grid;
+    grid-template-columns: 250px 165px 165px 165px 165px 165px;
+    grid-row-gap: 3px;
+    grid-column-gap: 1px;
+}
+#grid_table .th {
+    font-weight: bold;
+}
+#grid_table div:not(.th) {
+    text-align: center;
+}
+#grid_table div {
+    padding: 5px;
+    border-radius: 15px;
+}
+
+#dev td {
+    vertical-align: top;
+}

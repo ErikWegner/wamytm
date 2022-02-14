@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import pgettext_lazy
 
 from .fields import OverlapActionsField
-from .models import OrgUnit, OrgUnitDelegate, TimeRange, TeamMember, user_display_name
+from .models import odb_org, OrgUnit, OrgUnitDelegate, TimeRange, TeamMember, user_display_name, OMS
 from .config import RuntimeConfig
 
 
@@ -96,6 +96,7 @@ class AddTimeRangeForm(forms.Form):
         widget=forms.widgets.DateInput(attrs=dateInputAttrs))
     orgunit_id = forms.ChoiceField(
         required=True,
+        disabled=True,
         help_text=pgettext_lazy(
             'AddTimeRangeForm', 'Entry will be visible to this and all organizational units above'),
         label=pgettext_lazy('AddTimeRangeForm', 'Organizational unit'))
@@ -125,11 +126,19 @@ class AddTimeRangeForm(forms.Form):
         self.can_delegate = self.user.orgunitdelegate_set.count() > 0
         super(AddTimeRangeForm, self).__init__(*args, **kwargs)
         self.fields['user'].initial = self.user.id
-        self.fields['user'].choices = [
-            (self.user.id, user_display_name(self.user))]
-        self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
-        self.fields['orgunit_id'].initial = TeamMember.objects.get(
-            pk=self.user.id).orgunit_id
+        self.fields['user'].choices = [(self.user.id, user_display_name(self.user))]
+
+
+        #self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
+        self.fields['orgunit_id'].choices = odb_org.objects.selectListItemsWithAllChoice()
+
+        #self.fields['orgunit_id'].initial = TeamMember.objects.get(pk=self.user.id).orgunit_id
+        #print(TeamMember.objects.get(pk=self.user.id).orgunit_id)
+        self.fields['orgunit_id'].initial = OMS.objects.getORG_ID(self.user.id).M2O_ORG_ID
+        #print(OMS.objects.getORG_ID(self.user.id).M2O_ORG_ID)
+
+
+        
         self._setupKindChoices()
         if self.can_delegate:
             userfield = self.fields['user']
@@ -181,7 +190,8 @@ class FrontPageFilterForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['orgunit'].choices = OrgUnit.objects.selectListItemsWithAllChoice()
+        #self.fields['orgunit'].choices = OrgUnit.objects.selectListItemsWithAllChoice()
+        self.fields['orgunit'].choices = odb_org.objects.selectListItemsWithAllChoice()
 
     def clean(self):
         cleaned_data = super().clean()
