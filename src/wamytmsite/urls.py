@@ -14,8 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
-from django.conf.urls import url
+from django.urls import include, path, re_path
 from django.shortcuts import redirect
 from django.http import HttpResponse
 
@@ -25,7 +24,9 @@ urlpatterns = [
     path('cal/', include('wamytmapp.urls')),
     path('admin/', admin.site.urls),
     path('ka/', korporator_admin.urls, name="ka"),
-    url('', include('social_django.urls', namespace='social')),
-    url(r'^$', lambda request: redirect('cal/', permanent=False)),
-    url(r'^status/health$', lambda request: HttpResponse('ok'))
+    path('', include('social_django.urls', namespace='social')),
+    path('', include('django_prometheus.urls')),
+    re_path(r'^$', lambda _: redirect('cal/', permanent=False)),
+    re_path(r'^status/up$', lambda _: HttpResponse('ok')),
+    re_path(r'^status/ht/', include('health_check.urls'))
 ]

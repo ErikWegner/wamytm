@@ -28,9 +28,9 @@ DATABASES = {
 #  Oracle
 #	'default': {
 #		'ENGINE': 'django.db.backends.oracle',
-#        	'NAME': '(DESCRIPTION=(ADDRESS = (PROTOCOL = TCP)(HOST = srv904.intra.regiocom.net)(PORT = 1521))(CONNECT_DATA=(SERVICE_NAME=orav904)))',
+#        	'NAME': '(DESCRIPTION=(ADDRESS = (PROTOCOL = TCP)(HOST = ***REMOVED***)(PORT = 1521))(CONNECT_DATA=(SERVICE_NAME=***REMOVED***)))',
 #        	'USER': 'KO',
-#        	'PASSWORD': '8LATeZ4t',
+#        	'PASSWORD': '***REMOVED***',
 #        	'HOST': '',
 #        	'PORT': '',
 #	}

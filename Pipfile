@@ -23,6 +23,8 @@ djangorestframework = "*"
 django-rest-framework-social-oauth2 = "*"
 django-ical = "*"
 django-simple-history = "*"
+django-prometheus = "*"
+django-health-check = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
