@@ -8,6 +8,7 @@
 * New: Django 4
 * New: Health check endpoint `status/ht/`
 * New: prometheus monitoring
+* Change: Build docker image through github workflow action
 
 # Version 16
 
