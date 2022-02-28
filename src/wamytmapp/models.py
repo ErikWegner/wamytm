@@ -10,6 +10,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.text import format_lazy
 from django.utils.translation import pgettext_lazy
+from django_prometheus.models import ExportModelOperationsMixin
 from simple_history.models import HistoricalRecords
 from typing import List
 
@@ -348,7 +349,7 @@ class TimeRangeManager(models.Manager):
         return r
 
 
-class TimeRange(models.Model):
+class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
     DATA_KINDDETAIL = 'kinddetail'
     DATA_DESCRIPTION = 'desc'
     DATA_PARTIAL = 'partial'

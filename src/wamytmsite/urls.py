@@ -25,6 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('ka/', korporator_admin.urls, name="ka"),
     path('', include('social_django.urls', namespace='social')),
+    path('', include('django_prometheus.urls')),
     re_path(r'^$', lambda _: redirect('cal/', permanent=False)),
     re_path(r'^status/up$', lambda _: HttpResponse('ok')),
     re_path(r'^status/ht/', include('health_check.urls'))
