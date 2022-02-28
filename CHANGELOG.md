@@ -1,6 +1,13 @@
 # Next Version
 
-tba
+# Version 17
+
+* Breaking: organizational unit assigned through external data
+* Breaking: Readiness probe endpoint changed to `status/up`
+* New: Python 10
+* New: Django 4
+* New: Health check endpoint `status/ht/`
+* New: prometheus monitoring
 
 # Version 16
 

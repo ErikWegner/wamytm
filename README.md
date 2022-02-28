@@ -47,7 +47,7 @@ New documentation is avalable at https://erikwegner.github.io/wamytm/
   - Open Keycloak by visiting https://localhost:8443/auth/
   - Temporarily accept certificate
 - Korporator setup
-  - Install [Python 3.9](https://www.python.org/downloads/)
+  - Install [Python 3.10](https://www.python.org/downloads/)
   - Install [pipenv](https://pipenv.readthedocs.io/): `pip install pipenv`
   - Enter pipenv environment: `pipenv shell`
   - Install dependencies: `PIPENV_VENV_IN_PROJECT="enabled" pipenv install --dev`
