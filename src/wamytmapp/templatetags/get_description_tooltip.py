@@ -11,7 +11,7 @@ def get_description_tooltip(value):
     if TimeRange.DATA_DESCRIPTION not in value:
         return ''
     description = value[TimeRange.DATA_DESCRIPTION]
-    if description == "":
+    if description is None:
         return ''
     description = escape(description)
     return mark_safe(f'<span data-toggle="tooltip" title="{description}">💬</span>')

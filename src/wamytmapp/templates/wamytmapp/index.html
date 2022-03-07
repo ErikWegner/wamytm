@@ -75,7 +75,7 @@
 {% if item.kind == None %}
 <div style="grid-column: span {{ item.span }};" class="empty"></div>
 {% else %}
-<div style="grid-column: span {{ item.span }};" class="kind-{{ item.kind }}">{{ trc|get_value_from_dict:item.kind }}{{ item|get_description_tooltip }}</div>
+<div style="grid-column: span {{ item.span }};" class="kind-{{ item.kind }}{{ item.partial }}">{{ item|get_partial_symbol }}{{ trc|get_value_from_dict:item.kind }}{{ item|get_description_tooltip }}</div>
 {% endif %}
 {% endfor %}       
 </div>

@@ -1,13 +1,29 @@
 .presence .kind-a {
     background-color: #d66262;
 }
-
 .presence .kind-p {
     background-color: #8fbc8f;
 }
-
 .presence .kind-m {
     background-color: #8292ee;
+}
+.presence .kind-ma {
+    background: linear-gradient(110deg, #aaa 40%, #8292ee 40%);
+}
+.presence .kind-mf {
+    background: linear-gradient(110deg, #8292ee 60%, #aaa 60%);
+}
+.presence .kind-aa {
+    background: linear-gradient(110deg, #aaa 40%,#d66262 40%);
+}
+.presence .kind-af {
+    background: linear-gradient(110deg, #d66262 60%, #aaa 60%,);
+}
+.presence .kind-pa {
+    background: linear-gradient(110deg, #aaa 40%,#8fbc8f 40%);
+}
+.presence .kind-pf {
+    background: linear-gradient(110deg, #8fbc8f 60%, #aaa 60%,);
 }
 
 .presence .kind-mp {

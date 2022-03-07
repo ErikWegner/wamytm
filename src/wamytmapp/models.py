@@ -142,11 +142,15 @@ ce as
 asd as
  (select t.*,
          case
-           when coalesce(t.lag, 'yaa') != coalesce(t.kind, 'yaa') then
+           when coalesce(t.lag, 'yaa') != coalesce(t.kind, 'yaa')
+           or coalesce(t.lag_data->>'desc','yaa') != coalesce(t.data->>'desc','yaa')
+           or coalesce(t.lag_data->>'partial','yaa') != coalesce(t.data->>'partial','yaa')
+           then
             1
          end as ca
     from (select t.*,
-                 lag(t.kind, 1, 'easd') over(partition by t.user_name order by t.level) as lag
+                 lag(t.kind, 1, 'easd') over(partition by t.user_name order by t.level) as lag,
+                 lag(t.data, 1) over(partition by t.user_name order by t.level) as lag_data
             from (select t.level,
                          g.id,
                          t.user_name,
@@ -163,8 +167,8 @@ asd as
            where rn = 1) t),
 baum as
  (select t.*,
-         1 as lvl,
-         coalesce(t.id, to_char(t.level, 'YYYYMMDD') ::integer) as root
+        1 as lvl,
+        to_char(t.level, 'DDD')::INTEGER as root
     from asd t
    where ca = 1
   union
@@ -172,13 +176,15 @@ baum as
     from asd t
     join baum g
       on t.user_name = g.user_name
+     and coalesce(t.data,'{}'::jsonb) = coalesce(g.data,'{}'::jsonb)
      and t.level = g.level + 1
      and coalesce(t.kind, 'y') = coalesce(g.kind, 'y'))
 
 select user_name,
-       kind,
+       kind, 
        data->>'v' as data_v,
        data->>'desc' as desc,
+       coalesce(data->>'partial','') as partial,
        min(level),
        max(lvl) as span,
        dense_rank() over(partition by user_name order by min(level)) as dn
@@ -189,6 +195,7 @@ select user_name,
 
  """, (day_of_week,day_of_week,orgid,day_of_week,day_of_week))
         row = dictfetchall(cursor)
+    print(day_of_week)
 	
     return row
     
