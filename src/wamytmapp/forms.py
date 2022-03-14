@@ -96,7 +96,7 @@ class AddTimeRangeForm(forms.Form):
         widget=forms.widgets.DateInput(attrs=dateInputAttrs))
     orgunit_id = forms.ChoiceField(
         required=True,
-        disabled=True,
+        disabled=False,
         help_text=pgettext_lazy(
             'AddTimeRangeForm', 'Entry will be visible to this and all organizational units above'),
         label=pgettext_lazy('AddTimeRangeForm', 'Organizational unit'))
@@ -129,15 +129,11 @@ class AddTimeRangeForm(forms.Form):
         self.fields['user'].choices = [(self.user.id, user_display_name(self.user))]
 
 
-        #self.fields['orgunit_id'].choices = OrgUnit.objects.selectListItems()
         self.fields['orgunit_id'].choices = odb_org.objects.selectListItemsWithAllChoice()
-
-        #self.fields['orgunit_id'].initial = TeamMember.objects.get(pk=self.user.id).orgunit_id
-        #print(TeamMember.objects.get(pk=self.user.id).orgunit_id)
-        self.fields['orgunit_id'].initial = OMS.objects.getORG_ID(self.user.id).M2O_ORG_ID
-        #print(OMS.objects.getORG_ID(self.user.id).M2O_ORG_ID)
-
-
+        M2O_ORG_ID = OMS.objects.getORG_ID(self.user.id)
+        if M2O_ORG_ID is not None:
+            self.fields['orgunit_id'].initial = M2O_ORG_ID.M2O_ORG_ID
+            self.fields['orgunit_id'].disabled = True
         
         self._setupKindChoices()
         if self.can_delegate:

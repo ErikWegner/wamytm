@@ -24,8 +24,12 @@ class OMSManager(models.Manager):
 join "ODB_MITARBEITER2STRUKT" g
 on t.mit_id=g."M2O_MIT_ID"
 and date_trunc('day',NOW()) between g."M2O_VON" and coalesce(g."M2O_BIS",date_trunc('day',NOW()))
-where t.user_id = %s
+where t.user_id =    %s
         ''', params=[user_id])
+
+        if len(qu) == 0:
+            return None
+
         return qu[0]
 
 class OMS(models.Model):

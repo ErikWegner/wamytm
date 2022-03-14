@@ -136,7 +136,7 @@ def index(request):
     #p.disable()
     #stats = pstats.Stats(p).sort_stats('cumtime')
     #stats.print_stats()
-   
+
     for alldayevent in alldayevents:
         for dh in days:
             if dh.day == alldayevent.day:
