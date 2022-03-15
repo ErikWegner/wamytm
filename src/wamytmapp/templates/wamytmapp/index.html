@@ -7,62 +7,58 @@
 
 {% block content %}
 {% get_current_language as LANGUAGE_CODE %}
-<h2 class="hide-embedded">{% trans "Week view" context "IndexTemplate" %}</h2>
 
-<button type="button" onclick="go_week(-1);" class="btn btn-dark"
-    role="button">{% trans "Previous week" context "IndexTemplate" %}</button>
+<h2 class="hide-embedded">{% trans "Week view" context "IndexTemplate" %}</h2>
+<div class="row align-items-center">
+    <div class="col-md-3">
+<button type="button" onclick="go_week(-1);" class="btn btn-dark bi bi-caret-left-fill"
+    role="button"></button>
 <button type="button" onclick="setWeekdeltaAndSubmit(0);" class="btn btn-light"
     role="button">{% trans "Current week" context "IndexTemplate" %}</button>
-<button type="button" onclick="go_week(1);" class="btn btn-dark"
-    role="button">{% trans "Next week" context "IndexTemplate" %}</button>
-<button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseFilter" aria-expanded="false"
-    aria-controls="collapseFilter">
-    {% trans "Filters" context "IndexTemplate" %}
+<button type="button" onclick="go_week(1);" class="btn btn-dark bi-caret-right-fill"
+    role="button"></button>
 </button>
-
-
-<form action="{% url 'wamytmapp:index' %}" method="get" role="form" id="filterform">
-    {% if embeded %}{% bootstrap_field filterform.embed %}{% endif %}
-    {% bootstrap_field filterform.weekdelta %}
-    {% if users %}{% bootstrap_field filterform.users %}{% endif %}
-    <div class="collapse mt-2 show" id="collapseFilter">
-        <div class="card card-body d-flex flex-row">
-            <div class="row">
-                <div class="col-md-6 col-12">
-                    {% bootstrap_field filterform.orgunit show_label=False %}
+</div>
+<div class="col">
+    <form action="{% url 'wamytmapp:index' %}" method="get" role="form" id="filterform">
+        {% if embeded %}{% bootstrap_field filterform.embed %}{% endif %}
+        {% bootstrap_field filterform.weekdelta %}
+        {% if users %}{% bootstrap_field filterform.users %}{% endif %}
+            <div class="mt-2 d-flex flex-row">
+                <div class="row">
+                    <div class="col-md-6">
+                        {% bootstrap_field filterform.orgunit show_label=False form_group_class=False%}
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" id="filterDate" data-provide="datepicker" data-date-calendar-weeks="true"
+                        data-date-format="yyyy-mm-dd" data-date-today-highlight="true" data-date-week-start="1"
+                        data-date-today-btn="true" data-date-language="{{ LANGUAGE_CODE }}"
+                        class="form-control d-inline" title="">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" id="goToDate"
+                        class="btn btn-secondary d-inline">{% trans "Go" context "IndexTemplateFilters" %}</button>
+                    </div>
                 </div>
-                <div class="col-md-4 col-10">
-                    <input type="text" id="filterDate" data-provide="datepicker" data-date-calendar-weeks="true"
-                    data-date-format="yyyy-mm-dd" data-date-today-highlight="true" data-date-week-start="1"
-                    data-date-today-btn="true" data-date-language="{{ LANGUAGE_CODE }}"
-                    class="form-control d-inline w-auto" title="">
-                </div>
-                <div class="col-md-2 col-2">
-                    <button type="button" id="goToDate"
-                    class="btn btn-secondary d-inline">{% trans "Go" context "IndexTemplateFilters" %}</button>
-                </div>
+                <script>
+                $('#goToDate').on('click', function () {
+                    var d = $('#filterDate').datepicker('getDate');
+                    if (!d) {
+                        return;
+                    }
+                    var d_minutes = (d.getTime() / 1000 / 60 - d.getTimezoneOffset());
+                    var d_monday = Math.floor(d_minutes / 60 / 24) - ((d.getDay() + 6) % 7);
+                    var today = new Date();
+                    var t_monday = Math.floor((today.getTime() / 1000 / 60 - today.getTimezoneOffset()) / 60 / 24) - ((today.getDay() + 6) % 7);
+                    var delta = (d_monday - t_monday) / 7;
+                    setWeekdeltaAndSubmit(delta);
+                });
+                </script>
             </div>
-            <script>
-            $('#goToDate').on('click', function () {
-                var d = $('#filterDate').datepicker('getDate');
-                if (!d) {
-                    return;
-                }
-                var d_minutes = (d.getTime() / 1000 / 60 - d.getTimezoneOffset());
-                var d_monday = Math.floor(d_minutes / 60 / 24) - ((d.getDay() + 6) % 7);
-                var today = new Date();
-                var t_monday = Math.floor((today.getTime() / 1000 / 60 - today.getTimezoneOffset()) / 60 / 24) - ((today.getDay() + 6) % 7);
-                var delta = (d_monday - t_monday) / 7;
-                setWeekdeltaAndSubmit(delta);
-            });
-            </script>
-        </div>
-    </div>
-</form>
+    </form>
+</div>
+</div>
 
-<!--
-<table id="dev"><tr><td>
--->
 <div id="grid_table" class="presence">
 <div class="th">{% trans "Person" context "IndexTemplate" %}</div>
 {% for day in days %}
@@ -79,38 +75,6 @@
 {% endif %}
 {% endfor %}       
 </div>
-<!--
-</td><td>
-
-{% spaceless %}
-<table class="table table-sm presence mt-3">
-    <thead>
-        <tr>
-            <th scope="col">{% trans "Person" context "IndexTemplate" %}</th>
-            {% for day in days %}
-            <th scope="col" {% if day.allday %} class="allday" {% endif %}>
-                {% if day.allday %}{{ day.allday.description }}<br>{% endif %}{{ day.day }}</th>
-            {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in this_week %}
-        <tr>
-            <th scope="row">{{ item.username }}</th>
-            {% for day in item.days %}
-            {% if day == 0%}
-            <td class="empty"></td>
-            {% else %}
-            <td class="kind-{{ day.k }}">{{ trc|get_value_from_dict:day.k }}{{ day|get_partial_symbol }}{{ day|get_description_tooltip }}</td>
-            {% endif %}
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endspaceless %}
-</td></tr></table>
--->
 
 <a class="hide-embedded" href="{% url 'wamytmapp:weekCSV' %}?kind=m&weekdelta={{ weekdelta }}"
     role="">{% trans "Report Mobile Workers" context "IndexTemplate" %}</a>

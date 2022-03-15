@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/bootstrap.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/bootstrap-datepicker.standalone.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/bootstrap-icons.css' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'wamytmapp/favicon/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'wamytmapp/favicon/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'wamytmapp/favicon/favicon-16x16.png' %}">
@@ -47,8 +48,6 @@
                         href="{% url 'wamytmapp:add' %}">{% trans "Add date" context "BaseTemplate" %}</a>
                     <a class="nav-item nav-link"
                         href="{% url 'wamytmapp:list1' %}">{% trans "3 months ahead view" context "BaseTemplate" %}</a>
-                    <a class="nav-item nav-link"
-                        href="{% url 'wamytmapp:profile' %}">{% trans "Profile" context "BaseTemplate" %}</a>
                     {% if user.is_authenticated %}
                     <a class="nav-item nav-link"
                         href="{% url 'ka:index' %}">{% trans "Administration" context "BaseTemplate" %}</a>

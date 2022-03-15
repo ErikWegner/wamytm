@@ -2,6 +2,8 @@
 
 # Version 17
 
+* Change: Filterlayout 
+* New: Pillow renderer
 * Breaking: organizational unit assigned through external data
 * Breaking: Readiness probe endpoint changed to `status/up`
 * New: Python 3.10
