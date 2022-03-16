@@ -10,7 +10,7 @@
 
     function overlapactionsselection(id, res) {
         const restxt = wamytmi18n['res_' + res];
-        return ('<input class="overlapaction" type="checkbox" data-trid="' + 
+        return ('<input checked="" class="overlapaction" type="checkbox" data-trid="' + 
         id + '" name="overlap_actions" value="' + id + ':' + res + '"> ' + restxt)
     }
 
