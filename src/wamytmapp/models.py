@@ -24,7 +24,7 @@ class OMSManager(models.Manager):
 join "ODB_MITARBEITER2STRUKT" g
 on t.mit_id=g."M2O_MIT_ID"
 and date_trunc('day',NOW()) between g."M2O_VON" and coalesce(g."M2O_BIS",date_trunc('day',NOW()))
-where t.user_id =    %s
+where t.user_id = %s
         ''', params=[user_id])
 
         if len(qu) == 0:
@@ -133,7 +133,7 @@ wertung_kind as
          3 as wertung union select 'm' as kind,
          2 as wertung),
 src as
- (select t.*, u.last_name || ', ' || u.first_name as user_name
+ (select t.*, u.last_name || ', '  || u.first_name || ' (' || upper(substr(u.username,2)) || ')' as user_name
     from wamytmapp_timerange t
     left join auth_user u
       on u.id = t.user_id
@@ -250,7 +250,17 @@ class odb_org(models.Model):
 	class Meta:
 		managed = False
 		db_table = 'mv_odb_org'
-	
+
+class ODB_MITARBEITER2STRUKT(models.Model):
+    m2o_id = models.IntegerField(primary_key=True)
+    m2o_mit_id = models.BigIntegerField()
+    m2o_org_id = models.IntegerField()
+    m2o_von = models.DateField()
+    m2o_bis = models.DateField(blank=True)
+    m2o_typ = models.IntegerField()
+    class Meta:
+        managed = False
+        db_table = 'ODB_MITARBEITER2STRUKT'
 	
 class TeamMemberManager(models.Manager):
     pass
@@ -374,8 +384,7 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              verbose_name=pgettext_lazy('TimeRange', 'User'))
-    orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE,
-                                verbose_name=pgettext_lazy('TimeRange', 'Organizational unit'))
+    orgunit = models.ForeignKey(OrgUnit,blank=True, on_delete=models.CASCADE,verbose_name=pgettext_lazy('TimeRange', 'Organizational unit'))
     start = models.DateField(verbose_name=pgettext_lazy('TimeRange', 'Start'))
     end = models.DateField(
         blank=True, verbose_name=pgettext_lazy('TimeRange', 'End'))

@@ -20,7 +20,7 @@ from .config import RuntimeConfig
 from .models import my_custom_sql, TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name, TimeRangeManager
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
 from .serializers import TimeRangeSerializer
-from .models import OrgUnit
+from .models import OrgUnit, OMS, ODB_MITARBEITER2STRUKT
 
 class DayHeader:
     def __init__(self, day: datetime.date):
@@ -226,22 +226,31 @@ def add(request):
 def list1(request):
     filterformvalues = request.GET.copy()
     if request.user is not None and request.user.is_authenticated and 'orgunit' not in filterformvalues:
-        tm = TeamMember.objects.filter(pk=request.user.id)
-        if tm.exists():
-            filterformvalues['orgunit'] = tm.first().orgunit_id
+        mit_id = OMS.objects.filter(user=request.user.id)
+        if mit_id.exists():
+            org_id = ODB_MITARBEITER2STRUKT.objects.filter(m2o_mit_id=mit_id.first().mit_id)
+            #mit_id.first().mit_id
+
+        #mit_id = OMS.objects.getORG_ID(user_id=request.user.id)
+        #tm = TeamMember.objects.filter(pk=request.user.id)
+        #if tm.exists():
+        #if (mit_id is not None):
+            #filterformvalues['orgunit'] = tm.first().orgunit_id
+            #filterformvalues['orgunit'] = 
     filterform = OrgUnitFilterForm(filterformvalues)
+
     orgunitparamvalue = None
     start = None
     end = None
     orgunit = None
     if filterform.is_valid():
         startparamvalue = filterform.cleaned_data['fd']
-        start = datetime.datetime.strptime(
-            startparamvalue, "%Y-%m-%d").date() if startparamvalue else None
+        start = datetime.datetime.strptime(startparamvalue, "%Y-%m-%d").date() if startparamvalue else None
         endparamvalue = filterform.cleaned_data['td']
-        end = datetime.datetime.strptime(
-            endparamvalue, "%Y-%m-%d").date() if endparamvalue else None
+        end = datetime.datetime.strptime(endparamvalue, "%Y-%m-%d").date() if endparamvalue else None
+
         orgunitparamvalue = filterform.cleaned_data['orgunit']
+
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
     (events, alldayevents), start, end = query_events_list1(start, end, orgunit)
     viewdata = _prepareList1Data(events, start, end)

@@ -94,7 +94,8 @@ class AddTimeRangeForm(forms.Form):
         help_text=pgettext_lazy('AddTimeRangeForm',
                                 'If left blank, it will be set to start date'),
         widget=forms.widgets.DateInput(attrs=dateInputAttrs))
-    orgunit_id = forms.ChoiceField(
+    #orgunit_id = forms.ChoiceField(
+    org_id = forms.ChoiceField(
         required=True,
         disabled=False,
         help_text=pgettext_lazy(
@@ -129,11 +130,14 @@ class AddTimeRangeForm(forms.Form):
         self.fields['user'].choices = [(self.user.id, user_display_name(self.user))]
 
 
-        self.fields['orgunit_id'].choices = odb_org.objects.selectListItemsWithAllChoice()
+        #self.fields['orgunit_id'].choices = odb_org.objects.selectListItemsWithAllChoice()
+        self.fields['org_id'].choices = odb_org.objects.selectListItemsWithAllChoice()
         M2O_ORG_ID = OMS.objects.getORG_ID(self.user.id)
         if M2O_ORG_ID is not None:
-            self.fields['orgunit_id'].initial = M2O_ORG_ID.M2O_ORG_ID
-            self.fields['orgunit_id'].disabled = True
+            #self.fields['orgunit_id'].initial = M2O_ORG_ID.M2O_ORG_ID
+            self.fields['org_id'].initial = M2O_ORG_ID.M2O_ORG_ID
+            #self.fields['orgunit_id'].disabled = True
+            self.fields['org_id'].disabled = True
         
         self._setupKindChoices()
         if self.can_delegate:
@@ -161,7 +165,8 @@ class AddTimeRangeForm(forms.Form):
             jsondata[TimeRange.DATA_PARTIAL] = cleaned_data['part_of_day']
         initData = {
             'user_id': cleaned_data['user_id'],
-            'orgunit_id': cleaned_data['orgunit_id'],
+            #'orgunit_id': cleaned_data['orgunit_id'],
+            'org_id': cleaned_data['org_id'],
             'start': cleaned_data['start'],
             'end': cleaned_data['end'],
             'kind': complexKind[:1],
@@ -208,7 +213,8 @@ class OrgUnitFilterForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['orgunit'].choices = OrgUnit.objects.selectListItemsWithAllChoice()
+        #self.fields['orgunit'].choices = OrgUnit.objects.selectListItemsWithAllChoice()
+        self.fields['orgunit'].choices = odb_org.objects.selectListItemsWithAllChoice()
 
 
 class ProfileForm(forms.Form):

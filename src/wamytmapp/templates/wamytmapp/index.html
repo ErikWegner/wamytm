@@ -11,12 +11,16 @@
 <h2 class="hide-embedded">{% trans "Week view" context "IndexTemplate" %}</h2>
 <div class="row align-items-center">
     <div class="col-md-3">
-<button type="button" onclick="go_week(-1);" class="btn btn-dark bi bi-caret-left-fill"
-    role="button"></button>
+<button type="button" onclick="go_week(-1);" class="btn btn-dark"
+    role="button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
+        <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+      </svg></button>
 <button type="button" onclick="setWeekdeltaAndSubmit(0);" class="btn btn-light"
     role="button">{% trans "Current week" context "IndexTemplate" %}</button>
-<button type="button" onclick="go_week(1);" class="btn btn-dark bi-caret-right-fill"
-    role="button"></button>
+<button type="button" onclick="go_week(1);" class="btn btn-dark"
+    role="button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+        <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+      </svg></button>
 </button>
 </div>
 <div class="col">
@@ -62,7 +66,7 @@
 <div id="grid_table" class="presence">
 <div class="th">{% trans "Person" context "IndexTemplate" %}</div>
 {% for day in days %}
-<div class="th {% if day.allday %} allday{% endif %}">{% if day.allday %}{{ day.allday.description }}<br>{% endif %}{{ day.day }}</div>
+<div class="header th {% if day.allday %} allday{% endif %}" >{% if day.allday %}{{ day.allday.description }}<br>{% endif %}{{ day.day }}</div>
 {% endfor %}
 {% for item in meins %}
 {% if item.dn == 1 %}

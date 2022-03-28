@@ -11,7 +11,7 @@
     background: linear-gradient(110deg, #aaa 40%, #8292ee 40%);
 }
 .presence .kind-mf {
-    background: linear-gradient(110deg, #8292ee 60%, #aaa 60%);
+    background: linear-gradient(110deg, #8292ee 60px, #aaa 60px);
 }
 .presence .kind-aa {
     background: linear-gradient(110deg, #aaa 40%,#d66262 40%);
@@ -58,12 +58,15 @@ body {
 }
 #grid_table {
     display: grid;
-    grid-template-columns: 250px 165px 165px 165px 165px 165px;
+    grid-template-columns: 270px 166px 166px 166px 166px 166px;
     grid-row-gap: 3px;
     grid-column-gap: 1px;
 }
 #grid_table .th {
     font-weight: bold;
+}
+#grid_table .header {
+    text-align: center;
 }
 #grid_table div:not(.th) {
     text-align: center;
