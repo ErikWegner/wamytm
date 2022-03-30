@@ -1,12 +1,48 @@
+class WordCount extends HTMLTableRowElement {
+    constructor() {
+      super();
+      this.appendChild(document.createElement('td')).scope = "row";
+      [...Array(3).keys()].map(e=>this.appendChild(document.createElement('td')));
+    }
+    setData(p_val) {
+        Array.from(this.children).map((e,n) => e.innerHTML=p_val[n]);
+    }
+}
+customElements.define('word-count', WordCount, {extends: "tr"});
+
+function getXHRRequestPromise(body) {
+	return new Promise(function(resolve, reject) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', wamytmroot + 'check');
+        xhr.withCredentials = true;
+		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+		xhr.send(JSON.stringify(body));
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4 && xhr.status === 204) {
+				resolve(xhr.getResponseHeader(desiredHeader));
+			} else {
+				reject({
+                   status: this.status,
+                   statusText: xhr.statusText
+                 });
+			}
+		};
+	});
+}
+
 (function ($) {
     const log = function() {};
 
     const e$ = $('input[name="end"]');
     const s$ = $('input[name="start"]');
     const uid$ = $('select[name="user"]');
+    const part$ = $('select[name="part_of_day"]');
+    const kind$ = $('select[name="kind"]');
+    const desc$ = $('input[name="description"]');
+    
     const csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
-    const spinner$ = $('#submitspinner');
-    const overlappingcontainer$ = $('#overlappingcontainer');
+    const spinner$ = document.getElementById('submitspinner');
+    const overlappingcontainer$ = document.getElementById('overlappingcontainer');
 
     function overlapactionsselection(id, res) {
         const restxt = wamytmi18n['res_' + res];
@@ -20,30 +56,17 @@
     }
 
     function updateTable(data) {
-        overlappingcontainer$.hide();
-        tbody$ = $('tbody', overlappingcontainer$);
-        tbody$.empty();
+        overlappingcontainer$.style.display = (!data || !data.mods || data.mods.length === 0) ? 'none' : '';
 
-        if (!data || !data.mods || data.mods.length === 0) {
-            return
-        }
-        overlappingcontainer$.show();
-
-        let newrow;
-        data.mods.forEach(element => {
-            newrow = ''
-            newrow += '<tr>';
-            newrow += '<td scope="row">' + element.item.id + '</td>'
-            newrow += '<td>' + element.item.start + '</td>'
-            newrow += '<td>' + element.item.end + '</td>'
-            newrow += '<td>' + overlapactionsselection(element.item.id, element.res) + '</td>'
-            newrow += '</tr>';
-            tbody$.append(newrow);
+        let tbody$ = document.querySelector('#overlappingcontainer table tbody');
+        while(tbody$.firstChild) tbody$.removeChild(tbody$.firstChild);
+        
+        data.mods.forEach(e => {
+            tbody$.appendChild(document.createElement('tr', {is: 'word-count'})).setData([e.item.id,e.item.start,e.item.end,overlapactionsselection(e.item.id, e.res)]);
         });
     }
 
     function queryForConflicts() {
-        spinner$.show();
         function csrfSafeMethod(method) {
             // these HTTP methods do not require CSRF protection
             return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
@@ -51,8 +74,10 @@
 
         const startDate = s$.datepicker('getDate');
         if (!startDate) {
-            spinner$.hide();
+            spinner$.style.display = 'none';
             return;
+        } else {
+            spinner$.style.display = '';
         }
 
         const endDate = e$.datepicker('getDate') || startDate;
@@ -78,8 +103,9 @@
             .fail(console.error)
             .always(function () {
                 log("complete");
-                spinner$.hide();
-            });;
+                //spinner$.hide();
+                spinner$.style.display = 'none';
+            });
     }
 
     s$.datepicker().on('changeDate', function (e) {
@@ -91,6 +117,8 @@
     s$.on('change', queryForConflicts);
     e$.on('change', queryForConflicts);
     uid$.on('change', queryForConflicts);
-
+    part$.on('change', queryForConflicts);
+    kind$.on('change', queryForConflicts);
+    desc$.on('change', queryForConflicts);
 
 })(jQuery)

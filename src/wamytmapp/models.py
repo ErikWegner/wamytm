@@ -201,37 +201,6 @@ select user_name,
         row = dictfetchall(cursor)
 	
     return row
-    
-#class myBericht_Manager(models.Manager):
-#	def queryBericht(self):
-#		qu = super().raw('''
-#		with recursive wt as
-# (select cast('2021-12-06' as date) as level union select level + 1
-#    from wt
-#   where level < '2021-12-10'
-#  ),
-#data as
-# (select *
-#    from wamytmapp_timerange t
-#   where t.org_id = coalesce(9540,t.org_id)
-#     and t.start <= '2021-12-10'
-#     and t.end >= '2021-12-06'
-#     and t.id in (23400, 17770)
-# )
-#select g.id
-#from wt t
-#left join data g
-#on t.level between g.start and g.end
-#left join auth_user u 
-#on u.id = g.user_id
-#        	''')
-#		return qu
-
-#class myBericht(models.Model):
-#	level = models.DateField()
-#	kind = models.CharField(max_length=1)
-#	user_name = models.CharField(max_length=255)
-#	objects = myBericht_Manager()
 
 
 class odb_org_Manager(models.Manager):		

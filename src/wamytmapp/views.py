@@ -125,7 +125,7 @@ def index(request):
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
     days = []
-    users = usersStr.split(',') if usersStr else None
+    #users = usersStr.split(',') if usersStr else None
 
     for weekday in range(5):
         days.append(DayHeader(monday + datetime.timedelta(days=weekday)))
@@ -152,6 +152,7 @@ def index(request):
     context['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
     if usersStr:
         context['users'] = usersStr
+
     return render(request, 'wamytmapp/index.html', context)
 
 
