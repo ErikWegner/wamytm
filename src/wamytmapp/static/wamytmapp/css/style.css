@@ -11,7 +11,7 @@
     background: linear-gradient(110deg, #aaa 40%, #8292ee 40%);
 }
 .presence .kind-mf {
-    background: linear-gradient(110deg, #8292ee 60px, #aaa 60px);
+    background: linear-gradient(110deg, #8292ee 60%, #aaa 60%);
 }
 .presence .kind-aa {
     background: linear-gradient(110deg, #aaa 40%,#d66262 40%);

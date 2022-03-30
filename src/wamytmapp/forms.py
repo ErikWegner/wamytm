@@ -191,7 +191,6 @@ class FrontPageFilterForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #self.fields['orgunit'].choices = OrgUnit.objects.selectListItemsWithAllChoice()
         self.fields['orgunit'].choices = odb_org.objects.selectListItemsWithAllChoice()
 
     def clean(self):

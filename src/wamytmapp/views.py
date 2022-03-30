@@ -20,7 +20,8 @@ from .config import RuntimeConfig
 from .models import my_custom_sql, TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name, TimeRangeManager
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
 from .serializers import TimeRangeSerializer
-from .models import OrgUnit, OMS, ODB_MITARBEITER2STRUKT
+from .models import OrgUnit, OMS, ODB_MITARBEITER2STRUKT, AllDayEvent
+
 
 class DayHeader:
     def __init__(self, day: datetime.date):
@@ -107,9 +108,16 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 
 @xframe_options_exempt
 def index(request):
-    filterform = FrontPageFilterForm(request.GET)
+    tempdict = request.GET.copy()
+
+    if request.user is not None and request.user.is_authenticated and 'orgunit' not in request.GET:
+        tempdict['orgunit'] = OMS.objects.getORG_ID(request.user.id).M2O_ORG_ID
+
+    filterform = FrontPageFilterForm(tempdict)
+
     if filterform.is_valid():
         orgunitparamvalue = filterform.cleaned_data['orgunit']
+
     weekdelta = filterform.cleaned_data['weekdelta']
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
     usersStr = filterform.cleaned_data['users'] if 'users' in filterform.cleaned_data else None
@@ -118,33 +126,24 @@ def index(request):
     monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
     days = []
     users = usersStr.split(',') if usersStr else None
+
     for weekday in range(5):
-        dh = DayHeader(monday + datetime.timedelta(days=weekday))
-        days.append(dh)
-    
-        
-    #p = cProfile.Profile()
-    #p.enable()
-    timeranges, alldayevents = query_events_timeranges_in_week(
-        day_of_week=monday, orgunit=orgunit, users=users)
-       
-                
-    timeranges_thisweek = _prepareWeekdata(timeranges)
-                
-    meins = my_custom_sql(orgid=orgunit,day_of_week=monday)
-    
-    #p.disable()
-    #stats = pstats.Stats(p).sort_stats('cumtime')
-    #stats.print_stats()
+        days.append(DayHeader(monday + datetime.timedelta(days=weekday)))
+
+    alldayevents = AllDayEvent.objects.eventsInRange(monday, monday + datetime.timedelta(days=4))
+
+    #timeranges, alldayevents = query_events_timeranges_in_week(day_of_week=monday, orgunit=orgunit, users=users)
+    #timeranges_thisweek = _prepareWeekdata(timeranges)
+
+    meins = my_custom_sql(orgid=orgunit, day_of_week=monday)
 
     for alldayevent in alldayevents:
         for dh in days:
             if dh.day == alldayevent.day:
                 dh.allday = alldayevent
-    timeranges_thisweek = _prepareWeekdata(timeranges)
+
     context = {
-        'meins' : meins,
-        'this_week': timeranges_thisweek,
+        'meins': meins,
         'days': days,
         'trc': RuntimeConfig.TimeRangeViewsLegend,
         'weekdelta': weekdelta,
@@ -227,16 +226,14 @@ def list1(request):
     filterformvalues = request.GET.copy()
     if request.user is not None and request.user.is_authenticated and 'orgunit' not in filterformvalues:
         mit_id = OMS.objects.filter(user=request.user.id)
-        if mit_id.exists():
-            org_id = ODB_MITARBEITER2STRUKT.objects.filter(m2o_mit_id=mit_id.first().mit_id)
-            #mit_id.first().mit_id
+        M2O_ORG_ID = OMS.objects.getORG_ID(request.user.id)
+        if M2O_ORG_ID is not None:
+            filterformvalues['orgunit'] = M2O_ORG_ID.M2O_ORG_ID
 
-        #mit_id = OMS.objects.getORG_ID(user_id=request.user.id)
         #tm = TeamMember.objects.filter(pk=request.user.id)
-        #if tm.exists():
-        #if (mit_id is not None):
+        # if tm.exists():
             #filterformvalues['orgunit'] = tm.first().orgunit_id
-            #filterformvalues['orgunit'] = 
+
     filterform = OrgUnitFilterForm(filterformvalues)
 
     orgunitparamvalue = None
@@ -245,9 +242,11 @@ def list1(request):
     orgunit = None
     if filterform.is_valid():
         startparamvalue = filterform.cleaned_data['fd']
-        start = datetime.datetime.strptime(startparamvalue, "%Y-%m-%d").date() if startparamvalue else None
+        start = datetime.datetime.strptime(
+            startparamvalue, "%Y-%m-%d").date() if startparamvalue else None
         endparamvalue = filterform.cleaned_data['td']
-        end = datetime.datetime.strptime(endparamvalue, "%Y-%m-%d").date() if endparamvalue else None
+        end = datetime.datetime.strptime(
+            endparamvalue, "%Y-%m-%d").date() if endparamvalue else None
 
         orgunitparamvalue = filterform.cleaned_data['orgunit']
 

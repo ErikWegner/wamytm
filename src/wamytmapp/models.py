@@ -199,7 +199,6 @@ select user_name,
 
  """, (day_of_week,day_of_week,orgid,day_of_week,day_of_week))
         row = dictfetchall(cursor)
-    print(day_of_week)
 	
     return row
     
@@ -252,12 +251,12 @@ class odb_org(models.Model):
 		db_table = 'mv_odb_org'
 
 class ODB_MITARBEITER2STRUKT(models.Model):
-    m2o_id = models.IntegerField(primary_key=True)
-    m2o_mit_id = models.BigIntegerField()
-    m2o_org_id = models.IntegerField()
-    m2o_von = models.DateField()
-    m2o_bis = models.DateField(blank=True)
-    m2o_typ = models.IntegerField()
+    M2O_ID = models.IntegerField(primary_key=True)
+    M2O_MIT_ID = models.BigIntegerField()
+    #m2o_org_id = models.IntegerField()
+    M2O_VON = models.DateField()
+    #m2o_bis = models.DateField(blank=True)
+    #m2o_typ = models.IntegerField()
     class Meta:
         managed = False
         db_table = 'ODB_MITARBEITER2STRUKT'
