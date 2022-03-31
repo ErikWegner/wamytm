@@ -1,7 +1,8 @@
 # Next Version
 
 # Version 17
-
+* Sticky header
+* New: default value for Teamfilter (WEK-2094 / issue30)
 * Change: Filterlayout 
 * New: Pillow renderer
 * Breaking: organizational unit assigned through external data

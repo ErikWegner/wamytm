@@ -14,6 +14,8 @@ from django_prometheus.models import ExportModelOperationsMixin
 from simple_history.models import HistoricalRecords
 from typing import List
 
+
+
 class OMSManager(models.Manager):
     def getMIT_ID(self, user_id):
         return super().all().filter(user_id__exact=user_id)[0]
@@ -127,11 +129,6 @@ with recursive wt as
  (select %s::date as level union select level + 1
     from wt
    where level < (%s::date + 4)),
-wertung_kind as
- (select 'a' as kind,
-         1 as wertung union select 'p' as kind,
-         3 as wertung union select 'm' as kind,
-         2 as wertung),
 src as
  (select t.*, u.last_name || ', '  || u.first_name || ' (' || upper(substr(u.username,2)) || ')' as user_name
     from wamytmapp_timerange t
@@ -166,7 +163,7 @@ asd as
                     left join src g
                       on t.user_name = g.user_name
                      and t.level between g.start and g.end
-                    left join wertung_kind o
+                    left join wamytmapp_kind o
                       on o.kind = g.kind) t
            where rn = 1) t),
 baum as
@@ -195,8 +192,6 @@ select user_name,
   from baum
  group by root, user_name, kind, data
  order by user_name, min(level)
-
-
  """, (day_of_week,day_of_week,orgid,day_of_week,day_of_week))
         row = dictfetchall(cursor)
 	
@@ -440,6 +435,9 @@ class AllDayEvent(models.Model):
     def __str__(self):
         return f"All day event on {self.day}: {self.description}"
 
+class KIND(models.Model):
+    kind = models.CharField(choices=TimeRange.KIND_CHOICES, max_length=1,primary_key=True)
+    wertung = models.SmallIntegerField(blank=True, null=True)
 
 class OrgUnitDelegateManager(models.Manager):
     def isDelegateForUser(self, request, otheruser):

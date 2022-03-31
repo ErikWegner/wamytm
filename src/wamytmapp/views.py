@@ -268,14 +268,13 @@ def list1(request):
 
 
 def weekCSV(request):
-    weekdelta = int(request.GET['weekdelta']
-                    ) if "weekdelta" in request.GET else 0
+    weekdelta = int(request.GET['weekdelta']) if "weekdelta" in request.GET else 0
     timeRangeFilter = request.GET['kind'] if 'kind' in request.GET else None
 
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
     timeranges, _ = query_events_timeranges_in_week(monday)
-
+    print(timeranges)
     users = []
     for timerange in timeranges:
         if timerange.user in users:
@@ -291,8 +290,7 @@ def weekCSV(request):
     writer = csv.writer(response, delimiter=';')
     writer.writerow(['KID', 'Vorname', 'Nachname', 'E-Mail'])
     for user in users:
-        writer.writerow([user.username, user.first_name,
-                         user.last_name, user.email])
+        writer.writerow([user.username, user.first_name,user.last_name, user.email])
 
     return response
 

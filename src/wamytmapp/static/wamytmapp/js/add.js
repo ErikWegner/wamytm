@@ -10,35 +10,17 @@ class WordCount extends HTMLTableRowElement {
 }
 customElements.define('word-count', WordCount, {extends: "tr"});
 
-function getXHRRequestPromise(body) {
-	return new Promise(function(resolve, reject) {
-		var xhr = new XMLHttpRequest();
-		xhr.open('POST', wamytmroot + 'check');
-        xhr.withCredentials = true;
-		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-		xhr.send(JSON.stringify(body));
-		xhr.onreadystatechange = function() {
-			if (xhr.readyState === 4 && xhr.status === 204) {
-				resolve(xhr.getResponseHeader(desiredHeader));
-			} else {
-				reject({
-                   status: this.status,
-                   statusText: xhr.statusText
-                 });
-			}
-		};
-	});
-}
-
 (function ($) {
     const log = function() {};
 
     const e$ = $('input[name="end"]');
+    const e2$ = document.getElementsByName('end')[0];
     const s$ = $('input[name="start"]');
+    const s2$ = document.getElementsByName('start')[0];
     const uid$ = $('select[name="user"]');
     const part$ = $('select[name="part_of_day"]');
-    const kind$ = $('select[name="kind"]');
-    const desc$ = $('input[name="description"]');
+    const kind$ = document.getElementsByName('kind')[0];
+    const desc$ = document.getElementsByName('description')[0];
     
     const csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
     const spinner$ = document.getElementById('submitspinner');
@@ -114,11 +96,14 @@ function getXHRRequestPromise(body) {
     e$.datepicker().on('changeDate', function (e) {
         s$.datepicker('setEndDate', (e$.datepicker('getDate')));
     });
-    s$.on('change', queryForConflicts);
-    e$.on('change', queryForConflicts);
+    //s$.on('change', queryForConflicts);
+    s2$.onchange = queryForConflicts;
+    //e$.on('change', queryForConflicts);
+    e2$.onchange = queryForConflicts;
     uid$.on('change', queryForConflicts);
     part$.on('change', queryForConflicts);
-    kind$.on('change', queryForConflicts);
-    desc$.on('change', queryForConflicts);
+    //kind$.on('change', queryForConflicts);
+    kind$.onchange = queryForConflicts;
+    desc$.onchange = queryForConflicts;
 
 })(jQuery)

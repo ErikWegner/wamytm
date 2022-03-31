@@ -64,7 +64,7 @@
 </div>
 
 <div id="grid_table" class="presence">
-<div class="th">{% trans "Person" context "IndexTemplate" %}</div>
+<div class="header th">{% trans "Person" context "IndexTemplate" %}</div>
 {% for day in days %}
 <div class="header th {% if day.allday %} allday{% endif %}" >{% if day.allday %}{{ day.allday.description }}<br>{% endif %}{{ day.day }}</div>
 {% endfor %}

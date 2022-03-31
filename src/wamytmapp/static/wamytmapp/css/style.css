@@ -67,6 +67,10 @@ body {
 }
 #grid_table .header {
     text-align: center;
+    position: sticky;
+    top: 0;
+    border-radius: 0;
+    background-color: white;
 }
 #grid_table div:not(.th) {
     text-align: center;
