@@ -158,7 +158,7 @@ asd as
                          g.kind,
                          g.data,
                          o.wertung,
-                         DENSE_RANK() OVER(partition by t.level, t.user_name order by o.wertung desc) as rn
+                         DENSE_RANK() OVER(partition by t.level, t.user_name order by o.wertung desc, g.id desc) as rn
                     from ce t
                     left join src g
                       on t.user_name = g.user_name
