@@ -144,6 +144,7 @@ def dictfetchall(cursor):
 def my_custom_sql(orgid,day_of_week):
     with connection.cursor() as cursor:
         cursor.execute("""
+<<<<<<< HEAD
 with recursive config as (
   select
     von,
@@ -298,6 +299,56 @@ baum as (
     asd t
   where
     ca = 1
+=======
+
+with recursive wt as
+ (select %s::date as level union select level + 1
+    from wt
+   where level < (%s::date + 4)),
+src as
+ (select t.*, u.last_name || ', '  || u.first_name || ' (' || upper(substr(u.username,2)) || ')' as user_name
+    from wamytmapp_timerange t
+    left join auth_user u
+      on u.id = t.user_id
+   where --t.user_id in (30)
+   coalesce(t.org_id, -1) = coalesce(%s, t.org_id, -1)
+and t.start <= (%s::date + 4)
+and t.end >= %s::date),
+ce as
+ (select distinct wt.level, src.user_name from src cross join wt),
+asd as
+ (select t.*,
+         case
+           when coalesce(t.lag, 'yaa') != coalesce(t.kind, 'yaa')
+           or coalesce(t.lag_data->>'desc','yaa') != coalesce(t.data->>'desc','yaa')
+           or coalesce(t.lag_data->>'partial','yaa') != coalesce(t.data->>'partial','yaa')
+           then
+            1
+         end as ca
+    from (select t.*,
+                 lag(t.kind, 1, 'easd') over(partition by t.user_name order by t.level) as lag,
+                 lag(t.data, 1) over(partition by t.user_name order by t.level) as lag_data
+            from (select t.level,
+                         g.id,
+                         t.user_name,
+                         g.kind,
+                         g.data,
+                         o.wertung,
+                         DENSE_RANK() OVER(partition by t.level, t.user_name order by o.wertung desc, g.id desc) as rn
+                    from ce t
+                    left join src g
+                      on t.user_name = g.user_name
+                     and t.level between g.start and g.end
+                    left join wamytmapp_kind o
+                      on o.kind = g.kind) t
+           where rn = 1) t),
+baum as
+ (select t.*,
+        1 as lvl,
+        to_char(t.level, 'DDD')::INTEGER as root
+    from asd t
+   where ca = 1
+>>>>>>> 3c152c7d132dc0856fa34ef3f0ad13b453c9913d
   union
   select
     t.*,
