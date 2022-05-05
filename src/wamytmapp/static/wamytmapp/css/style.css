@@ -1,3 +1,4 @@
+/* ganztägig */
 .presence .kind-a {
     background-color: #d66262;
 }
@@ -7,35 +8,53 @@
 .presence .kind-m {
     background-color: #8292ee;
 }
-.presence .kind-ma {
+/* halbtags */
+.presence .kind-m-a {
     background: linear-gradient(110deg, #aaa 40%, #8292ee 40%);
 }
-.presence .kind-mf {
+.presence .kind-m-f {
     background: linear-gradient(110deg, #8292ee 60%, #aaa 60%);
 }
-.presence .kind-aa {
+.presence .kind-a-a {
     background: linear-gradient(110deg, #aaa 40%,#d66262 40%);
 }
-.presence .kind-af {
+.presence .kind-a-f {
     background: linear-gradient(110deg, #d66262 60%, #aaa 60%);
 }
-.presence .kind-pa {
+.presence .kind-p-a {
     background: linear-gradient(110deg, #aaa 40%,#8fbc8f 40%);
 }
-.presence .kind-pf {
+.presence .kind-p-f {
     background: linear-gradient(110deg, #8fbc8f 60%, #aaa 60%);
 }
 
-.presence .kind-mp {
-    background-color: #ab82ee;
+/* ganztag gesplittet */
+.presence .kind-pm {
+    background: linear-gradient(110deg, #8fbc8f 50%,#8292ee 50%);
 }
+.presence .kind-mp {
+    background: linear-gradient(110deg, #8292ee 50%, #8fbc8f 50%);
+}
+.presence .kind-ap {
+    background: linear-gradient(110deg, #d66262 50%,#8fbc8f 50%);
+}
+.presence .kind-pa {
+    background: linear-gradient(110deg, #8fbc8f 50%, #d66262 50%);
+}
+.presence .kind-am {
+    background: linear-gradient(110deg, #d66262 50%,#8292ee 50%);
+}
+.presence .kind-ma {
+    background: linear-gradient(110deg, #8292ee 50%, #d66262 50%);
+}
+/*#####################*/
 
 tr.start-of-week {
     border-top: #000000 3px solid;
 }
 
-.presence th.allday {
-    background-color: #999;
+.presence .allday {
+    background-color: #b0b0b0 !important;
 }
 
 /* https://github.com/philipwalton/solved-by-flexbox/blob/master/assets/css/components/site.css */

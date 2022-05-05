@@ -4,13 +4,20 @@ from django.contrib.auth.models import User
 from django.utils.translation import pgettext_lazy
 
 from .fields import OverlapActionsField
-from .models import odb_org, OrgUnit, OrgUnitDelegate, TimeRange, TeamMember, user_display_name, OMS
+from .models import mv_odb_org, OrgUnit, OrgUnitDelegate, TimeRange, TeamMember, user_display_name, OMS, ODB_STRUKT
 from .config import RuntimeConfig
 
 
 class DateInput(forms.DateInput):
     input_type = 'date'
 
+class orgs4wamytmEditForm(forms.ModelForm):
+    ko_m = forms.ChoiceField(
+        required=True,
+        choices = ODB_STRUKT.objects.SelectList_with_Orgs(),
+        label=pgettext_lazy('OrgUnitFilterForm', 'Organizational unit'))
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 class TimeRangeEditForm(forms.ModelForm):
     description = forms.CharField(
@@ -131,11 +138,11 @@ class AddTimeRangeForm(forms.Form):
 
 
         #self.fields['orgunit_id'].choices = odb_org.objects.selectListItemsWithAllChoice()
-        self.fields['org_id'].choices = odb_org.objects.selectListItemsWithAllChoice()
+        self.fields['org_id'].choices = mv_odb_org.objects.selectListItemsWithAllChoice()
         M2O_ORG_ID = OMS.objects.getORG_ID(self.user.id)
         if M2O_ORG_ID is not None:
             #self.fields['orgunit_id'].initial = M2O_ORG_ID.M2O_ORG_ID
-            self.fields['org_id'].initial = M2O_ORG_ID.M2O_ORG_ID
+            self.fields['org_id'].initial = M2O_ORG_ID.m2o_org_id
             #self.fields['orgunit_id'].disabled = True
             self.fields['org_id'].disabled = True
         
@@ -191,7 +198,7 @@ class FrontPageFilterForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['orgunit'].choices = odb_org.objects.selectListItemsWithAllChoice()
+        self.fields['orgunit'].choices = mv_odb_org.objects.selectListItemsWithAllChoice()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -213,7 +220,7 @@ class OrgUnitFilterForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         #self.fields['orgunit'].choices = OrgUnit.objects.selectListItemsWithAllChoice()
-        self.fields['orgunit'].choices = odb_org.objects.selectListItemsWithAllChoice()
+        self.fields['orgunit'].choices = mv_odb_org.objects.selectListItemsWithAllChoice()
 
 
 class ProfileForm(forms.Form):
@@ -241,6 +248,8 @@ class ConflictCheckForm(forms.Form):
     uid = forms.IntegerField(
         required=False
     )
+    kind = forms.CharField(required=True)
+    part = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")

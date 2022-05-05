@@ -1,6 +1,6 @@
 import datetime
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models, connection
@@ -15,6 +15,8 @@ from simple_history.models import HistoricalRecords
 from typing import List
 
 
+#class User(AbstractUser):
+#    pass
 
 class OMSManager(models.Manager):
     def getMIT_ID(self, user_id):
@@ -23,9 +25,9 @@ class OMSManager(models.Manager):
     def getORG_ID(self,user_id):
         qu = super().raw('''
         select * from wamytmapp_oms t 
-join "ODB_MITARBEITER2STRUKT" g
-on t.mit_id=g."M2O_MIT_ID"
-and date_trunc('day',NOW()) between g."M2O_VON" and coalesce(g."M2O_BIS",date_trunc('day',NOW()))
+join odb_mitarbeiter2strukt g
+on t.mit_id=g.m2o_mit_id
+and date_trunc('day',NOW()) between g.m2o_von and coalesce(g.m2o_bis,date_trunc('day',NOW()))
 where t.user_id = %s
         ''', params=[user_id])
 
@@ -39,6 +41,24 @@ class OMS(models.Model):
     mit_id = models.IntegerField()
     objects = OMSManager()
 
+class ODB_STRUKT_Manager(models.Manager):
+    def SelectList_with_Orgs(self):
+        all_org_units = super().all().values_list("m_id", "m_org_id")
+        return all_org_units
+
+class ODB_STRUKT(models.Model):
+    m_id = models.IntegerField(primary_key=True)
+    m_parent_id = models.IntegerField(null=True)
+    m_org_id = models.IntegerField(null=True)
+    m_von = models.DateField(blank=True, null=True)
+    m_bis = models.DateField(blank=True, null=True)
+    objects = ODB_STRUKT_Manager()
+    class Meta:
+        #managed = False
+        db_table = 'odb_strukt'
+
+class orgs4wamytm(models.Model):
+    ko_m = models.OneToOneField(ODB_STRUKT, on_delete=models.PROTECT, primary_key=True)
 
 class OrgUnitManager(models.Manager):
     def selectListItems(self):
@@ -124,75 +144,199 @@ def dictfetchall(cursor):
 def my_custom_sql(orgid,day_of_week):
     with connection.cursor() as cursor:
         cursor.execute("""
-
-with recursive wt as
- (select %s::date as level union select level + 1
-    from wt
-   where level < (%s::date + 4)),
-src as
- (select t.*, u.last_name || ', '  || u.first_name || ' (' || upper(substr(u.username,2)) || ')' as user_name
-    from wamytmapp_timerange t
-    left join auth_user u
-      on u.id = t.user_id
-   where --t.user_id in (30)
-   coalesce(t.org_id, -1) = coalesce(%s, t.org_id, -1)
-and t.start <= (%s::date + 4)
-and t.end >= %s::date),
-ce as
- (select distinct wt.level, src.user_name from src cross join wt),
-asd as
- (select t.*,
-         case
-           when coalesce(t.lag, 'yaa') != coalesce(t.kind, 'yaa')
-           or coalesce(t.lag_data->>'desc','yaa') != coalesce(t.data->>'desc','yaa')
-           or coalesce(t.lag_data->>'partial','yaa') != coalesce(t.data->>'partial','yaa')
-           then
-            1
-         end as ca
-    from (select t.*,
-                 lag(t.kind, 1, 'easd') over(partition by t.user_name order by t.level) as lag,
-                 lag(t.data, 1) over(partition by t.user_name order by t.level) as lag_data
-            from (select t.level,
-                         g.id,
-                         t.user_name,
-                         g.kind,
-                         g.data,
-                         o.wertung,
-                         DENSE_RANK() OVER(partition by t.level, t.user_name order by o.wertung desc) as rn
-                    from ce t
-                    left join src g
-                      on t.user_name = g.user_name
-                     and t.level between g.start and g.end
-                    left join wamytmapp_kind o
-                      on o.kind = g.kind) t
-           where rn = 1) t),
-baum as
- (select t.*,
-        1 as lvl,
-        to_char(t.level, 'DDD')::INTEGER as root
-    from asd t
-   where ca = 1
+with recursive config as (
+  select
+    von,
+    von + 4 as bis,
+    org_id
+  from
+    (
+      select
+        %s:: date as von,
+        %s:: INTEGER as org_id
+    ) t
+),
+wt as (
+  select
+    t.von as level,
+    t.bis
+  from
+    config t
   union
-  select t.*, lvl + 1, g.root
-    from asd t
-    join baum g
-      on t.user_name = g.user_name
-     and coalesce(t.data,'{}'::jsonb) = coalesce(g.data,'{}'::jsonb)
-     and t.level = g.level + 1
-     and coalesce(t.kind, 'y') = coalesce(g.kind, 'y'))
-
-select user_name,
-       kind, 
-       data->>'v' as data_v,
-       data->>'desc' as desc,
-       coalesce(data->>'partial','') as partial,
-       min(level),
-       max(lvl) as span,
-       dense_rank() over(partition by user_name order by min(level)) as dn
-  from baum
- group by root, user_name, kind, data
- order by user_name, min(level)
- """, (day_of_week,day_of_week,orgid,day_of_week,day_of_week))
+  select
+    level + 1,
+    bis
+  from
+    wt
+  where
+    level < bis
+),
+src as (
+  select
+    t.*,
+    u.last_name || ', ' || u.first_name || ' (' || upper(substr(u.username, 2)) || ')' as user_name
+  from
+    wamytmapp_timerange t
+    cross join config g
+    left join auth_user u on u.id = t.user_id
+  where 1=1
+    --and t.user_id = 152 
+    and coalesce(t.org_id, -1) = coalesce(g.org_id, t.org_id, -1)
+    and t.start <= g.bis
+    and t.
+end >= g.von
+),
+ce as (
+  select
+    distinct wt.level,
+    src.user_name
+  from
+    src
+    cross join wt
+),
+asd as (
+  select
+    t.*,
+    case
+      when coalesce(t.lag, 'yaa') != coalesce(t.kind, 'yaa')
+      or coalesce(t.lag_desc, 'yaa') != coalesce(t.desc, 'yaa')
+      or coalesce(t.lag_partial, 'yaa') != coalesce(t.partial, 'yaa') then 1
+    end as ca
+  from
+    (
+      select
+        t.*,
+        lag(t.kind, 1, 'easd') over(
+          partition by t.user_name
+          order by
+            t.level
+        ) as lag,
+        lag(t.desc, 1, 'easd') over(
+          partition by t.user_name
+          order by
+            t.level
+        ) as lag_desc,
+        lag(t.partial, 1, 'easd') over(
+          partition by t.user_name
+          order by
+            t.level
+        ) as lag_partial
+        /*,lag(t.data, 1) over(
+         partition by t.user_name
+         order by
+         t.level
+         ) as lag_data*/
+      from
+        (
+          select
+            t.level,
+            t.user_name,
+            t.data,
+            min(t.wertung) as wertung,
+            t.desc,
+            DENSE_RANK() OVER(
+              partition by t.level,
+              t.user_name
+              order by
+                min(t.wertung) desc,
+                t.desc nulls last
+            ) as rn,
+            case
+              when t.cnt = 1 then coalesce('-' || min(t.partial), '')
+            end as partial,
+            case
+              when t.cnt = 2 then STRING_AGG(
+                t.kind,
+                ''
+                order by
+                  t.partial desc
+              )
+              else (
+                array_agg(
+                  t.kind
+                  order by
+                    t.wertung desc
+                )
+              ) [ 1 ]
+            end as kind
+          from
+            (
+              select
+                t.level,
+                t.user_name,
+                g.kind,
+                g.data - 'partial' as data,
+                g.data ->> 'partial' as partial,
+                g.data ->> 'desc' as desc,
+                count(g.data ->> 'partial') over(partition by t.level, t.user_name) as cnt,
+                o.wertung
+              from
+                ce t
+                left join src g on t.user_name = g.user_name
+                and t.level between g.start
+                and g.
+            end
+            left join wamytmapp_kind o on o.kind = g.kind
+        ) t
+      group by
+        t.level,
+        t.user_name,
+        t.data,
+        t.desc,
+        t.cnt
+    ) t
+  where
+    t.rn = 1
+) t
+),
+baum as (
+  select
+    t.*,
+    1 as lvl,
+    to_char(t.level, 'DDD'):: INTEGER as root
+  from
+    asd t
+  where
+    ca = 1
+  union
+  select
+    t.*,
+    lvl + 1,
+    g.root
+  from
+    asd t
+    join baum g on t.user_name = g.user_name
+    and coalesce(t.data, '{}':: jsonb) = coalesce(g.data, '{}':: jsonb)
+    and t.level = g.level + 1
+    and coalesce(t.kind, 'y') = coalesce(g.kind, 'y')
+    and coalesce(t.partial, 'y') = coalesce(g.partial, 'y')
+)
+select
+  t.user_name,
+  t.kind,
+  t.data ->> 'v' as data_v,
+  t.desc,
+  coalesce(t.partial,'') as partial,
+  min(t.level),
+  max(t.lvl) as span,
+  dense_rank() over(
+    partition by t.user_name
+    order by
+      min(t.level)
+  ) as dn
+from
+  baum t
+group by
+  t.root,
+  t.user_name,
+  t.kind,
+  t.partial,
+  t.desc,
+  t.data
+order by
+  t.user_name,
+  min(t.level)
+ """, (day_of_week,orgid))
         row = dictfetchall(cursor)
 	
     return row
@@ -205,7 +349,7 @@ class odb_org_Manager(models.Manager):
 	        toplevel.insert(0, ("", pgettext_lazy('OrgUnitManager', "All")))
 	        return toplevel
 
-class odb_org(models.Model):
+class mv_odb_org(models.Model):
 	id = models.BigIntegerField(primary_key=True)
 	name = models.CharField(max_length=255)
 	parent = models.ForeignKey('self', on_delete=models.DO_NOTHING, blank=True, null=True)
@@ -214,16 +358,33 @@ class odb_org(models.Model):
 		managed = False
 		db_table = 'mv_odb_org'
 
-class ODB_MITARBEITER2STRUKT(models.Model):
-    M2O_ID = models.IntegerField(primary_key=True)
-    M2O_MIT_ID = models.BigIntegerField()
-    #m2o_org_id = models.IntegerField()
-    M2O_VON = models.DateField()
-    #m2o_bis = models.DateField(blank=True)
-    #m2o_typ = models.IntegerField()
+class MV_OMS_DATEN(models.Model):
+    mit_id = models.BigIntegerField(primary_key=True)
+    mit_name_akt = models.CharField(max_length=255, null=True)
+    mit_vorname = models.CharField(max_length=255, null=True)
+    mit_austritt = models.DateField(blank=True, null=True)
+    kid = models.CharField(max_length=255, null=True)
     class Meta:
-        managed = False
-        db_table = 'ODB_MITARBEITER2STRUKT'
+        #managed = False
+        db_table = 'mv_oms_daten'
+
+class ODB_ORG(models.Model):
+    org_id = models.IntegerField(primary_key=True)
+    org_name = models.CharField(max_length=255, null=True)
+    org_kbez = models.CharField(max_length=255, null=True)
+    class Meta:
+        db_table = 'odb_org'
+
+class ODB_MITARBEITER2STRUKT(models.Model):
+    m2o_id = models.IntegerField(primary_key=True)
+    m2o_mit_id = models.BigIntegerField(null=True)
+    m2o_org_id = models.IntegerField(null=True)
+    m2o_von = models.DateField(blank=True, null=True)
+    m2o_bis = models.DateField(blank=True, null=True)
+    m2o_typ = models.IntegerField(blank=True, null=True)
+    class Meta:
+        #managed = False
+        db_table = 'odb_mitarbeiter2strukt'
 	
 class TeamMemberManager(models.Manager):
     pass
@@ -302,7 +463,6 @@ class TimeRangeManager(models.Manager):
         )
 
         if orgunits is not None:
-            #query = query.filter(orgunit__in=orgunits)
             query = query.filter(org_id__in=orgunits)
 
         if userid is not None:
@@ -314,7 +474,7 @@ class TimeRangeManager(models.Manager):
 
         return query
 
-    def overlapResolution(self, start: datetime.date, end: datetime.date, userid: int):
+    def overlapResolution(self, start: datetime.date, end: datetime.date, userid: int, kind: str, part: str):
         r = {'mods': []}
 
         overlapping_items = self.eventsInRange(start, end, userid=userid)
@@ -328,6 +488,12 @@ class TimeRangeManager(models.Manager):
                 mod['res'] = TimeRangeManager.OVERLAP_NEW_END
             elif item.end > end:
                 mod['res'] = TimeRangeManager.OVERLAP_NEW_START
+            
+            # Vormittag/Nachmittag 
+            if 'partial' in item.data and part:
+                if item.data['partial'] != part and kind != item.kind:
+                    continue
+
             r['mods'].append(mod)
 
         return r
@@ -364,7 +530,7 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
         verbose_name_plural = pgettext_lazy('Models', 'time ranges')
         indexes = [
             models.Index(fields=['start', 'end']),
-            models.Index(fields=['orgunit', 'start', 'end']),
+            models.Index(fields=['org_id', 'start', 'end']),
         ]
 
     def clean(self):
@@ -385,6 +551,13 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
         #return str(format_lazy('{s}({start}, {end})', s=s, start=self.start, end=self.end))
         return str(format_lazy('{s}({team}|{user}: {start}, {end})', s=s, team=self.org_id, user=self.user_id, start=self.start, end=self.end))
         
+    def new_kind(self):
+        r = self.kind
+        if self.data and TimeRange.DATA_PARTIAL in self.data and len(self.kind) == 1:
+            r = r + '-' + self.data[TimeRange.DATA_PARTIAL]
+        if self.data and TimeRange.DATA_KINDDETAIL in self.data:
+            r = r + self.data[TimeRange.DATA_KINDDETAIL]
+        return r
 
     def kind_with_details(self):
         r = self.kind
@@ -527,7 +700,10 @@ def query_events_list1(start, end, orgunit=None):
         end = start + datetime.timedelta(days=100)
     orgunits = OrgUnit.objects.listDescendants(
         orgunit) if orgunit is not None else None
-    return (query_events_timeranges(start, end, orgunits), start, end)
+
+    ret = (query_events_timeranges(start, end, orgunits), start, end)
+    
+    return ret
 
 
 def collect_descendents(org_units: List[OrgUnit], parent_id: int):

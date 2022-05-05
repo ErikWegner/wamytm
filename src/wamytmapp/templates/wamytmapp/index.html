@@ -66,7 +66,7 @@
 <div id="grid_table" class="presence">
 <div class="header th">{% trans "Person" context "IndexTemplate" %}</div>
 {% for day in days %}
-<div class="header th {% if day.allday %} allday{% endif %}" >{% if day.allday %}{{ day.allday.description }}<br>{% endif %}{{ day.day }}</div>
+<div class="header th {% if day.allday %} allday{% endif %}" >{{ day.day }}{% if day.allday %}<br>{{ day.allday.description }}{% endif %}</div>
 {% endfor %}
 {% for item in meins %}
 {% if item.dn == 1 %}
@@ -79,10 +79,6 @@
 {% endif %}
 {% endfor %}       
 </div>
-
-<a class="hide-embedded" href="{% url 'wamytmapp:weekCSV' %}?kind=m&weekdelta={{ weekdelta }}"
-    role="">{% trans "Report Mobile Workers" context "IndexTemplate" %}</a>
-
 
 <script>
     function submitFilter() {

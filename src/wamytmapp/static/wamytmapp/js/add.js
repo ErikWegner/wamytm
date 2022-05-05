@@ -64,7 +64,7 @@ customElements.define('word-count', WordCount, {extends: "tr"});
 
         const endDate = e$.datepicker('getDate') || startDate;
         log("query for conflicts", startDate, endDate);
-
+        
         $.ajax({
             url: wamytmroot + 'check',
             method: "POST",
@@ -76,7 +76,9 @@ customElements.define('word-count', WordCount, {extends: "tr"});
             data: {
                 start: dateToPostStr(startDate),
                 end: dateToPostStr(endDate),
-                uid: uid$.val()
+                uid: uid$.val(),
+                kind: kind$.value[0],
+                part: part$.val()
             },
             xhrFields: {
                 withCredentials: true

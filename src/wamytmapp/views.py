@@ -78,6 +78,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
             'four_week_counter': four_week_counter,
             'start_of_week': weekday == 0
         })
+
     for event in events:
         for line in lines:
             dh = line['day']
@@ -90,7 +91,16 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
                 users.append(event.user)
                 event.user.display_name = user_display_name(event.user)
             # and the event to the row
-            line[event.user] = event
+            if event.user in line:
+                if 'partial' not in event.data:
+                    continue
+                if line[event.user].data['partial'] == 'f' and event.data['partial'] == 'a':
+                    line[event.user].kind = line[event.user].kind + event.kind
+                elif line[event.user].data['partial'] == 'a' and event.data['partial'] == 'f':
+                    line[event.user].kind = event.kind + line[event.user].kind
+            else:
+                line[event.user] = event
+
     for line in lines:
         # prepare columns for every recorded user
         cols = []
@@ -103,6 +113,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
             else:
                 cols.append([])
         line['cols'] = cols
+
     return {'lines': lines, 'users': users}
 
 
@@ -111,7 +122,7 @@ def index(request):
     tempdict = request.GET.copy()
 
     if request.user is not None and request.user.is_authenticated and 'orgunit' not in request.GET:
-        tempdict['orgunit'] = OMS.objects.getORG_ID(request.user.id).M2O_ORG_ID
+        tempdict['orgunit'] = OMS.objects.getORG_ID(request.user.id).m2o_org_id
 
     filterform = FrontPageFilterForm(tempdict)
 
@@ -226,10 +237,10 @@ def add(request):
 def list1(request):
     filterformvalues = request.GET.copy()
     if request.user is not None and request.user.is_authenticated and 'orgunit' not in filterformvalues:
-        mit_id = OMS.objects.filter(user=request.user.id)
+        #mit_id = OMS.objects.filter(user=request.user.id)
         M2O_ORG_ID = OMS.objects.getORG_ID(request.user.id)
         if M2O_ORG_ID is not None:
-            filterformvalues['orgunit'] = M2O_ORG_ID.M2O_ORG_ID
+            filterformvalues['orgunit'] = M2O_ORG_ID.m2o_org_id
 
         #tm = TeamMember.objects.filter(pk=request.user.id)
         # if tm.exists():
@@ -259,6 +270,7 @@ def list1(request):
             dh = line['day']
             if dh.day == alldayevent.day:
                 dh.allday = alldayevent
+            
     viewdata['ouselect'] = filterform
     viewdata['orgunit'] = 0 if orgunit is None else orgunit
     viewdata['trc'] = RuntimeConfig.TimeRangeViewsLegend
@@ -342,7 +354,10 @@ def conflict_check(request):
         responseData = TimeRange.objects.overlapResolution(
             form.cleaned_data['start'],
             form.cleaned_data['end'],
-            form.cleaned_data['uid'])
+            form.cleaned_data['uid'],
+            form.cleaned_data['kind'],
+            form.cleaned_data['part']
+            )
         return JsonResponse(responseData)
     return HttpResponseBadRequest()
 

@@ -9,12 +9,12 @@ from django.utils.translation import pgettext_lazy
 
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent, OrgUnitDelegate
-from .forms import TimeRangeEditForm
+from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent, OrgUnitDelegate, KIND, orgs4wamytm
+from .forms import TimeRangeEditForm, orgs4wamytmEditForm
 
 admin.site.register(OrgUnit)
 admin.site.register(TimeRange)
-admin.site.register(AllDayEvent)
+#admin.site.register(AllDayEvent)
 
 
 class TeamMemberInline(admin.StackedInline):
@@ -180,7 +180,22 @@ class DelegatesAdmin(admin.ModelAdmin):
             return None
         return obj.teammember.orgunit.name
 
+class KindAdmin(admin.ModelAdmin):
+    list_display = [ 'kind', 'wertung' ]
+    readonly_fields = [ 'kind' ]
+    ordering = ['-wertung']
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+
+class orgs4wamytmAdmin(admin.ModelAdmin):
+    list_display = [ 'ko_m_id' ]
+    form = orgs4wamytmEditForm
+
 
 korporator_admin.register(AllDayEvent, AllDayEventAdmin)
-korporator_admin.register(OrgUnit)
+#korporator_admin.register(OrgUnit)
+korporator_admin.register(KIND, KindAdmin)
+korporator_admin.register(orgs4wamytm, orgs4wamytmAdmin)
 korporator_admin.register(User, DelegatesAdmin)
