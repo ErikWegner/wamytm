@@ -14,10 +14,11 @@ class DateInput(forms.DateInput):
 class orgs4wamytmEditForm(forms.ModelForm):
     ko_m = forms.ChoiceField(
         required=True,
-        choices = ODB_STRUKT.objects.SelectList_with_Orgs(),
+        #choices = ODB_STRUKT.objects.SelectList_with_Orgs(),
         label=pgettext_lazy('OrgUnitFilterForm', 'Organizational unit'))
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['ko_m'].choices = ODB_STRUKT.objects.SelectList_with_Orgs()
 
 class TimeRangeEditForm(forms.ModelForm):
     description = forms.CharField(
