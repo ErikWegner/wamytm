@@ -174,10 +174,15 @@ def add(request):
             return
         start = form.cleaned_data['start']
         end = form.cleaned_data['end'] if form.cleaned_data['end'] is not None else start
+        kind = form.cleaned_data['kind']
+        part = form.cleaned_data['part_of_day']
         overlaps = TimeRange.objects.overlapResolution(
             start,
             end,
-            form.cleaned_data['user_id'])
+            form.cleaned_data['user_id'],
+            kind,
+            part
+            )
         overlaps_map = {}
         for m in overlaps['mods']:
             overlaps_map[m['item']['id']] = m['res']
