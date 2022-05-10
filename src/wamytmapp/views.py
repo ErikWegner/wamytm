@@ -92,12 +92,20 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
                 event.user.display_name = user_display_name(event.user)
             # and the event to the row
             if event.user in line:
-                if 'partial' not in event.data:
+                if 'partial' not in event.data or 'partial' not in line[event.user].data:
                     continue
+
+                if line[event.user].kind == event.kind:
+                    del line[event.user].data[TimeRange.DATA_PARTIAL]
+                    continue
+
                 if line[event.user].data['partial'] == 'f' and event.data['partial'] == 'a':
-                    line[event.user].kind = line[event.user].kind + event.kind
+                    if line[event.user].kind != event.kind:
+                        line[event.user].kind = line[event.user].kind + event.kind
                 elif line[event.user].data['partial'] == 'a' and event.data['partial'] == 'f':
-                    line[event.user].kind = event.kind + line[event.user].kind
+                    if line[event.user].kind != event.kind:
+                        line[event.user].kind = event.kind + line[event.user].kind
+
             else:
                 line[event.user] = event
 

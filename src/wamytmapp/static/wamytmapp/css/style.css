@@ -1,11 +1,11 @@
 /* ganztägig */
-.presence .kind-a {
+.presence .kind-a, .presence .kind-aa {
     background-color: #d66262;
 }
-.presence .kind-p {
+.presence .kind-p, .presence .kind-pp {
     background-color: #8fbc8f;
 }
-.presence .kind-m {
+.presence .kind-m, .presence .kind-mm {
     background-color: #8292ee;
 }
 /* halbtags */
