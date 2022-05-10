@@ -114,7 +114,7 @@ class TimeRangeBasicAdmin(SimpleHistoryAdmin):
         return self._isAccessAllowed(request, obj)
 
     def has_change_permission(self, request, obj=None):
-        return self._isAccessAllowed(request, obj)
+        return False #self._isAccessAllowed(request, obj)
 
     def has_delete_permission(self, request, obj=None):
         return self._isAccessAllowed(request, obj)
