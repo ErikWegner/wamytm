@@ -24,11 +24,7 @@ class OMSManager(models.Manager):
 
     def getORG_ID(self,user_id):
         qu = super().raw('''
-        select * from wamytmapp_oms t 
-join odb_mitarbeiter2strukt g
-on t.mit_id=g.m2o_mit_id
-and date_trunc('day',NOW()) between g.m2o_von and coalesce(g.m2o_bis,date_trunc('day',NOW()))
-where t.user_id = %s
+select * from v_getORGID t where t.user_id = %s
         ''', params=[user_id])
 
         if len(qu) == 0:
