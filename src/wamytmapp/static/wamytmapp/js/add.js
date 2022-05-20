@@ -2,7 +2,7 @@ class WordCount extends HTMLTableRowElement {
     constructor() {
       super();
       this.appendChild(document.createElement('td')).scope = "row";
-      [...Array(3).keys()].map(e=>this.appendChild(document.createElement('td')));
+      [...Array(5).keys()].map(e=>this.appendChild(document.createElement('td')));
     }
     setData(p_val) {
         Array.from(this.children).map((e,n) => e.innerHTML=p_val[n]);
@@ -44,7 +44,7 @@ customElements.define('word-count', WordCount, {extends: "tr"});
         while(tbody$.firstChild) tbody$.removeChild(tbody$.firstChild);
         
         data.mods.forEach(e => {
-            tbody$.appendChild(document.createElement('tr', {is: 'word-count'})).setData([e.item.id,e.item.start,e.item.end,overlapactionsselection(e.item.id, e.res)]);
+            tbody$.appendChild(document.createElement('tr', {is: 'word-count'})).setData([e.item.id,e.item.start,e.item.end,e.item.kind,e.item.partial,overlapactionsselection(e.item.id, e.res)]);
         });
     }
 

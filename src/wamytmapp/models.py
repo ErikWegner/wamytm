@@ -217,11 +217,6 @@ asd as (
           order by
             t.level
         ) as lag_partial
-        /*,lag(t.data, 1) over(
-         partition by t.user_name
-         order by
-         t.level
-         ) as lag_data*/
       from
         (
           select
@@ -229,13 +224,13 @@ asd as (
             t.user_name,
             t.data,
             min(t.wertung) as wertung,
-            t.desc,
+            STRING_AGG(t.desc,'; ' order by t.partial desc) as desc,
             DENSE_RANK() OVER(
               partition by t.level,
               t.user_name
               order by
                 min(t.wertung) desc,
-                t.desc nulls last
+                min(t.desc) nulls last
             ) as rn,
             case
               when t.cnt = 1 then coalesce('-' || min(t.partial), '')
@@ -261,7 +256,7 @@ asd as (
                 t.level,
                 t.user_name,
                 g.kind,
-                g.data - 'partial' as data,
+                g.data - 'partial' - 'desc' as data,
                 g.data ->> 'partial' as partial,
                 g.data ->> 'desc' as desc,
                 count(g.data ->> 'partial') over(partition by t.level, t.user_name) as cnt,
@@ -278,7 +273,6 @@ asd as (
         t.level,
         t.user_name,
         t.data,
-        t.desc,
         t.cnt
     ) t
   where
@@ -562,11 +556,15 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
         return r
 
     def buildConflictJsonStructure(self):
+        partial = [('a','Nachmittag'),('f','Vormittag')]
 
         return {
             'id': self.id,
             'start': (self.start if isinstance(self.start, datetime.date) else self.start.date()).strftime('%Y-%m-%d'),
             'end': (self.end if isinstance(self.end, datetime.date) else self.end.date()).strftime('%Y-%m-%d'),
+            'kind': [ x for x in self.KIND_CHOICES if x[0] == self.kind][0][1],
+            'desc': self.data['desc'] if 'desc' in self.data  else "",
+            'partial': [ x for x in partial if x[0] == self.data['partial']][0][1] if 'partial' in self.data  else "",
         }
 
 
