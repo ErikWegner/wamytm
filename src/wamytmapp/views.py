@@ -109,7 +109,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
                     continue
 
                 if line[event.user].data['partial'] == 'f' and event.data['partial'] == 'a':
-                    if kind != event.kind:
+                    if line[event.user].kind != event.kind:
                         line[event.user].kind = line[event.user].kind + event.kind
                 elif line[event.user].data['partial'] == 'a' and event.data['partial'] == 'f':
                     if line[event.user].kind != event.kind:
