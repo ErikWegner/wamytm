@@ -298,6 +298,7 @@ baum as (
     join baum g on t.user_name = g.user_name
     and coalesce(t.data, '{}':: jsonb) = coalesce(g.data, '{}':: jsonb)
     and t.level = g.level + 1
+    and coalesce(t.desc, 'y') = coalesce(g.desc, 'y')
     and coalesce(t.kind, 'y') = coalesce(g.kind, 'y')
     and coalesce(t.partial, 'y') = coalesce(g.partial, 'y')
 )
