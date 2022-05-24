@@ -31,6 +31,21 @@ select * from v_getORGID t where t.user_id = %s
             return None
 
         return qu[0]
+    def queryTeammember(self, parents):
+        parentslist = tuple(parents if type(parents) is list else [parents])
+        if len(parentslist) == 0:
+            return list()
+        qu = super().raw('''
+        SELECT t.*, u.first_name, u.last_name, g.org_name, g.org_kbez
+        FROM v_getorgid t
+        JOIN odb_org g
+        ON g.org_id = t.m2o_org_id
+        JOIN auth_user u
+        on u.id = t.user_id
+        where t.m2o_org_id in %s
+        ''', params=[parentslist])
+        return list(qu)
+
 
 class OMS(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -81,6 +96,25 @@ class OrgUnitManager(models.Manager):
             SELECT t2.id, t2.parent_id
             FROM wamytmapp_orgunit AS t2, ou AS t1
             WHERE t2.parent_id = t1.id
+        )
+        SELECT DISTINCT id FROM ou
+        ''', params=[parentslist])
+        return list(qu)
+
+    def queryDescendants2(self, parents):
+        parentslist = tuple(parents if type(parents) is list else [parents])
+        if len(parentslist) == 0:
+            return list()
+        qu = super().raw('''
+        WITH RECURSIVE ou AS (
+            SELECT t.id, t.parent_id
+            FROM mv_odb_org t
+            WHERE t.id in %s
+        UNION ALL
+            SELECT t2.id, t2.parent_id
+            FROM mv_odb_org t2
+            JOIN ou t1
+            ON t2.parent_id = t1.id
         )
         SELECT DISTINCT id FROM ou
         ''', params=[parentslist])
@@ -176,7 +210,7 @@ src as (
     cross join config g
     left join auth_user u on u.id = t.user_id
   where 1=1
-    --and t.user_id = 152 
+    
     and coalesce(t.org_id, -1) = coalesce(g.org_id, t.org_id, -1)
     and t.start <= g.bis
     and t.
@@ -366,6 +400,9 @@ class ODB_ORG(models.Model):
     class Meta:
         db_table = 'odb_org'
 
+    def __str__(self):
+        return self.org_name + " (" + self.org_kbez + ")"
+
 class ODB_MITARBEITER2STRUKT(models.Model):
     m2o_id = models.IntegerField(primary_key=True)
     m2o_mit_id = models.BigIntegerField(null=True)
@@ -502,8 +539,7 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
         (PRESENT, pgettext_lazy('TimeRangeChoice', 'present')),
         (MOBILE, pgettext_lazy('TimeRangeChoice', 'mobile')),
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             verbose_name=pgettext_lazy('TimeRange', 'User'))
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=pgettext_lazy('TimeRange', 'User'))
     orgunit = models.ForeignKey(OrgUnit,blank=True, on_delete=models.CASCADE,verbose_name=pgettext_lazy('TimeRange', 'Organizational unit'))
     start = models.DateField(verbose_name=pgettext_lazy('TimeRange', 'Start'))
     end = models.DateField(
@@ -511,7 +547,10 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT,
                             verbose_name=pgettext_lazy('TimeRange', 'Kind of time range'))
     data = models.JSONField(encoder=DjangoJSONEncoder)
-    org_id = models.IntegerField(blank=True, null=True)
+
+    org = models.ForeignKey(ODB_ORG, blank=True, null=True,on_delete=models.SET_NULL,verbose_name=pgettext_lazy('TimeRange', 'Organizational unit'))
+    #org_id =  models.IntegerField(blank=True, null=True)
+
     history = HistoricalRecords()
 
     objects = TimeRangeManager()
@@ -613,18 +652,18 @@ class OrgUnitDelegateManager(models.Manager):
             return False
         if otheruser.id == request.user.id:
             return True
-        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(
+        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList2(
             request.user.id)
-        teammember = TeamMember.objects.get(pk=otheruser.id)
-        if teammember.orgunit_id in delegatedOUList:
+        #teammember = TeamMember.objects.get(pk=otheruser.id)
+        teammember = OMS.objects.getORG_ID(otheruser.id).m2o_org_id
+        #if teammember.orgunit_id in delegatedOUList:
+        if teammember in delegatedOUList:
             return True
         return False
 
     def delegatedOUIdList(self, user_id):
-        delegatedOUList = list(super().filter(
-            user__id=user_id).values_list('orgunit_id', flat=True))
-        delegatedOUListRecursive = list(
-            map(lambda ou: ou.id, OrgUnit.objects.queryDescendants(delegatedOUList)))
+        delegatedOUList = list(super().filter(user__id=user_id).values_list('orgunit_id', flat=True))
+        delegatedOUListRecursive = list(map(lambda ou: ou.id, OrgUnit.objects.queryDescendants(delegatedOUList)))
         return delegatedOUListRecursive
 
     def delegatedUsers(self, user_id):
@@ -635,12 +674,25 @@ class OrgUnitDelegateManager(models.Manager):
 
         return people
 
+    def delegatedOUIdList2(self, user_id):
+        delegatedOUList = list(super().filter(user__id=user_id).values_list('org_id', flat=True))
+        delegatedOUListRecursive = list(map(lambda ou: ou.id, OrgUnit.objects.queryDescendants2(delegatedOUList)))
+        return delegatedOUListRecursive
+
+    def delegatedUsers2(self, user_id):
+        delegatedOUList = self.delegatedOUIdList2(user_id)
+
+        #people = list(TeamMember.objects.filter(orgunit__id__in=delegatedOUList))
+        people = list(map(lambda ou: (ou.user_id, ou.first_name, ou.last_name,ou.org_name, ou.org_kbez), OMS.objects.queryTeammember(delegatedOUList)))
+        return people
+
 
 class OrgUnitDelegate(models.Model):
-    orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE,
+    orgunit = models.ForeignKey(OrgUnit, blank=True, null=True,on_delete=models.SET_NULL,
                                 verbose_name=pgettext_lazy('Delegate', 'Organizational unit'))
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              verbose_name=pgettext_lazy('Delegate', 'User'))
+    org = models.ForeignKey(ODB_ORG, blank=True, null=True,on_delete=models.SET_NULL)
     objects = OrgUnitDelegateManager()
 
     def __str__(self):

@@ -132,8 +132,7 @@ class TimeRangeBasicAdmin(SimpleHistoryAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(
-            request.user.id)
+        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(request.user.id)
         return qs.filter(
             Q(user=request.user) | Q(orgunit__id__in=delegatedOUList)
         )

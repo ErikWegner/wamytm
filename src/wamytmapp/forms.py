@@ -53,7 +53,7 @@ class TimeRangeEditForm(forms.ModelForm):
 
     class Meta:
         model = TimeRange
-        fields = ['orgunit', 'start', 'end', 'subkind',
+        fields = ['org', 'start', 'end', 'subkind',
                   'part_of_day', 'description', 'user']
 
     def clean(self):
@@ -152,16 +152,25 @@ class AddTimeRangeForm(forms.Form):
             userfield = self.fields['user']
             userfield.disabled = False
             userfield.required = True
-            userfield.choices = map(lambda u: (u.user.id, user_display_name(
-                u.user) + F" ({u.orgunit.name})"), OrgUnitDelegate.objects.delegatedUsers(self.user.id))
+            #list2 = list(map(lambda u: (u[0], F"{u[2]}, {u[1]} ({u[3]} ({u[4]}))"), OrgUnitDelegate.objects.delegatedUsers2(self.user.id)))
+            list2 = list(map(lambda u: (u[0], F"{u[2]}, {u[1]}"), OrgUnitDelegate.objects.delegatedUsers2(self.user.id)))
+            userfield.choices = sorted(list(dict.fromkeys(userfield.choices + list2)), key=lambda tup: tup[1])
+        print('asd')
 
     def get_time_range(self):
         if self.is_valid() == False:
             return None
 
         cleaned_data = self.cleaned_data
-        cleaned_data['user_id'] = cleaned_data['user'] if self.can_delegate else self.user.id
+
+        if self.can_delegate:
+            cleaned_data['user_id'] = cleaned_data['user']
+            cleaned_data['org_id'] = OMS.objects.getORG_ID(cleaned_data['user_id']).m2o_org_id
+        else:
+            cleaned_data['user_id'] = self.user.id
+
         del(cleaned_data['user'])
+
         complexKind = cleaned_data['kind']
         cleaned_data['kind'] = complexKind[:1]
         jsondata = {'v': 1}
@@ -264,8 +273,10 @@ class ConflictCheckForm(forms.Form):
         logged_in_user_id = self.request.user.id
         if self.cleaned_data['uid'] == logged_in_user_id:
             return conflict_check_user_id
+
         if OrgUnitDelegate.objects.isDelegateForUser(
                 self.request,
                 User.objects.get(pk=conflict_check_user_id)):
             return self.cleaned_data['uid']
+            
         raise PermissionDenied('uid invalid')

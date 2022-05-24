@@ -365,6 +365,16 @@ class TimeRangesList(APIView):
         serializer = TimeRangeSerializer(timerangeItems, many=True)
         return Response(serializer.data)
 
+def getorgid(request):
+    if not request.user.is_authenticated:
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        r = { }
+        r['org_id'] = OMS.objects.getORG_ID(request.POST['uid']).m2o_org_id
+
+        return JsonResponse(r)
+    return HttpResponseBadRequest()
 
 def conflict_check(request):
     if not request.user.is_authenticated:
@@ -373,6 +383,7 @@ def conflict_check(request):
         form = ConflictCheckForm(data=request.POST, request=request)
         if not form.is_valid():
             return JsonResponse(form.errors, status=400)
+        
         responseData = TimeRange.objects.overlapResolution(
             form.cleaned_data['start'],
             form.cleaned_data['end'],
@@ -380,9 +391,9 @@ def conflict_check(request):
             form.cleaned_data['kind'],
             form.cleaned_data['part']
             )
+        responseData['org_id'] = OMS.objects.getORG_ID(form.cleaned_data['uid']).m2o_org_id
         return JsonResponse(responseData)
     return HttpResponseBadRequest()
-
 
 class TeamFeed(ICalFeed):
     product_id = '-//example.com//Example//EN'

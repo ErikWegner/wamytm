@@ -21,7 +21,8 @@ customElements.define('word-count', WordCount, {extends: "tr"});
     const part$ = $('select[name="part_of_day"]');
     const kind$ = document.getElementsByName('kind')[0];
     const desc$ = document.getElementsByName('description')[0];
-    
+    const org$ = document.getElementById('id_org_id');
+
     const csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
     const spinner$ = document.getElementById('submitspinner');
     const overlappingcontainer$ = document.getElementById('overlappingcontainer');
@@ -38,6 +39,7 @@ customElements.define('word-count', WordCount, {extends: "tr"});
     }
 
     function updateTable(data) {
+        org$.value = data.org_id
         overlappingcontainer$.style.display = (!data || !data.mods || data.mods.length === 0) ? 'none' : '';
 
         let tbody$ = document.querySelector('#overlappingcontainer table tbody');
@@ -57,7 +59,27 @@ customElements.define('word-count', WordCount, {extends: "tr"});
         const startDate = s$.datepicker('getDate');
         if (!startDate) {
             spinner$.style.display = 'none';
-            return;
+            $.ajax({
+                url: wamytmroot + 'getorgid',
+                method: "POST",
+                beforeSend: function (xhr, settings) {
+                    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    }
+                },
+                data: {
+                    uid: uid$.val()
+                },
+                xhrFields: {
+                    withCredentials: true
+                }
+            }).done(function(data) {
+                org$.value = data.org_id;
+            }).fail(console.error)
+            .always(function() {
+                return;
+            });
+            
         } else {
             spinner$.style.display = '';
         }
@@ -88,10 +110,11 @@ customElements.define('word-count', WordCount, {extends: "tr"});
             .always(function () {
                 log("complete");
                 //spinner$.hide();
+                
                 spinner$.style.display = 'none';
             });
     }
-
+   
     s$.datepicker().on('changeDate', function (e) {
         e$.datepicker('setStartDate', (s$.datepicker('getDate')));
     });
@@ -107,5 +130,6 @@ customElements.define('word-count', WordCount, {extends: "tr"});
     //kind$.on('change', queryForConflicts);
     kind$.onchange = queryForConflicts;
     desc$.onchange = queryForConflicts;
+    //uid$.onchange = getTeam;
 
 })(jQuery)
