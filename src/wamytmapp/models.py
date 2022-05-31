@@ -214,9 +214,13 @@ src as (
     wamytmapp_timerange t
     cross join config g
     left join auth_user u on u.id = t.user_id
+
+    left join wamytmapp_oms oms on oms.user_id = t.user_id
+    left join odb_mitarbeiter2strukt m2o on m2o.m2o_mit_id = oms.mit_id and CURRENT_DATE >= COALESCE(m2o.m2o_von, '1970-01-01':: date) AND CURRENT_DATE <= COALESCE(m2o.m2o_bis, '2099-12-31':: date)
+
   where 1=1
     
-    and coalesce(t.org_id, -1) = coalesce(g.org_id, t.org_id, -1)
+    and coalesce(m2o.m2o_org_id, -1) = coalesce(g.org_id, t.org_id, -1)
     and t.start <= g.bis
     and t.end >= g.von
     """ + user + """
