@@ -139,12 +139,14 @@ def index(request):
     tempdict = request.GET.copy()
 
     if request.user is not None and request.user.is_authenticated and 'orgunit' not in request.GET:
-        tempdict['orgunit'] = OMS.objects.getORG_ID(request.user.id).m2o_org_id
+        m2o_org_id = OMS.objects.getORG_ID(request.user.id)
+        tempdict['orgunit'] = m2o_org_id.m2o_org_id if m2o_org_id is not None else None
 
     filterform = FrontPageFilterForm(tempdict)
 
-    if filterform.is_valid():
-        orgunitparamvalue = filterform.cleaned_data['orgunit']
+    orgunitparamvalue = filterform.cleaned_data['orgunit'] if filterform.is_valid() else None
+    #if filterform.is_valid():
+    #    orgunitparamvalue = filterform.cleaned_data['orgunit']
 
     weekdelta = filterform.cleaned_data['weekdelta']
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
@@ -153,7 +155,7 @@ def index(request):
     today = datetime.date.today()
     monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
     days = []
-    #users = usersStr.split(',') if usersStr else None
+    users = usersStr.split(',') if usersStr else None
 
     for weekday in range(5):
         days.append(DayHeader(monday + datetime.timedelta(days=weekday)))
@@ -163,7 +165,7 @@ def index(request):
     #timeranges, alldayevents = query_events_timeranges_in_week(day_of_week=monday, orgunit=orgunit, users=users)
     #timeranges_thisweek = _prepareWeekdata(timeranges)
 
-    meins = my_custom_sql(orgid=orgunit, day_of_week=monday)
+    meins = my_custom_sql(orgid=orgunit, day_of_week=monday, users=users)
 
     for alldayevent in alldayevents:
         for dh in days:

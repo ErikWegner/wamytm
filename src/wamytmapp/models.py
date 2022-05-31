@@ -49,7 +49,7 @@ select * from v_getORGID t where t.user_id = %s
 
 class OMS(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    mit_id = models.IntegerField()
+    mit_id = models.IntegerField(null=True)
     objects = OMSManager()
 
 class ODB_STRUKT_Manager(models.Manager):
@@ -171,7 +171,12 @@ def dictfetchall(cursor):
         for row in cursor.fetchall()
     ]
       
-def my_custom_sql(orgid,day_of_week):
+def my_custom_sql(orgid, day_of_week, users):
+    if users is not None and len(users) > 0:
+        user =  "and u.username in (" + ','.join(map(lambda x: "'" + x + "'", users)) + ")"
+    else:
+        user = ''
+
     with connection.cursor() as cursor:
         cursor.execute("""
 with recursive config as (
@@ -182,8 +187,8 @@ with recursive config as (
   from
     (
       select
-        %s:: date as von,
-        %s:: INTEGER as org_id
+        %s::date as von,
+        %s::INTEGER as org_id
     ) t
 ),
 wt as (
@@ -213,8 +218,8 @@ src as (
     
     and coalesce(t.org_id, -1) = coalesce(g.org_id, t.org_id, -1)
     and t.start <= g.bis
-    and t.
-end >= g.von
+    and t.end >= g.von
+    """ + user + """
 ),
 ce as (
   select
@@ -540,7 +545,7 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
         (MOBILE, pgettext_lazy('TimeRangeChoice', 'mobile')),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=pgettext_lazy('TimeRange', 'User'))
-    orgunit = models.ForeignKey(OrgUnit,blank=True, on_delete=models.CASCADE,verbose_name=pgettext_lazy('TimeRange', 'Organizational unit'))
+    orgunit = models.ForeignKey(OrgUnit,blank=True, null=True,on_delete=models.CASCADE,verbose_name=pgettext_lazy('TimeRange', 'Organizational unit'))
     start = models.DateField(verbose_name=pgettext_lazy('TimeRange', 'Start'))
     end = models.DateField(
         blank=True, verbose_name=pgettext_lazy('TimeRange', 'End'))
