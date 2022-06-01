@@ -220,7 +220,7 @@ src as (
 
   where 1=1
     
-    and coalesce(m2o.m2o_org_id, -1) = coalesce(g.org_id, t.org_id, -1)
+    and coalesce(m2o.m2o_org_id, -1) = coalesce(g.org_id, m2o.m2o_org_id, -1)
     and t.start <= g.bis
     and t.end >= g.von
     """ + user + """
