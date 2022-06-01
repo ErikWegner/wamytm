@@ -138,7 +138,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 def index(request):
     tempdict = request.GET.copy()
 
-    if request.user is not None and request.user.is_authenticated and 'orgunit' not in request.GET:
+    if request.user is not None and request.user.is_authenticated and 'orgunit' not in request.GET and 'users' not in request.GET: 
         m2o_org_id = OMS.objects.getORG_ID(request.user.id)
         tempdict['orgunit'] = m2o_org_id.m2o_org_id if m2o_org_id is not None else None
 

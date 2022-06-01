@@ -31,6 +31,21 @@ select * from v_getORGID t where t.user_id = %s
             return None
 
         return qu[0]
+    def queryAllTeammember(self, parents):
+        parentslist = tuple(parents if type(parents) is list else [parents])
+        if len(parentslist) == 0:
+            return list()
+        qu = super().raw('''
+        SELECT u.id
+        FROM odb_mitarbeiter2strukt t
+        JOIN wamytmapp_oms g ON g.mit_id = t.m2o_mit_id
+        JOIN auth_user u on u.id = g.user_id
+        where CURRENT_DATE >= COALESCE(t.m2o_von, '1970-01-01':: date)
+          AND CURRENT_DATE <= COALESCE(t.m2o_bis, '2099-12-31':: date)
+          and t.m2o_org_id in %s
+        ''', params=[parentslist])
+        return list(qu)
+
     def queryTeammember(self, parents):
         parentslist = tuple(parents if type(parents) is list else [parents])
         if len(parentslist) == 0:
@@ -500,7 +515,8 @@ class TimeRangeManager(models.Manager):
         )
 
         if orgunits is not None:
-            query = query.filter(org_id__in=orgunits)
+            query = query.filter(user__in=list(map(lambda x: x.id,OMS.objects.queryAllTeammember(orgunits)))) 
+            #query = query.filter(org_id__in=orgunits)
 
         if userid is not None:
             query = query.filter(user__id=userid)
