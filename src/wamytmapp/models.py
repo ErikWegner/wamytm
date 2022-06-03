@@ -222,7 +222,7 @@ wt as (
     level < bis
 ),
 src as (
-  select
+  select distinct 
     t.*,
     u.last_name || ', ' || u.first_name || ' (' || upper(substr(u.username, 2)) || ')' as user_name
   from
