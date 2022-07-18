@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from typing import List
 
 from .config import RuntimeConfig
-from .models import my_custom_sql, TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name, TimeRangeManager
+from .models import getORGS4FILTER, my_custom_sql, TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name, TimeRangeManager
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
 from .serializers import TimeRangeSerializer
 from .models import OrgUnit, OMS, ODB_MITARBEITER2STRUKT, AllDayEvent
@@ -141,6 +141,8 @@ def index(request):
     if request.user is not None and request.user.is_authenticated and 'orgunit' not in request.GET and 'users' not in request.GET: 
         m2o_org_id = OMS.objects.getORG_ID(request.user.id)
         tempdict['orgunit'] = m2o_org_id.m2o_org_id if m2o_org_id is not None else None
+    else:
+        m2o_org_id = None
 
     filterform = FrontPageFilterForm(tempdict)
 
@@ -165,7 +167,8 @@ def index(request):
     #timeranges, alldayevents = query_events_timeranges_in_week(day_of_week=monday, orgunit=orgunit, users=users)
     #timeranges_thisweek = _prepareWeekdata(timeranges)
 
-    meins = my_custom_sql(orgid=orgunit, day_of_week=monday, users=users)
+    #meins = my_custom_sql(orgid=orgunit, day_of_week=monday, users=users)
+    #orgunit = getORGS4FILTER()
 
     for alldayevent in alldayevents:
         for dh in days:
@@ -173,7 +176,9 @@ def index(request):
                 dh.allday = alldayevent
 
     context = {
-        'meins': meins,
+        'meins': my_custom_sql(orgid=orgunit, day_of_week=monday, users=users),
+        'orgunit': getORGS4FILTER(),
+        'orgunit_initial': m2o_org_id.m2o_org_id if m2o_org_id is not None else str(orgunit or '-1'),
         'days': days,
         'trc': RuntimeConfig.TimeRangeViewsLegend,
         'weekdelta': weekdelta,

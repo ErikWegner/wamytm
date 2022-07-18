@@ -206,6 +206,24 @@ with recursive config as (
         %s::INTEGER as org_id
     ) t
 ),
+orgs AS (
+  SELECT
+    t.id,
+    t.parent_id,
+    t.name
+  FROM
+    mv_odb_org t
+    cross join config g
+  WHERE
+    t.id = g.org_id
+  UNION ALL
+  SELECT
+    t2.id,
+    t2.parent_id,
+    t2.name
+  FROM
+    mv_odb_org t2
+    JOIN orgs t1 ON t2.parent_id = t1.id),
 wt as (
   select
     t.von as level,
@@ -232,10 +250,10 @@ src as (
 
     left join wamytmapp_oms oms on oms.user_id = t.user_id
     left join odb_mitarbeiter2strukt m2o on m2o.m2o_mit_id = oms.mit_id and CURRENT_DATE >= COALESCE(m2o.m2o_von, '1970-01-01':: date) AND CURRENT_DATE <= COALESCE(m2o.m2o_bis, '2099-12-31':: date)
-
+    left join orgs org on org.id = m2o.m2o_org_id
   where 1=1
-    
-    and coalesce(m2o.m2o_org_id, -1) = coalesce(g.org_id, m2o.m2o_org_id, -1)
+    and (org.id is not null or g.org_id = -1)
+    /*and coalesce(m2o.m2o_org_id, -1) = coalesce(g.org_id, m2o.m2o_org_id, -1)*/
     and t.start <= g.bis
     and t.end >= g.von
     """ + user + """
@@ -389,14 +407,62 @@ order by
         row = dictfetchall(cursor)
 	
     return row
+def getORGS4FILTER():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+        with recursive asd as (
+            select
+            t.*,
+            1 as lvl,
+            t.name as root,
+            ARRAY[name] AS hierarchy
+            from
+            mv_odb_org t
+            where
+            t.parent_id is null
+            union
+            select t.*, lvl + 1, g.root,g.hierarchy || t.name
+            from mv_odb_org t 
+            join asd g on t.parent_id = g.id)
+            select
+            id,lvl,name
+            from
+            asd order by hierarchy
+            """)
+        row = dictfetchall(cursor)
+    return row
 
-
-class odb_org_Manager(models.Manager):		
-	def selectListItemsWithAllChoice(self):
-	        all_org_units = super().all()
-	        toplevel = get_children(all_org_units)
-	        toplevel.insert(0, ("", pgettext_lazy('OrgUnitManager', "All")))
-	        return toplevel
+class odb_org_Manager(models.Manager):
+    def getORGS4FILTER(self):
+        with connection.cursor() as cursor:
+            cursor.execute("""
+        with recursive asd as (
+            select
+            t.*,
+            1 as lvl,
+            t.name as root,
+            ARRAY[name] AS hierarchy
+            from
+            mv_odb_org t
+            where
+            t.parent_id is null
+            union
+            select t.*, lvl + 1, g.root,g.hierarchy || t.name
+            from mv_odb_org t 
+            join asd g on t.parent_id = g.id)
+            select
+            id,lvl,name
+            from
+            asd order by hierarchy
+            """)
+            row = dictfetchall(cursor)
+        return row
+        
+    def selectListItemsWithAllChoice(self):
+        all_org_units = super().all()
+        toplevel = get_children(all_org_units)
+        toplevel.insert(0, ("", pgettext_lazy('OrgUnitManager', "All")))
+        return toplevel
 
 class mv_odb_org(models.Model):
 	id = models.BigIntegerField(primary_key=True)
