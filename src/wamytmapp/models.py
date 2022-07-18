@@ -252,8 +252,7 @@ src as (
     left join odb_mitarbeiter2strukt m2o on m2o.m2o_mit_id = oms.mit_id and CURRENT_DATE >= COALESCE(m2o.m2o_von, '1970-01-01':: date) AND CURRENT_DATE <= COALESCE(m2o.m2o_bis, '2099-12-31':: date)
     left join orgs org on org.id = m2o.m2o_org_id
   where 1=1
-    and (org.id is not null or g.org_id = -1)
-    /*and coalesce(m2o.m2o_org_id, -1) = coalesce(g.org_id, m2o.m2o_org_id, -1)*/
+    and (org.id is not null or g.org_id is NULL)
     and t.start <= g.bis
     and t.end >= g.von
     """ + user + """
