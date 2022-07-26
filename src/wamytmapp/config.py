@@ -32,12 +32,12 @@ class RuntimeConfig:
                 RuntimeConfig.KIND_DEFAULT: True
             },
             TimeRange.MOBILE: {
-                RuntimeConfig.KIND_DEFAULT: True,
-                'p': {
-                    RuntimeConfig.KIND_LABEL: pgettext_lazy(
-                        'TimeRangeChoice', 'mobile (particular circumstances)'),
-                    RuntimeConfig.KIND_ENABLED: False,
-                }
+                RuntimeConfig.KIND_DEFAULT: True
+                #'p': {
+                #    RuntimeConfig.KIND_LABEL: pgettext_lazy(
+                #        'TimeRangeChoice', 'mobile (particular circumstances)'),
+                #    RuntimeConfig.KIND_ENABLED: False,
+                #}
             }
         }
 

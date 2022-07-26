@@ -83,8 +83,6 @@ class ODB_STRUKT(models.Model):
         #managed = False
         db_table = 'odb_strukt'
 
-class orgs4wamytm(models.Model):
-    ko_m = models.OneToOneField(ODB_STRUKT, on_delete=models.PROTECT, primary_key=True)
 
 class OrgUnitManager(models.Manager):
     def selectListItems(self):
@@ -491,6 +489,8 @@ class ODB_ORG(models.Model):
 
     def __str__(self):
         return self.org_name + " (" + self.org_kbez + ")"
+class orgs4wamytm(models.Model):
+    m_org = models.OneToOneField(ODB_ORG, on_delete=models.PROTECT, primary_key=True)
 
 class ODB_MITARBEITER2STRUKT(models.Model):
     m2o_id = models.IntegerField(primary_key=True)

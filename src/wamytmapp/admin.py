@@ -189,7 +189,7 @@ class KindAdmin(admin.ModelAdmin):
 
 
 class orgs4wamytmAdmin(admin.ModelAdmin):
-    list_display = [ 'ko_m_id' ]
+    list_display = [ 'm_org' ]
     form = orgs4wamytmEditForm
 
 
