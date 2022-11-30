@@ -489,8 +489,9 @@ class ODB_ORG(models.Model):
 
     def __str__(self):
         return self.org_name + " (" + self.org_kbez + ")"
+
 class orgs4wamytm(models.Model):
-    m_org = models.OneToOneField(ODB_ORG, on_delete=models.PROTECT, primary_key=True)
+    m_org = models.OneToOneField(ODB_ORG, on_delete=models.PROTECT)
 
 class ODB_MITARBEITER2STRUKT(models.Model):
     m2o_id = models.IntegerField(primary_key=True)

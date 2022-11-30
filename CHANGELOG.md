@@ -1,6 +1,11 @@
-# Next Version
+# Version 17.2
+
+* JQuery Hierarchy Select for Bootstrap 4 (Orgunit-Filter)
+* alle Mitarbeiter rekursiv ab selektierten Team
+* "(besondere Situation)" entfernt
 
 # Version 17
+
 * Sticky header
 * New: default value for Teamfilter (WEK-2094 / issue30)
 * Change: Filterlayout 

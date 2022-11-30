@@ -1,6 +1,7 @@
 [[source]]
 name = "pypi"
 url = "https://pypi.org/simple"
+#url = "https://nexus3.r.regiocom.net/repository/pypi-all/simple"
 verify_ssl = true
 
 [dev-packages]

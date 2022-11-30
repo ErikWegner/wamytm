@@ -9,3 +9,5 @@
 
 .venv/
 *.swp
+src/wamytmsite/settings/migrate2testdb.py
+src/wamytmsite/settings/migrate2proddb.py

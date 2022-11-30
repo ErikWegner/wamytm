@@ -4,6 +4,7 @@ version: '3'
 services:
   db:
     image: postgres
+    network_mode: bridge
     environment:
       - POSTGRES_PASSWORD=PEqmZ9dt
       - POSTGRES_USER=postgres
@@ -23,6 +24,7 @@ services:
       - KEYCLOAK_USER=k-admin
       - KEYCLOAK_PASSWORD=s3c4stroNG
       - KEYCLOAK_IMPORT=/tmp/wamytm-realm.json
+      - ROOT_LOGLEVEL=ALL
     volumes:
       - ./realm.json:/tmp/wamytm-realm.json
     ports:
