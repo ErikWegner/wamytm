@@ -61,11 +61,20 @@ select * from v_getORGID t where t.user_id = %s
         ''', params=[parentslist])
         return list(qu)
 
-
 class OMS(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     mit_id = models.IntegerField(null=True)
     objects = OMSManager()
+
+class virtualteam(models.Model):
+    vt_id = models.IntegerField(primary_key=True)
+    vt_parent_id = models.IntegerField(null=True)
+    vt_name = models.TextField()
+    #models.CharField(max_length=80)
+
+class ma2vt(models.Model):
+    vt = models.ForeignKey(virtualteam, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class ODB_STRUKT_Manager(models.Manager):
     def SelectList_with_Orgs(self):
@@ -248,9 +257,10 @@ src as (
 
     left join wamytmapp_oms oms on oms.user_id = t.user_id
     left join odb_mitarbeiter2strukt m2o on m2o.m2o_mit_id = oms.mit_id and CURRENT_DATE >= COALESCE(m2o.m2o_von, '1970-01-01':: date) AND CURRENT_DATE <= COALESCE(m2o.m2o_bis, '2099-12-31':: date)
-    left join orgs org on org.id = m2o.m2o_org_id
+    left join wamytmapp_ma2vt m2t on m2t.user_id = t.user_id
+    left join orgs org on org.id in (m2o.m2o_org_id,-m2t.vt_id)
   where 1=1
-    and (org.id is not null or g.org_id is NULL)
+    and (org.id is not null or g.org_id = 0)
     and t.start <= g.bis
     and t.end >= g.von
     """ + user + """
@@ -407,24 +417,39 @@ order by
 def getORGS4FILTER():
     with connection.cursor() as cursor:
         cursor.execute("""
-        with recursive asd as (
-            select
-            t.*,
-            1 as lvl,
-            t.name as root,
-            ARRAY[name] AS hierarchy
-            from
-            mv_odb_org t
-            where
-            t.parent_id is null
-            union
-            select t.*, lvl + 1, g.root,g.hierarchy || t.name
-            from mv_odb_org t 
-            join asd g on t.parent_id = g.id)
-            select
-            id,lvl,name
-            from
-            asd order by hierarchy
+       with
+  recursive asd as (
+    select
+      t.*,
+      1 as lvl,
+      t.name as root,
+      ARRAY [name] AS hierarchy
+    from
+      mv_odb_org t
+    where
+      t.parent_id is null
+    union
+    select
+      t.*,
+      lvl + 1,
+      g.root,
+      g.hierarchy || t.name
+    from
+      mv_odb_org t
+      join asd g on t.parent_id = g.id
+  )
+select
+  id,
+  lvl,
+  name
+from
+  asd t
+order by
+  case
+    when id < 0 then 1
+    else 2
+  end,
+  t.hierarchy
             """)
         row = dictfetchall(cursor)
     return row
@@ -458,7 +483,7 @@ class odb_org_Manager(models.Manager):
     def selectListItemsWithAllChoice(self):
         all_org_units = super().all()
         toplevel = get_children(all_org_units)
-        toplevel.insert(0, ("", pgettext_lazy('OrgUnitManager', "All")))
+        toplevel.insert(0, ("0", pgettext_lazy('OrgUnitManager', "All")))
         return toplevel
 
 class mv_odb_org(models.Model):
@@ -491,7 +516,7 @@ class ODB_ORG(models.Model):
         return self.org_name + " (" + self.org_kbez + ")"
 
 class orgs4wamytm(models.Model):
-    m_org = models.OneToOneField(ODB_ORG, on_delete=models.PROTECT)
+    m_org = models.OneToOneField(ODB_ORG, primary_key=True, on_delete=models.PROTECT)
 
 class ODB_MITARBEITER2STRUKT(models.Model):
     m2o_id = models.IntegerField(primary_key=True)

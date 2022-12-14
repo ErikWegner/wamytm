@@ -45,7 +45,7 @@
                                 <input type="text" class="form-control" autocomplete="off">
                             </div>
                             <div class="hs-menu-inner">
-                                <a class="dropdown-item" data-value="-1" data-level="1" href="#">Alle</a>
+                                <a class="dropdown-item" data-value="0" data-level="1" href="#">Alle</a>
                                 {% for em in orgunit %}
                                 <a class="dropdown-item" data-value="{{ em.id }}" data-level="{{ em.lvl }}" href="#">{{ em.name }}</a>
                                 {% endfor %}
@@ -122,7 +122,6 @@
         resetSearchOnSelection: false,
         initialValueSet: true,
         onChange: function (value) {
-            console.log('value: "' + $('input[name=orgunit_initial]').val() + '" -> "' + value + '"');
             if ($('input[name=orgunit_initial]').val() != value) {
                 document.getElementById('filterform').submit();
             }

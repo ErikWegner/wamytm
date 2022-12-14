@@ -16,9 +16,10 @@ customElements.define('word-count', WordCount, {extends: "tr"});
     const e$ = $('input[name="end"]');
     const e2$ = document.getElementsByName('end')[0];
     const s$ = $('input[name="start"]');
+    //const s$ =  document.getElementsByName('start')[0];
     const s2$ = document.getElementsByName('start')[0];
-    const uid$ = $('select[name="user"]');
-    const part$ = $('select[name="part_of_day"]');
+    const uid$ = document.getElementsByName('user')[0];
+    const part$ = document.getElementsByName('part_of_day')[0];
     const kind$ = document.getElementsByName('kind')[0];
     const desc$ = document.getElementsByName('description')[0];
     const org$ = document.getElementById('id_org_id');
@@ -68,7 +69,7 @@ customElements.define('word-count', WordCount, {extends: "tr"});
                     }
                 },
                 data: {
-                    uid: uid$.val()
+                    uid: uid$.value
                 },
                 xhrFields: {
                     withCredentials: true
@@ -98,9 +99,9 @@ customElements.define('word-count', WordCount, {extends: "tr"});
             data: {
                 start: dateToPostStr(startDate),
                 end: dateToPostStr(endDate),
-                uid: uid$.val(),
+                uid: uid$.value,
                 kind: kind$.value[0],
-                part: part$.val()
+                part: part$.value
             },
             xhrFields: {
                 withCredentials: true
@@ -125,8 +126,9 @@ customElements.define('word-count', WordCount, {extends: "tr"});
     s2$.onchange = queryForConflicts;
     //e$.on('change', queryForConflicts);
     e2$.onchange = queryForConflicts;
-    uid$.on('change', queryForConflicts);
-    part$.on('change', queryForConflicts);
+    //uid$.on('change', queryForConflicts);
+    uid$.addEventListener('change',queryForConflicts);
+    part$.addEventListener('change',queryForConflicts);
     //kind$.on('change', queryForConflicts);
     kind$.onchange = queryForConflicts;
     desc$.onchange = queryForConflicts;

@@ -151,7 +151,7 @@ def index(request):
     #    orgunitparamvalue = filterform.cleaned_data['orgunit']
 
     weekdelta = filterform.cleaned_data['weekdelta']
-    orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
+    orgunit = int(orgunitparamvalue) if orgunitparamvalue else 0
     usersStr = filterform.cleaned_data['users'] if 'users' in filterform.cleaned_data else None
 
     today = datetime.date.today()
@@ -178,7 +178,7 @@ def index(request):
     context = {
         'meins': my_custom_sql(orgid=orgunit, day_of_week=monday, users=users),
         'orgunit': getORGS4FILTER(),
-        'orgunit_initial': m2o_org_id.m2o_org_id if m2o_org_id is not None else str(orgunit or '-1'),
+        'orgunit_initial': m2o_org_id.m2o_org_id if m2o_org_id is not None else str(orgunit or '0'),
         'days': days,
         'trc': RuntimeConfig.TimeRangeViewsLegend,
         'weekdelta': weekdelta,
@@ -231,6 +231,15 @@ def add(request):
                 item.start = end + datetime.timedelta(days=1)
                 item.save()
             elif action == TimeRangeManager.OVERLAP_SPLIT:
+                if part in ('a','f') and start == end:
+                    today = TimeRange.objects.get(id=itemid)
+                    if today.kind != kind:
+                        today.pk = None
+                        today.start = start
+                        today.end = end
+                        today.data['partial'] = 'a' if part == 'f' else 'a'
+                        today.save()
+
                 prev_item = TimeRange.objects.get(id=itemid)
                 next_item = TimeRange.objects.get(id=itemid)
                 next_item.pk = None
