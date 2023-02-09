@@ -51,6 +51,7 @@ New documentation is avalable at https://erikwegner.github.io/wamytm/
   - Install [pipenv](https://pipenv.readthedocs.io/): `pip install pipenv`
   - Enter pipenv environment: `pipenv shell`
   - Install dependencies: `PIPENV_VENV_IN_PROJECT="enabled" pipenv install --dev`
+  - falls Windows Shell: setzen der Enviromentvariablen: $env:DJANGO_SETTINGS_MODULE='wamytmsite.settings.dev' (setzen der Variablen entfällt dann bei den folgenden Schritten)
   - Initialize database: `cd src && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py migrate`
   - Create super user: `cd src && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py createsuperuser`
   - (Optional) Remove existing data and create new example data: `cd src && DJANGO_SETTINGS_MODULE=wamytmsite.settings.dev python manage.py example_data`

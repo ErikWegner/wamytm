@@ -1,4 +1,7 @@
 # Version 17.2
+* virtuelle Teams
+
+# Version 17.2
 
 * JQuery Hierarchy Select for Bootstrap 4 (Orgunit-Filter)
 * alle Mitarbeiter rekursiv ab selektierten Team

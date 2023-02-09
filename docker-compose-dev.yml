@@ -4,6 +4,7 @@ version: '3'
 services:
   db:
     image: postgres
+    container_name: postgresql
     network_mode: bridge
     environment:
       - POSTGRES_PASSWORD=PEqmZ9dt
@@ -13,13 +14,15 @@ services:
     ports:
       - 5432:5432
 
-  adminer:
-    image: adminer
-    ports:
-      - 5480:8080
+  #adminer:
+  #  image: adminer
+  #  container_name: adminer
+  #  ports:
+  #    - 5480:8080
 
   keycloak:
     image: jboss/keycloak
+    container_name: keycloak
     environment: 
       - KEYCLOAK_USER=k-admin
       - KEYCLOAK_PASSWORD=s3c4stroNG
