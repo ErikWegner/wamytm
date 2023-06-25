@@ -1,4 +1,11 @@
+# Version 17.2.1
+
+* Fehler 3-Monats-Vorschau
+* neue Select-Liste in 3-Monats-Vorschau
+* UI Fehler auf Startseite behoben
+ 
 # Version 17.2
+
 * virtuelle Teams
 
 # Version 17.2

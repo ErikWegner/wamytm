@@ -55,6 +55,7 @@ tr.start-of-week {
 
 .presence .allday {
     background-color: #b0b0b0 !important;
+    border-radius: 4px !important;
 }
 
 /* https://github.com/philipwalton/solved-by-flexbox/blob/master/assets/css/components/site.css */
@@ -102,3 +103,7 @@ body {
 #dev td {
     vertical-align: top;
 }
+
+.table thead th {
+    color: white;
+  }

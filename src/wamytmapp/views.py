@@ -308,9 +308,11 @@ def list1(request):
             dh = line['day']
             if dh.day == alldayevent.day:
                 dh.allday = alldayevent
-            
+
     viewdata['ouselect'] = filterform
     viewdata['orgunit'] = 0 if orgunit is None else orgunit
+    viewdata['orgunit_initial'] = 0 if orgunit is None else orgunit
+    viewdata['orgunit_filter'] = getORGS4FILTER()
     viewdata['trc'] = RuntimeConfig.TimeRangeViewsLegend
     viewdata['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
 

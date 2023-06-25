@@ -7,9 +7,26 @@
 
 {% block content %}
 
-<form action="{% url 'wamytmapp:list1' %}" method="get" role="form" id="filterform">
+<form action="{% url 'wamytmapp:list1' %}" method="get" class="mb-3" role="form" id="filterform">
+    <label for="id_orgunit">Organisationseinheit</label>
     {% if embeded %}{% bootstrap_field ouselect.embed %}{% endif %}
-    {% bootstrap_field ouselect.orgunit %}
+    <div class="dropdown hierarchy-select" id="id_orgunit">
+        <button type="button" class="btn btn-secondary dropdown-toggle" id="example-three-button"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+        <div class="dropdown-menu" aria-labelledby="example-three-button">
+            <div class="hs-searchbox">
+                <input type="text" class="form-control" autocomplete="off">
+            </div>
+            <div class="hs-menu-inner">
+                <a class="dropdown-item" data-value="0" data-level="1" href="#">Alle</a>
+                {% for em in orgunit_filter %}
+                    <a class="dropdown-item" data-value="{{ em.id }}" data-level="{{ em.lvl }}" href="#">{{ em.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        <input class="d-none" name="orgunit" readonly="readonly" aria-hidden="true" type="text" value="{{ orgunit }}" />
+    </div>
+    <input name="orgunit_initial" readonly="readonly" type="hidden" value="{{ orgunit_initial }}" />
     {% bootstrap_field ouselect.fd %}
     {% bootstrap_field ouselect.td %}
 </form>
@@ -25,7 +42,7 @@
         <tr class="bg-secondary">
             <th scope="col">{% trans "Date" context "List1Template" %}</th>
             {% for user in users %}
-            <th scope="col">{{ user.display_name }}</th>
+                <th scope="col">{{ user.display_name }}</th>
             {% endfor %}
         </tr>
     </thead>
@@ -48,7 +65,20 @@
 </table>
 {% endspaceless %}
 
-<a class="hide-embedded" href="{% url 'wamytmapp:icalfeed-by-orgunit' orgunit=orgunit %}"
-    role="">{% trans "iCal calendar sync" context "IndexTemplate" %}</a>
-
+{% if orgunit_initial > 0 %}
+    <a class="hide-embedded" href="{% url 'wamytmapp:icalfeed-by-orgunit' orgunit=orgunit %}" role="">{% trans "iCal calendar sync" context "IndexTemplate" %}</a>
+{% endif %}
+<script>
+    $('#id_orgunit').hierarchySelect({
+        width: '100%',
+        height: '500px',
+        resetSearchOnSelection: false,
+        initialValueSet: true,
+        onChange: function (value) {
+            if ($('input[name=orgunit_initial]').val() != value) {
+                document.getElementById('filterform').submit();
+            }
+        }
+    });
+</script>
 {% endblock %}

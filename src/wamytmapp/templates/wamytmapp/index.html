@@ -9,9 +9,9 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 <h2 class="ml-2 row hide-embedded">{% trans "Week view" context "IndexTemplate" %}</h2>
-<div class="row align-items-center">
-    <div class="col-md-3 pb-3">
-        <button type="button" onclick="go_week(-1);" class="btn btn-dark" role="button">
+<div class="row align-items-center mb-3">
+    <div class="col-md-3">
+        <button type="button" onclick="go_week(-1);" class="btn btn-secondary d-inline" role="button">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                 class="bi bi-caret-left-fill" viewBox="0 0 16 16">
                 <path
@@ -19,7 +19,7 @@
             </svg>
         </button>
         <button type="button" onclick="setWeekdeltaAndSubmit(0);" class="btn btn-light" role="button">{% trans "Current week" context "IndexTemplate" %}</button>
-        <button type="button" onclick="go_week(1);" class="btn btn-dark" role="button">
+        <button type="button" onclick="go_week(1);" class="btn btn-secondary d-inline" role="button">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                 class="bi bi-caret-right-fill" viewBox="0 0 16 16">
                 <path
@@ -47,7 +47,7 @@
                             <div class="hs-menu-inner">
                                 <a class="dropdown-item" data-value="0" data-level="1" href="#">Alle</a>
                                 {% for em in orgunit %}
-                                <a class="dropdown-item" data-value="{{ em.id }}" data-level="{{ em.lvl }}" href="#">{{ em.name }}</a>
+                                    <a class="dropdown-item" data-value="{{ em.id }}" data-level="{{ em.lvl }}" href="#">{{ em.name }}</a>
                                 {% endfor %}
                             </div>
                         </div>

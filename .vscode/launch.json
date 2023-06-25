@@ -52,6 +52,22 @@
             },
             "django": true,
             "justMyCode": false
+        },
+        {
+            "name": "Django migrate",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src",
+            "program": "${workspaceFolder}/src/manage.py",
+            "args": [
+                "migrate"
+            ],
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.dev",
+                "DEBUG": "TRUE"
+            },
+            "django": true,
+            "justMyCode": false
         }
     ]
 }

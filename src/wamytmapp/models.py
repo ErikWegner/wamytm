@@ -66,15 +66,32 @@ class OMS(models.Model):
     mit_id = models.IntegerField(null=True)
     objects = OMSManager()
 
+class virtualteam_manager(models.Manager):
+    def get_childs(self, orgunit):
+        ret = super().all().filter(vt_parent_id=orgunit).values_list('vt_id', flat=True)
+        return list(ret)
+
+    
 class virtualteam(models.Model):
     vt_id = models.IntegerField(primary_key=True)
     vt_parent_id = models.IntegerField(null=True)
     vt_name = models.TextField()
+    objects = virtualteam_manager()
     #models.CharField(max_length=80)
+
+class ma2vt_Manager(models.Manager):
+    def get_users(self, orgunit):
+        orgunit = abs(orgunit)
+        orgunits = virtualteam.objects.get_childs(orgunit)
+        orgunits.append(orgunit)
+        tmp = super().all()
+        all_users = super().all().filter(vt__in=orgunits).values_list('user', flat=True)
+        return list(all_users)
 
 class ma2vt(models.Model):
     vt = models.ForeignKey(virtualteam, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    objects = ma2vt_Manager()
 
 class ODB_STRUKT_Manager(models.Manager):
     def SelectList_with_Orgs(self):
@@ -834,8 +851,16 @@ def query_events_timeranges(
         users: List[str] = None
 ):
     alldayevents = AllDayEvent.objects.eventsInRange(start, end)
-    timeranges = TimeRange.objects.eventsInRange(
-        start, end, orgunits=orgunits, users=users)
+    timeranges = TimeRange.objects.eventsInRange(start, end, orgunits=orgunits, users=users)
+    return timeranges, alldayevents
+
+def query_events_timeranges4user(
+        start: datetime.date,
+        end: datetime.date,
+        users: List[str] = None
+):
+    alldayevents = AllDayEvent.objects.eventsInRange(start, end)
+    timeranges = TimeRange.objects.eventsInRange(start, end).filter(user__in=users)
     return timeranges, alldayevents
 
 
@@ -861,11 +886,13 @@ def query_events_list1(start, end, orgunit=None):
         start = datetime.date.today()
     if end is None or end < start:
         end = start + datetime.timedelta(days=100)
-    orgunits = OrgUnit.objects.listDescendants(
-        orgunit) if orgunit is not None else None
 
-    ret = (query_events_timeranges(start, end, orgunits), start, end)
-    
+    if orgunit is None:
+        orgunits = OrgUnit.objects.listDescendants(orgunit) if orgunit is not None else None
+        ret = (query_events_timeranges(start, end, orgunits), start, end)
+    else:
+        userlist = ma2vt.objects.get_users(orgunit)
+        ret = (query_events_timeranges4user(start, end, userlist), start, end)
     return ret
 
 
