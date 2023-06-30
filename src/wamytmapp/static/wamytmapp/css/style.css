@@ -107,3 +107,7 @@ body {
 .table thead th {
     color: white;
   }
+
+  .dropdown-item.active, .dropdown-item:active {
+    background-color: #5a6268 !important;
+  }

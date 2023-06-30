@@ -141,22 +141,23 @@ class OrgUnitManager(models.Manager):
         return list(qu)
 
     def queryDescendants2(self, parents):
-        parentslist = tuple(parents if type(parents) is list else [parents])
+        #parentslist = tuple(parents if type(parents) is list else [parents])
+        parentslist = ','.join(str(x) for x in (parents if type(parents) is list else [parents]))
         if len(parentslist) == 0:
             return list()
         qu = super().raw('''
         WITH RECURSIVE ou AS (
             SELECT t.id, t.parent_id
             FROM mv_odb_org t
-            WHERE t.id in %s
+            WHERE t.id in (%s) or 0 in (%s)  
         UNION ALL
             SELECT t2.id, t2.parent_id
             FROM mv_odb_org t2
             JOIN ou t1
             ON t2.parent_id = t1.id
         )
-        SELECT DISTINCT id FROM ou
-        ''', params=[parentslist])
+        SELECT DISTINCT id FROM ou WHERE id > 0
+        ''', params=[parentslist,parentslist])
         return list(qu)
 
     def queryParents(self, children):
@@ -854,13 +855,18 @@ def query_events_timeranges(
     timeranges = TimeRange.objects.eventsInRange(start, end, orgunits=orgunits, users=users)
     return timeranges, alldayevents
 
-def query_events_timeranges4user(
+def query_events_timeranges2(
         start: datetime.date,
         end: datetime.date,
-        users: List[str] = None
+        users: List[int] = None,
+        orgunits: List[int] = None
 ):
     alldayevents = AllDayEvent.objects.eventsInRange(start, end)
-    timeranges = TimeRange.objects.eventsInRange(start, end).filter(user__in=users)
+    timeranges = TimeRange.objects.eventsInRange(start, end)
+    if users is not None:
+        timeranges = timeranges.filter(user__in=users)
+    if orgunits is not None:
+        timeranges = timeranges.filter(org__in=orgunits)
     return timeranges, alldayevents
 
 
@@ -881,18 +887,20 @@ def query_events_timeranges_in_week(
     return query_events_timeranges(monday, friday, orgunits=orgunits, users=users)
 
 
-def query_events_list1(start, end, orgunit=None):
+def query_events_list1(start, end, orgunit=0):
     if start is None:
         start = datetime.date.today()
     if end is None or end < start:
         end = start + datetime.timedelta(days=100)
 
-    if orgunit is None:
-        orgunits = OrgUnit.objects.listDescendants(orgunit) if orgunit is not None else None
-        ret = (query_events_timeranges(start, end, orgunits), start, end)
+    orgunit = 0 if orgunit is None else orgunit
+    
+    if orgunit >= 0:
+        orgunits =  [x.id for x in OrgUnit.objects.queryDescendants2([orgunit])]
+        ret = (query_events_timeranges2(start=start, end=end, orgunits=orgunits), start, end)
     else:
         userlist = ma2vt.objects.get_users(orgunit)
-        ret = (query_events_timeranges4user(start, end, userlist), start, end)
+        ret = (query_events_timeranges2(start=start, end=end, users=userlist), start, end)
     return ret
 
 
