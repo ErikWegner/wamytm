@@ -76,6 +76,7 @@ class virtualteam(models.Model):
     vt_id = models.IntegerField(primary_key=True)
     vt_parent_id = models.IntegerField(null=True)
     vt_name = models.TextField()
+    is_privat = models.BooleanField(default=False)
     objects = virtualteam_manager()
     #models.CharField(max_length=80)
 

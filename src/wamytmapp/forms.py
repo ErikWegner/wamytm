@@ -110,6 +110,7 @@ class AddTimeRangeForm(forms.Form):
             'AddTimeRangeForm', 'Entry will be visible to this and all organizational units above'),
         label=pgettext_lazy('AddTimeRangeForm', 'Organizational unit'))
     kind = forms.ChoiceField(
+        help_text=pgettext_lazy('AddTimeRangeForm', 'kind_help'),
         required=True,
         label=pgettext_lazy('AddTimeRangeForm', 'Kind of time range'))
     description = forms.CharField(
