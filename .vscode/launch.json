@@ -72,6 +72,24 @@
             "justMyCode": false
         },
         {
+            "name": "Python: Django testDaten",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src",
+            "program": "${workspaceFolder}/src/manage.py",
+            "args": [
+                "runserver",
+                "0.0.0.0:8000",
+                "--noreload"
+            ],
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.migrate2testdb",
+                "DEBUG": "TRUE"
+            },
+            "django": true,
+            "justMyCode": false
+        },
+        {
             "name": "Django migrate",
             "type": "python",
             "request": "launch",

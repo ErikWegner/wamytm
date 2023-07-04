@@ -123,7 +123,7 @@ msgstr "Organisationseinheit"
 #: .\wamytmapp\forms.py:113
 msgctxt "AddTimeRangeForm"
 msgid "kind_help"
-msgstr "Zeiteintrag „Mobiles Arbeiten bis 04.07.2023, ab 05.07.2023 „Home Office“."
+msgstr "Zeiteintrag „Mobiles Arbeiten bis 03.07.2023, ab 04.07.2023 „Home Office“."
 
 #: .\wamytmapp\forms.py:241
 msgctxt "ProfileForm"
