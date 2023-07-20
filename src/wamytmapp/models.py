@@ -14,7 +14,7 @@ from django_prometheus.models import ExportModelOperationsMixin
 from simple_history.models import HistoricalRecords
 from typing import List
 
-
+ 
 #class User(AbstractUser):
 #    pass
 
@@ -150,7 +150,7 @@ class OrgUnitManager(models.Manager):
         WITH RECURSIVE ou AS (
             SELECT t.id, t.parent_id
             FROM mv_odb_org t
-            WHERE t.id in (%s) or 0 in (%s)  
+            WHERE t.id in (''' + parentslist + ''') or 0 in (''' + parentslist + ''')  
         UNION ALL
             SELECT t2.id, t2.parent_id
             FROM mv_odb_org t2
@@ -158,7 +158,7 @@ class OrgUnitManager(models.Manager):
             ON t2.parent_id = t1.id
         )
         SELECT DISTINCT id FROM ou WHERE id > 0
-        ''', params=[parentslist,parentslist])
+        ''')
         return list(qu)
 
     def queryParents(self, children):
