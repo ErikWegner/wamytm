@@ -175,9 +175,12 @@ def index(request):
             if dh.day == alldayevent.day:
                 dh.allday = alldayevent
 
+    orgunits = getORGS4FILTER()
+    #<div class="dropdown-divider"></div>
     context = {
         'meins': my_custom_sql(orgid=orgunit, day_of_week=monday, users=users),
-        'orgunit': getORGS4FILTER(),
+        'orgunit': list(filter(lambda x: (x['id'] > 0),orgunits)),
+        'orgunit_vt': list(filter(lambda x: (x['id'] < 0),orgunits)),
         'orgunit_initial': m2o_org_id.m2o_org_id if m2o_org_id is not None else str(orgunit or '0'),
         'days': days,
         'trc': RuntimeConfig.TimeRangeViewsLegend,

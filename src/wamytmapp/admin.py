@@ -9,7 +9,7 @@ from django.utils.translation import pgettext_lazy
 
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent, OrgUnitDelegate, KIND, orgs4wamytm
+from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent, OrgUnitDelegate, KIND, orgs4wamytm, virtualteam, ma2vt
 from .forms import TimeRangeEditForm, orgs4wamytmEditForm
 
 admin.site.register(OrgUnit)
@@ -185,8 +185,18 @@ class KindAdmin(admin.ModelAdmin):
     ordering = ['-wertung']
     def has_delete_permission(self, request, obj=None):
         return False
+    
+class virtualteamAdmin(admin.ModelAdmin):
+    list_display = [ 'vt_name', 'vt_parent_id' ]
+    ordering = ['-vt_id']
+    readonly_fields = [ 'vt_id' ]
+    def has_delete_permission(self, request, obj=None):
+        return False
 
-
+class ma2vtAdmin(admin.ModelAdmin):
+    #list_display = [ 'vt_id', 'user_id' ]
+    list_filter = ["vt"]
+    #pass
 
 class orgs4wamytmAdmin(admin.ModelAdmin):
     list_display = [ 'm_org' ]
@@ -198,3 +208,5 @@ korporator_admin.register(AllDayEvent, AllDayEventAdmin)
 korporator_admin.register(KIND, KindAdmin)
 korporator_admin.register(orgs4wamytm, orgs4wamytmAdmin)
 korporator_admin.register(User, DelegatesAdmin)
+korporator_admin.register(virtualteam, virtualteamAdmin)
+korporator_admin.register(ma2vt, ma2vtAdmin)

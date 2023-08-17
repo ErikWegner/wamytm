@@ -74,11 +74,14 @@ class virtualteam_manager(models.Manager):
     
 class virtualteam(models.Model):
     vt_id = models.IntegerField(primary_key=True)
-    vt_parent_id = models.IntegerField(null=True)
+    #vt_parent_id = models.IntegerField(null=True)
+    vt_parent = models.ForeignKey("virtualteam", on_delete=models.CASCADE)
     vt_name = models.TextField()
     is_privat = models.BooleanField(default=False)
     objects = virtualteam_manager()
-    #models.CharField(max_length=80)
+
+    def __str__(self):
+        return self.vt_name
 
 class ma2vt_Manager(models.Manager):
     def get_users(self, orgunit):
@@ -93,6 +96,8 @@ class ma2vt(models.Model):
     vt = models.ForeignKey(virtualteam, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     objects = ma2vt_Manager()
+    def __str__(self):
+        return f"{self.vt} <- {self.user}" 
 
 class ODB_STRUKT_Manager(models.Manager):
     def SelectList_with_Orgs(self):
@@ -268,7 +273,7 @@ wt as (
 src as (
   select distinct 
     t.*,
-    u.last_name || ', ' || u.first_name || ' (' || upper(substr(u.username, 2)) || ')' as user_name
+    u.last_name || ', ' || u.first_name || ' (' || upper(trim(leading  '\-\' from substr(u.username, 2))) || ')' as user_name
   from
     wamytmapp_timerange t
     cross join config g
