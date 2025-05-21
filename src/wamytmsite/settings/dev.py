@@ -26,23 +26,23 @@ DATABASES = {
 #        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #    }
 #  Oracle
-#	'default': {
-#		'ENGINE': 'django.db.backends.oracle',
-#        	'NAME': '(DESCRIPTION=(ADDRESS = (PROTOCOL = TCP)(HOST = ***REMOVED***)(PORT = 1521))(CONNECT_DATA=(SERVICE_NAME=***REMOVED***)))',
-#        	'USER': 'KO',
-#        	'PASSWORD': '***REMOVED***',
-#        	'HOST': '',
-#        	'PORT': '',
-#	}
+	'default': {
+		'ENGINE': 'django.db.backends.oracle',
+        	'NAME': '(DESCRIPTION=(ADDRESS = (PROTOCOL = TCP)(HOST = vs1500.intra.regiocom.net)(PORT = 1521))(CONNECT_DATA=(SERVICE_NAME=dev_apex_regiocom)))',
+        	'USER': 'KO',
+        	'PASSWORD': 'dJeJ3Vga',
+        	'HOST': '',
+        	'PORT': '',
+	}
 # Postgres
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'wamytmdb',
-        'USER': 'wamytm',
-        'PASSWORD': 'Stw9nUvm',
-        'HOST': '127.0.0.1',
-        'PORT': '',
-    }
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#        'NAME': 'wamytmdb',
+#        'USER': 'wamytm',
+#        'PASSWORD': 'Stw9nUvm',
+#        'HOST': '127.0.0.1',
+#        'PORT': '',
+#    }
 }
 
 # Clients > Client ID

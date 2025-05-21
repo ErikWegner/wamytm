@@ -441,39 +441,11 @@ order by
 def getORGS4FILTER():
     with connection.cursor() as cursor:
         cursor.execute("""
-       with
-  recursive asd as (
-    select
-      t.*,
-      1 as lvl,
-      t.name as root,
-      ARRAY [name] AS hierarchy
-    from
-      mv_odb_org t
-    where
-      t.parent_id is null
-    union
-    select
-      t.*,
-      lvl + 1,
-      g.root,
-      g.hierarchy || t.name
-    from
-      mv_odb_org t
-      join asd g on t.parent_id = g.id
-  )
-select
-  id,
-  lvl,
-  name
-from
-  asd t
-order by
-  case
-    when id < 0 then 1
-    else 2
-  end,
-  t.hierarchy
+       select t.id, level, t.name, SYS_CONNECT_BY_PATH(t.name,',') as hierarchy
+  from mv_odb_org t
+ start with t.parent_id is null
+connect by prior t.id = t.parent_id
+ order SIBLINGS by case when t.id < 0 then 1 else 2 end,t.name
             """)
         row = dictfetchall(cursor)
     return row
@@ -872,7 +844,7 @@ def query_events_timeranges2(
     if users is not None:
         timeranges = timeranges.filter(user__in=users)
     if orgunits is not None:
-        timeranges = timeranges.filter(org__in=orgunits)
+        timeranges = timeranges.filter(user__in=list(map(lambda x: x.id,OMS.objects.queryAllTeammember(orgunits))))
     return timeranges, alldayevents
 
 

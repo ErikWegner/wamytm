@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wamytmapp', '0018_add_mitid2auth_user'),
+        ('wamytmapp', '0017_orgs4wamytm'),
     ]
 
     operations = [
