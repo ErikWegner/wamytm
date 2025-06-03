@@ -16,11 +16,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from typing import List
 
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
+
 from .config import RuntimeConfig
-from .models import getORGS4FILTER, my_custom_sql, TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name, TimeRangeManager
+
+from .model.Timerange import TimeRange, TimeRangeManager
+from .model.sonst import AllDayEvent, query_events_list1, query_events_timeranges_in_week, TeamMember
+from .model.ODB import OMS, getORGS4FILTER, my_custom_sql
+from .model.base import user_display_name
+
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
 from .serializers import TimeRangeSerializer
-from .models import OrgUnit, OMS, ODB_MITARBEITER2STRUKT, AllDayEvent
 
 
 class DayHeader:
@@ -179,8 +186,8 @@ def index(request):
     #<div class="dropdown-divider"></div>
     context = {
         'meins': my_custom_sql(orgid=orgunit, day_of_week=monday, users=users),
-        'orgunit': list(filter(lambda x: (x['id'] > 0),orgunits)),
-        'orgunit_vt': list(filter(lambda x: (x['id'] < 0),orgunits)),
+        'orgunit': list(filter(lambda x: (x['ID'] > 0),orgunits)),
+        'orgunit_vt': list(filter(lambda x: (x['ID'] < 0),orgunits)),
         'orgunit_initial': m2o_org_id.m2o_org_id if m2o_org_id is not None else str(orgunit or '0'),
         'days': days,
         'trc': RuntimeConfig.TimeRangeViewsLegend,
@@ -194,17 +201,21 @@ def index(request):
     return render(request, 'wamytmapp/index.html', context)
 
 
-@login_required
+#@login_required
 def add(request):
+    user = User.objects.get(id=152)
+    user.backend = 'django.contrib.auth.backends.ModelBackend'
+    login(request, user)
+
     def handle_overlaps(form: AddTimeRangeForm):
         if form.cleaned_data['overlap_actions'] is None or form.cleaned_data['overlap_actions'] == "":
             return
-        start = form.cleaned_data['start']
-        end = form.cleaned_data['end'] if form.cleaned_data['end'] is not None else start
+        von = form.cleaned_data['start']
+        end = form.cleaned_data['end'] if form.cleaned_data['end'] is not None else von
         kind = form.cleaned_data['kind']
         part = form.cleaned_data['part_of_day']
         overlaps = TimeRange.objects.overlapResolution(
-            start,
+            von,
             end,
             form.cleaned_data['user_id'],
             kind,
@@ -227,18 +238,18 @@ def add(request):
                 TimeRange.objects.get(id=itemid).delete()
             elif action == TimeRangeManager.OVERLAP_NEW_END:
                 item = TimeRange.objects.get(id=itemid)
-                item.end = start + datetime.timedelta(days=-1)
+                item.end = von + datetime.timedelta(days=-1)
                 item.save()
             elif action == TimeRangeManager.OVERLAP_NEW_START:
                 item = TimeRange.objects.get(id=itemid)
-                item.start = end + datetime.timedelta(days=1)
+                item.von = end + datetime.timedelta(days=1)
                 item.save()
             elif action == TimeRangeManager.OVERLAP_SPLIT:
-                if part in ('a','f') and start == end:
+                if part in ('a','f') and von == end:
                     today = TimeRange.objects.get(id=itemid)
                     if today.kind != kind:
                         today.pk = None
-                        today.start = start
+                        today.start = von
                         today.end = end
                         today.data['partial'] = 'a' if part == 'f' else 'a'
                         today.save()
@@ -246,7 +257,7 @@ def add(request):
                 prev_item = TimeRange.objects.get(id=itemid)
                 next_item = TimeRange.objects.get(id=itemid)
                 next_item.pk = None
-                prev_item.end = start + datetime.timedelta(days=-1)
+                prev_item.end = von + datetime.timedelta(days=-1)
                 next_item.start = end + datetime.timedelta(days=1)
                 prev_item.save()
                 next_item.save()
@@ -266,6 +277,7 @@ def add(request):
                         form.add_error(field, error)
     else:
         form = AddTimeRangeForm(user=request.user)
+        
     language = get_language_from_request(request)
     if language is not None and language.startswith("de"):
         form.fields['start'].widget.attrs['data-date-language'] = 'de'

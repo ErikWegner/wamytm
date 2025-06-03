@@ -47,11 +47,11 @@
                             <div class="hs-menu-inner">
                                 <a class="dropdown-item" data-value="0" data-level="1" href="#">Alle</a>
                                 {% for em in orgunit_vt %}
-                                    <a class="dropdown-item" data-value="{{ em.id }}" data-level="{{ em.lvl }}" href="#">{{ em.name }}</a>
+                                    <a class="dropdown-item" data-value="{{ em.ID }}" data-level="{{ em.LEVEL }}" href="#">{{ em.NAME }}</a>
                                 {% endfor %}
                                 <div class="dropdown-divider"></div>
                                 {% for em in orgunit %}
-                                    <a class="dropdown-item" data-value="{{ em.id }}" data-level="{{ em.lvl }}" href="#">{{ em.name }}</a>
+                                    <a class="dropdown-item" data-value="{{ em.ID }}" data-level="{{ em.LEVEL }}" href="#">{{ em.NAME }}</a>
                                 {% endfor %}
                             </div>
                         </div>
@@ -96,13 +96,13 @@
     <div class="header th {% if day.allday %} allday{% endif %}">{{ day.day }}{% if day.allday %}<br>{{ day.allday.description }}{% endif %}</div>
     {% endfor %}
     {% for item in meins %}
-    {% if item.dn == 1 %}
-    <div class="th">{{ item.user_name }}</div>
+    {% if item.DN == 1 %}
+    <div class="th">{{ item.USER_NAME }}</div>
     {% endif %}
-    {% if item.kind == None %}
-    <div style="grid-column: span {{ item.span }};" class="empty"></div>
+    {% if item.KIND == None %}
+    <div style="grid-column: span {{ item.SPAN }};" class="empty"></div>
     {% else %}
-    <div style="grid-column: span {{ item.span }};" class="kind-{{ item.kind }}{{ item.partial }}">{{ trc|get_value_from_dict:item.kind }}{{ item|get_description_tooltip }}</div>
+    <div style="grid-column: span {{ item.SPAN }};" class="kind-{{ item.KIND }}{{ item.PARTIAL }}">{{ trc|get_value_from_dict:item.KIND }}{{ item|get_description_tooltip }}</div>
     {% endif %}
     {% endfor %}
 </div>

@@ -9,7 +9,12 @@ from django.utils.translation import pgettext_lazy
 
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import OrgUnit, TeamMember, TimeRange, AllDayEvent, OrgUnitDelegate, KIND, orgs4wamytm, virtualteam, ma2vt
+from .model.Timerange import TimeRange
+from .model.virtualteam import *
+from .model.OrgUnit import *
+from .model.ODB import *
+from .model.sonst import *
+
 from .forms import TimeRangeEditForm, orgs4wamytmEditForm
 
 admin.site.register(OrgUnit)
@@ -95,12 +100,12 @@ korporator_admin = BasicAdminSite(name="ka")
 class TimeRangeBasicAdmin(SimpleHistoryAdmin):
     readonly_fields = ('user',)
     view_on_site = False
-    list_display = ('start', 'end', 'kind')
-    list_filter = ('start', 'kind')
-    date_hierarchy = 'start'
-    ordering = ['-start']
+    list_display = ('von', 'bis', 'kind')
+    list_filter = ('von', 'kind')
+    date_hierarchy = 'von'
+    ordering = ['-von']
     form = TimeRangeEditForm
-    history_list_display = ['start', 'end', 'kind']
+    history_list_display = ['von', 'bis', 'kind']
 
     def has_module_permission(self, request):
         return True
