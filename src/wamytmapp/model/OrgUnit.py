@@ -1,5 +1,5 @@
 from .base import *
-from .ODB import ODB_ORG
+from .ODB import ODB_ORG, OMS
 
 class OrgUnitManager(models.Manager):
     def selectListItems(self):

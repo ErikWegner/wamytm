@@ -1,6 +1,10 @@
+from django.core.exceptions import ValidationError
+from django.utils.text import format_lazy
+from simple_history.models import HistoricalRecords
+
 from .base import *
-from .OrgUnit import *
-from .ODB import *
+from .OrgUnit import OrgUnit
+from .ODB import ODB_ORG, OMS
 
 class TimeRangeManager(models.Manager):
     OVERLAP_NEW_END = 'end'
@@ -53,7 +57,7 @@ class TimeRangeManager(models.Manager):
         )
 
         if orgunits is not None:
-            query = query.filter(user__in=list(map(lambda x: x.id,OMS.objects.queryAllTeammember(orgunits)))) 
+            query = query.filter(user__in=list(map(lambda x: x.id, OMS.objects.queryAllTeammember(orgunits)))) 
             #query = query.filter(org_id__in=orgunits)
 
         if userid is not None:

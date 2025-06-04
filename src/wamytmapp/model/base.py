@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from django.utils.translation import pgettext_lazy
 from django_prometheus.models import ExportModelOperationsMixin
 from django.core.serializers.json import DjangoJSONEncoder
-from simple_history.models import HistoricalRecords
 from typing import List
 
 def dictfetchall(cursor):
