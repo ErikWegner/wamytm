@@ -20,7 +20,7 @@
             <div class="hs-menu-inner">
                 <a class="dropdown-item" data-value="0" data-level="1" href="#">Alle</a>
                 {% for em in orgunit_filter %}
-                    <a class="dropdown-item" data-value="{{ em.id }}" data-level="{{ em.lvl }}" href="#">{{ em.name }}</a>
+                    <a class="dropdown-item" data-value="{{ em.ID }}" data-level="{{ em.LEVEL }}" href="#">{{ em.NAME }}</a>
                 {% endfor %}
             </div>
         </div>

@@ -91,7 +91,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
             dh = line['day']
             day = dh.day
             # check if the day of the row is in the duration of the event
-            if day < event.start or day > event.end:
+            if day < event.von or day > event.bis:
                 continue
             # record any user with an event
             if event.user not in users:
@@ -203,10 +203,12 @@ def index(request):
 
 #@login_required
 def add(request):
-    user = User.objects.get(id=152)
-    user.backend = 'django.contrib.auth.backends.ModelBackend'
-    login(request, user)
-
+    # manuelles Einloggen
+    #user = User.objects.get(id=152)
+    #user.backend = 'django.contrib.auth.backends.ModelBackend'
+    #login(request, user)
+    ###########################################################
+    
     def handle_overlaps(form: AddTimeRangeForm):
         if form.cleaned_data['overlap_actions'] is None or form.cleaned_data['overlap_actions'] == "":
             return

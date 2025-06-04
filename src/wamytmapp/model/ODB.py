@@ -56,26 +56,23 @@ class OMSManager(models.Manager):
         return super().all().filter(user_id__exact=user_id)[0]
 
     def getORG_ID(self,user_id):
-        qu = super().raw('''
-select * from v_getORGID t where t.user_id = %s
-        ''', params=[user_id])
-
+        qu = super().raw('''select * from v_getORGID t where t.user_id = %s''', params=[user_id])
         if len(qu) == 0:
             return None
-
         return qu[0]
+    
     def queryAllTeammember(self, parents):
         parentslist = tuple(parents if type(parents) is list else [parents])
         if len(parentslist) == 0:
             return list()
         qu = super().raw("""
-        SELECT g.user_id
+        SELECT g.user_id as id
         FROM odb_mitarbeiter2strukt t
         JOIN wamytmapp_oms g ON g.mit_id = t.m2o_mit_id
         where trunc(sysdate) >= COALESCE(t.m2o_von, to_date('01.01.1970','DD.MM.RRRR'))
           AND trunc(sysdate) <= COALESCE(t.m2o_bis, to_date('31.12.2099','DD.MM.RRRR'))
-          and t.m2o_org_id in %s
-        """, params=[parentslist[:4]])
+          and t.m2o_org_id in (%s)
+        """, params=[",".join(map(str,parentslist[:4]))])
         return list(qu)
 
     def queryTeammember(self, parents):
