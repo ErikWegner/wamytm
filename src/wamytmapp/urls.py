@@ -10,6 +10,7 @@ urlpatterns = [
     path('survey', views.weekCSV, name='weekCSV'),
     path('add', views.add, name='add'),
     path('list', views.list1, name='list1'),
+    path('list2', views.list2, name='list2'),
     path('profile', views.profile, name="profile"),
     path('timeranges', views.TimeRangesList.as_view()),
     path('check', views.conflict_check),

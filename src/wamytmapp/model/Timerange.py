@@ -96,7 +96,7 @@ class TimeRangeManager(models.Manager):
     
 class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
     DATA_KINDDETAIL = 'kinddetail'
-    DATA_DESCRIPTION = 'desc'
+    DATA_DESCRIPTION = 'DATA_DESC'
     DATA_PARTIAL = 'partial'
     ABSENT = 'a'
     PRESENT = 'p'

@@ -10,20 +10,20 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import get_language_from_request
 from django.views.decorators.clickjacking import xframe_options_exempt
-from django.views.generic import FormView
+#from django.views.generic import FormView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from typing import List
 
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 
 from .config import RuntimeConfig
 
 from .model.Timerange import TimeRange, TimeRangeManager
 from .model.sonst import AllDayEvent, query_events_list1, query_events_timeranges_in_week, TeamMember
-from .model.ODB import OMS, getORGS4FILTER, my_custom_sql
+from .model.ODB import OMS, getORGS4FILTER, my_custom_sql, my_custom_sql2
 from .model.base import user_display_name
 
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
@@ -204,11 +204,11 @@ def index(request):
 #@login_required
 def add(request):
     # manuelles Einloggen
-    #user = User.objects.get(id=152)
-    #user.backend = 'django.contrib.auth.backends.ModelBackend'
-    #login(request, user)
+    user = User.objects.get(id=152)
+    user.backend = 'django.contrib.auth.backends.ModelBackend'
+    login(request, user)
     ###########################################################
-    
+
     def handle_overlaps(form: AddTimeRangeForm):
         if form.cleaned_data['overlap_actions'] is None or form.cleaned_data['overlap_actions'] == "":
             return
@@ -335,6 +335,43 @@ def list1(request):
 
     return render(request, 'wamytmapp/list1.html', viewdata)
 
+@xframe_options_exempt
+def list2(request):
+    filterformvalues = request.GET.copy()
+    if request.user is not None and request.user.is_authenticated and 'orgunit' not in filterformvalues:
+        M2O_ORG_ID = OMS.objects.getORG_ID(request.user.id)
+        if M2O_ORG_ID is not None:
+            filterformvalues['orgunit'] = M2O_ORG_ID.m2o_org_id
+
+    filterform = OrgUnitFilterForm(filterformvalues)
+
+    orgunitparamvalue = None
+    start = None
+    end = None
+    orgunit = None
+
+    if filterform.is_valid():
+        startparamvalue = filterform.cleaned_data['fd']
+        start = datetime.datetime.strptime(startparamvalue, "%Y-%m-%d").date() if startparamvalue else None
+        endparamvalue = filterform.cleaned_data['td']
+        end = datetime.datetime.strptime(endparamvalue, "%Y-%m-%d").date() if endparamvalue else None
+
+        orgunitparamvalue = filterform.cleaned_data['orgunit']
+
+    orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
+
+    (events, alldayevents), start, end = query_events_list1(start, end, orgunit)
+    viewdata = _prepareList1Data(events, start, end)
+    viewdata['ouselect'] = filterform
+    viewdata['orgunit'] = 0 if orgunit is None else orgunit
+    viewdata['orgunit_initial'] = 0 if orgunit is None else orgunit
+    viewdata['orgunit_filter'] = getORGS4FILTER()
+    viewdata['trc'] = RuntimeConfig.TimeRangeViewsLegend
+    viewdata['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
+
+    viewdata['newuser'] = OMS.objects.queryTeammember(orgunit)
+
+    return render(request, 'wamytmapp/list2.html', viewdata)
 
 def weekCSV(request):
     weekdelta = int(request.GET['weekdelta']) if "weekdelta" in request.GET else 0
@@ -458,10 +495,10 @@ class TeamFeed(ICalFeed):
         return ""
 
     def item_start_datetime(self, item):
-        return item.start
+        return item.von
 
     def item_end_datetime(self, item):
-        return item.end
+        return item.bis
 
     def item_link(self, item):
         return reverse('wamytmapp:list1') + F"?orgunit={item.orgunit_id}"

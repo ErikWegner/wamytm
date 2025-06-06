@@ -86,8 +86,8 @@ class OMSManager(models.Manager):
         ON g.org_id = t.m2o_org_id
         JOIN auth_user u
         on u.id = t.user_id
-        where t.m2o_org_id in %s
-        ''', params=[parentslist])
+        where t.m2o_org_id in %s order by u.last_name, u.first_name
+        ''', params=[",".join(map(str,parentslist))])
         return list(qu)
 
 class OMS(models.Model):
@@ -305,6 +305,40 @@ select t.user_name,
  group by t.root, t.user_name, t.kind, t.partial, t.data_desc, t.data_v
  order by t.user_name, min(t.tag)
  """, (day_of_week.strftime('%Y-%m-%d'),orgid))
+        row = dictfetchall(cursor)
+	
+    return row
+
+
+def my_custom_sql2(orgid, von, bis):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+with mas as
+ (select t.user_id, u.first_name, u.last_name
+    FROM v_getorgid t
+    JOIN auth_user u
+      on u.id = t.user_id
+   where t.m2o_org_id = %s),
+tage as
+ (select ab + level - 1 as tag
+    from (select to_date(%s, 'DD.MM.RRRR') as ab,
+                 to_date(%s, 'DD.MM.RRRR') as bis
+            from dual)
+  connect by ab + level - 1 <= bis),
+data as
+ (select * from tage cross join mas)
+select data.tag,
+       data.last_name,
+       data.first_name,
+       t.kind,
+       JSON_VALUE(t.data, '$.partial') as data_partial,
+       JSON_VALUE(t.data, '$.desc') as data_desc
+  from data
+  left join WAMYTMAPP_TIMERANGE t
+    on data.tag between t.von and t.bis
+   and data.user_id = t.user_id
+ order by data.tag, data.last_name, data.first_name
+ """, (orgid, von.strftime('%d.%m.%Y'),bis.strftime('%d.%m.%Y')))
         row = dictfetchall(cursor)
 	
     return row
