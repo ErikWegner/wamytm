@@ -1,5 +1,6 @@
 from .base import *
 from .ODB import ODB_ORG, OMS
+#from .sonst import TeamMember
 
 class OrgUnitManager(models.Manager):
     def selectListItems(self):
@@ -13,23 +14,23 @@ class OrgUnitManager(models.Manager):
         toplevel.insert(0, ("", pgettext_lazy('OrgUnitManager', "All")))
         return toplevel
 
-    def queryDescendants(self, parents):
-        parentslist = tuple(parents if type(parents) is list else [parents])
-        if len(parentslist) == 0:
-            return list()
-        qu = super().raw('''
-        WITH RECURSIVE ou(id, parent_id) AS (
-            SELECT id, parent_id
-            FROM wamytmapp_orgunit
-            WHERE id in %s
-        UNION ALL
-            SELECT t2.id, t2.parent_id
-            FROM wamytmapp_orgunit AS t2, ou AS t1
-            WHERE t2.parent_id = t1.id
-        )
-        SELECT DISTINCT id FROM ou
-        ''', params=[parentslist])
-        return list(qu)
+    #def queryDescendants(self, parents):
+    #    parentslist = tuple(parents if type(parents) is list else [parents])
+    #    if len(parentslist) == 0:
+    #        return list()
+    #    qu = super().raw('''
+    #    WITH RECURSIVE ou(id, parent_id) AS (
+    #        SELECT id, parent_id
+    #        FROM wamytmapp_orgunit
+    #        WHERE id in %s
+    #    UNION ALL
+    #        SELECT t2.id, t2.parent_id
+    #        FROM wamytmapp_orgunit AS t2, ou AS t1
+    #        WHERE t2.parent_id = t1.id
+    #    )
+    #    SELECT DISTINCT id FROM ou
+    #    ''', params=[parentslist])
+    #    return list(qu)
 
     def queryDescendants2(self, parents):
         #parentslist = tuple(parents if type(parents) is list else [parents])
@@ -38,28 +39,28 @@ class OrgUnitManager(models.Manager):
             return list()
         qu = super().raw('''
         select distinct t.id
-  from mv_odb_org t
- where t.id > 0
- start with t.id in (''' + parentslist + ''') or 0 in (''' + parentslist + ''')
-connect by t.parent_id = prior t.id
+        from mv_odb_org t
+        where t.id > 0
+        start with t.id in (''' + parentslist + ''') or 0 in (''' + parentslist + ''')
+        connect by t.parent_id = prior t.id
         ''')
         return list(qu)
 
-    def queryParents(self, children):
-        idlist = children if type(children) is list else [children]
-        qu = super().raw('''
-        WITH RECURSIVE ou(id, parent_id) AS (
-            SELECT id, parent_id
-            FROM wamytmapp_orgunit
-            WHERE id in (%s)
-        UNION ALL
-            SELECT t2.id, t2.parent_id
-            FROM wamytmapp_orgunit AS t2, ou AS t1
-            WHERE t2.id = t1.parent_id
-        )
-        SELECT DISTINCT id FROM ou
-        ''', idlist)
-        return list(qu)
+    #def queryParents(self, children):
+    #    idlist = children if type(children) is list else [children]
+    #    qu = super().raw('''
+    #    WITH RECURSIVE ou(id, parent_id) AS (
+    #        SELECT id, parent_id
+    #        FROM wamytmapp_orgunit
+    #        WHERE id in (%s)
+    #    UNION ALL
+    #        SELECT t2.id, t2.parent_id
+    #        FROM wamytmapp_orgunit AS t2, ou AS t1
+    #        WHERE t2.id = t1.parent_id
+    #    )
+    #    SELECT DISTINCT id FROM ou
+    #    ''', idlist)
+    #    return list(qu)
 
     def listDescendants(self, parent_id):
         all_org_units = super().all()

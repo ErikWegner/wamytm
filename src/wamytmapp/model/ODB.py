@@ -95,32 +95,19 @@ class OMS(models.Model):
     mit_id = models.IntegerField(null=True)
     objects = OMSManager()
 
-class odb_org_Manager(models.Manager):
+class odb_org_Manager(models.Manager):  
     def getORGS4FILTER(self):
         with connection.cursor() as cursor:
             cursor.execute("""
-        with recursive asd as (
-            select
-            t.*,
-            1 as lvl,
-            t.name as root,
-            ARRAY[name] AS hierarchy
-            from
-            mv_odb_org t
-            where
-            t.parent_id is null
-            union
-            select t.*, lvl + 1, g.root,g.hierarchy || t.name
-            from mv_odb_org t 
-            join asd g on t.parent_id = g.id)
-            select
-            id,lvl,name
-            from
-            asd order by hierarchy
+        select t.id, level, t.name, SYS_CONNECT_BY_PATH(t.name,',') as hierarchy
+        from mv_odb_org t
+        start with t.parent_id is null
+        connect by prior t.id = t.parent_id
+        order SIBLINGS by case when t.id < 0 then 1 else 2 end,t.name
             """)
             row = dictfetchall(cursor)
         return row
-        
+          
     def selectListItemsWithAllChoice(self):
         all_org_units = super().all()
         toplevel = get_children(all_org_units)
@@ -161,19 +148,6 @@ def get_children(org_units: List[mv_odb_org]):
                 charr.append((child_org_unit.id, child_org_unit.name))
             r.append((org_unit.name, tuple(charr)))
     return r
-
-
-def getORGS4FILTER():
-    with connection.cursor() as cursor:
-        cursor.execute("""
-        select t.id, level, t.name, SYS_CONNECT_BY_PATH(t.name,',') as hierarchy
-        from mv_odb_org t
-        start with t.parent_id is null
-        connect by prior t.id = t.parent_id
-        order SIBLINGS by case when t.id < 0 then 1 else 2 end,t.name
-            """)
-        row = dictfetchall(cursor)
-    return row
 
 def my_custom_sql(orgid, day_of_week, users):
     if users is not None and len(users) > 0:

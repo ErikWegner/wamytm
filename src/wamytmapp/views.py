@@ -23,7 +23,7 @@ from .config import RuntimeConfig
 
 from .model.Timerange import TimeRange, TimeRangeManager
 from .model.sonst import AllDayEvent, query_events_list1, query_events_timeranges_in_week, TeamMember
-from .model.ODB import OMS, getORGS4FILTER, my_custom_sql, my_custom_sql2
+from .model.ODB import OMS, mv_odb_org, my_custom_sql, my_custom_sql2
 from .model.base import user_display_name
 
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
@@ -182,8 +182,8 @@ def index(request):
             if dh.day == alldayevent.day:
                 dh.allday = alldayevent
 
-    orgunits = getORGS4FILTER()
-    #<div class="dropdown-divider"></div>
+    orgunits = mv_odb_org.objects.getORGS4FILTER()
+
     context = {
         'meins': my_custom_sql(orgid=orgunit, day_of_week=monday, users=users),
         'orgunit': list(filter(lambda x: (x['ID'] > 0),orgunits)),
@@ -329,7 +329,7 @@ def list1(request):
     viewdata['ouselect'] = filterform
     viewdata['orgunit'] = 0 if orgunit is None else orgunit
     viewdata['orgunit_initial'] = 0 if orgunit is None else orgunit
-    viewdata['orgunit_filter'] = getORGS4FILTER()
+    viewdata['orgunit_filter'] = mv_odb_org.objects.getORGS4FILTER()
     viewdata['trc'] = RuntimeConfig.TimeRangeViewsLegend
     viewdata['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
 
