@@ -26,9 +26,9 @@ DATABASES = {
 	'default': {
 		'ENGINE': 'django.db.backends.oracle',
         	'NAME': '(DESCRIPTION=(ADDRESS = (PROTOCOL = TCP)(HOST = vs1500.intra.regiocom.net)(PORT = 1521))(CONNECT_DATA=(SERVICE_NAME=dev_apex_regiocom)))',
-        	'USER': 'KO',
+            'USER': 'KO',
         	'PASSWORD': 'dJeJ3Vga',
-        	'HOST': '',
+            'HOST': '',
         	'PORT': '',
 	}
 }
