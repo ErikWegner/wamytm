@@ -10,17 +10,24 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import get_language_from_request
 from django.views.decorators.clickjacking import xframe_options_exempt
-from django.views.generic import FormView
+#from django.views.generic import FormView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from typing import List
 
+from django.contrib.auth.models import User
+from django.contrib.auth import login
+
 from .config import RuntimeConfig
-from .models import getORGS4FILTER, my_custom_sql, TimeRange, TeamMember, query_events_timeranges_in_week, query_events_list1, user_display_name, TimeRangeManager
+
+from .model.Timerange import TimeRange, TimeRangeManager
+from .model.sonst import AllDayEvent, query_events_list1, query_events_timeranges_in_week, TeamMember
+from .model.ODB import OMS, mv_odb_org, my_custom_sql, my_custom_sql2
+from .model.base import user_display_name
+
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
 from .serializers import TimeRangeSerializer
-from .models import OrgUnit, OMS, ODB_MITARBEITER2STRUKT, AllDayEvent
 
 
 class DayHeader:
@@ -84,7 +91,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
             dh = line['day']
             day = dh.day
             # check if the day of the row is in the duration of the event
-            if day < event.start or day > event.end:
+            if day < event.von or day > event.bis:
                 continue
             # record any user with an event
             if event.user not in users:
@@ -175,12 +182,12 @@ def index(request):
             if dh.day == alldayevent.day:
                 dh.allday = alldayevent
 
-    orgunits = getORGS4FILTER()
-    #<div class="dropdown-divider"></div>
+    orgunits = mv_odb_org.objects.getORGS4FILTER()
+
     context = {
         'meins': my_custom_sql(orgid=orgunit, day_of_week=monday, users=users),
-        'orgunit': list(filter(lambda x: (x['id'] > 0),orgunits)),
-        'orgunit_vt': list(filter(lambda x: (x['id'] < 0),orgunits)),
+        'orgunit': list(filter(lambda x: (x['ID'] > 0),orgunits)),
+        'orgunit_vt': list(filter(lambda x: (x['ID'] < 0),orgunits)),
         'orgunit_initial': m2o_org_id.m2o_org_id if m2o_org_id is not None else str(orgunit or '0'),
         'days': days,
         'trc': RuntimeConfig.TimeRangeViewsLegend,
@@ -194,17 +201,23 @@ def index(request):
     return render(request, 'wamytmapp/index.html', context)
 
 
-@login_required
+#@login_required
 def add(request):
+    # manuelles Einloggen
+    user = User.objects.get(id=152)
+    user.backend = 'django.contrib.auth.backends.ModelBackend'
+    login(request, user)
+    ###########################################################
+
     def handle_overlaps(form: AddTimeRangeForm):
         if form.cleaned_data['overlap_actions'] is None or form.cleaned_data['overlap_actions'] == "":
             return
-        start = form.cleaned_data['start']
-        end = form.cleaned_data['end'] if form.cleaned_data['end'] is not None else start
+        von = form.cleaned_data['start']
+        end = form.cleaned_data['end'] if form.cleaned_data['end'] is not None else von
         kind = form.cleaned_data['kind']
         part = form.cleaned_data['part_of_day']
         overlaps = TimeRange.objects.overlapResolution(
-            start,
+            von,
             end,
             form.cleaned_data['user_id'],
             kind,
@@ -227,18 +240,18 @@ def add(request):
                 TimeRange.objects.get(id=itemid).delete()
             elif action == TimeRangeManager.OVERLAP_NEW_END:
                 item = TimeRange.objects.get(id=itemid)
-                item.end = start + datetime.timedelta(days=-1)
+                item.end = von + datetime.timedelta(days=-1)
                 item.save()
             elif action == TimeRangeManager.OVERLAP_NEW_START:
                 item = TimeRange.objects.get(id=itemid)
-                item.start = end + datetime.timedelta(days=1)
+                item.von = end + datetime.timedelta(days=1)
                 item.save()
             elif action == TimeRangeManager.OVERLAP_SPLIT:
-                if part in ('a','f') and start == end:
+                if part in ('a','f') and von == end:
                     today = TimeRange.objects.get(id=itemid)
                     if today.kind != kind:
                         today.pk = None
-                        today.start = start
+                        today.start = von
                         today.end = end
                         today.data['partial'] = 'a' if part == 'f' else 'a'
                         today.save()
@@ -246,7 +259,7 @@ def add(request):
                 prev_item = TimeRange.objects.get(id=itemid)
                 next_item = TimeRange.objects.get(id=itemid)
                 next_item.pk = None
-                prev_item.end = start + datetime.timedelta(days=-1)
+                prev_item.end = von + datetime.timedelta(days=-1)
                 next_item.start = end + datetime.timedelta(days=1)
                 prev_item.save()
                 next_item.save()
@@ -266,6 +279,7 @@ def add(request):
                         form.add_error(field, error)
     else:
         form = AddTimeRangeForm(user=request.user)
+        
     language = get_language_from_request(request)
     if language is not None and language.startswith("de"):
         form.fields['start'].widget.attrs['data-date-language'] = 'de'
@@ -315,12 +329,49 @@ def list1(request):
     viewdata['ouselect'] = filterform
     viewdata['orgunit'] = 0 if orgunit is None else orgunit
     viewdata['orgunit_initial'] = 0 if orgunit is None else orgunit
-    viewdata['orgunit_filter'] = getORGS4FILTER()
+    viewdata['orgunit_filter'] = mv_odb_org.objects.getORGS4FILTER()
     viewdata['trc'] = RuntimeConfig.TimeRangeViewsLegend
     viewdata['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
 
     return render(request, 'wamytmapp/list1.html', viewdata)
 
+@xframe_options_exempt
+def list2(request):
+    filterformvalues = request.GET.copy()
+    if request.user is not None and request.user.is_authenticated and 'orgunit' not in filterformvalues:
+        M2O_ORG_ID = OMS.objects.getORG_ID(request.user.id)
+        if M2O_ORG_ID is not None:
+            filterformvalues['orgunit'] = M2O_ORG_ID.m2o_org_id
+
+    filterform = OrgUnitFilterForm(filterformvalues)
+
+    orgunitparamvalue = None
+    start = None
+    end = None
+    orgunit = None
+
+    if filterform.is_valid():
+        startparamvalue = filterform.cleaned_data['fd']
+        start = datetime.datetime.strptime(startparamvalue, "%Y-%m-%d").date() if startparamvalue else None
+        endparamvalue = filterform.cleaned_data['td']
+        end = datetime.datetime.strptime(endparamvalue, "%Y-%m-%d").date() if endparamvalue else None
+
+        orgunitparamvalue = filterform.cleaned_data['orgunit']
+
+    orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
+
+    (events, alldayevents), start, end = query_events_list1(start, end, orgunit)
+    viewdata = _prepareList1Data(events, start, end)
+    viewdata['ouselect'] = filterform
+    viewdata['orgunit'] = 0 if orgunit is None else orgunit
+    viewdata['orgunit_initial'] = 0 if orgunit is None else orgunit
+    viewdata['orgunit_filter'] = getORGS4FILTER()
+    viewdata['trc'] = RuntimeConfig.TimeRangeViewsLegend
+    viewdata['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
+
+    viewdata['newuser'] = OMS.objects.queryTeammember(orgunit)
+
+    return render(request, 'wamytmapp/list2.html', viewdata)
 
 def weekCSV(request):
     weekdelta = int(request.GET['weekdelta']) if "weekdelta" in request.GET else 0
@@ -444,10 +495,10 @@ class TeamFeed(ICalFeed):
         return ""
 
     def item_start_datetime(self, item):
-        return item.start
+        return item.von
 
     def item_end_datetime(self, item):
-        return item.end
+        return item.bis
 
     def item_link(self, item):
         return reverse('wamytmapp:list1') + F"?orgunit={item.orgunit_id}"

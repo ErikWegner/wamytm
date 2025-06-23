@@ -1,6 +1,6 @@
 from django.utils.translation import pgettext_lazy
 
-from .models import TimeRange
+from .model.Timerange import TimeRange
 
 
 class RuntimeConfig:

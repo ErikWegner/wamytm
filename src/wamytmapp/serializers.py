@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import TimeRange
+from .model.Timerange import TimeRange
 
 class TimeRangeSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,16 +1,14 @@
-from ..model.Timerange import TimeRange
 from django import template
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 register = template.Library()
 
-
 @register.filter
-def get_description_tooltip(value):
-    if TimeRange.DATA_DESCRIPTION not in value:
+def get_description_tooltip2(value):
+    if 'desc' not in value:
         return ''
-    description = value[TimeRange.DATA_DESCRIPTION]
+    description = value['desc']
     if description is None:
         return ''
     description = escape(description)

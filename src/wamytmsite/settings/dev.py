@@ -7,6 +7,9 @@ import os
 
 from . import *
 
+TIME_ZONE = 'Europe/Berlin'
+
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '82021938-3cf7-41ac-a314-9af12725f985'
 
@@ -19,30 +22,15 @@ ALLOWED_HOSTS = ['*']
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
-
-# SQLite
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#    }
 #  Oracle
-#	'default': {
-#		'ENGINE': 'django.db.backends.oracle',
-#        	'NAME': '(DESCRIPTION=(ADDRESS = (PROTOCOL = TCP)(HOST = ***REMOVED***)(PORT = 1521))(CONNECT_DATA=(SERVICE_NAME=***REMOVED***)))',
-#        	'USER': 'KO',
-#        	'PASSWORD': '***REMOVED***',
-#        	'HOST': '',
-#        	'PORT': '',
-#	}
-# Postgres
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'wamytmdb',
-        'USER': 'wamytm',
-        'PASSWORD': 'Stw9nUvm',
-        'HOST': '127.0.0.1',
-        'PORT': '',
-    }
+	'default': {
+		'ENGINE': 'django.db.backends.oracle',
+        	'NAME': '(DESCRIPTION=(ADDRESS = (PROTOCOL = TCP)(HOST = vs1500.intra.regiocom.net)(PORT = 1521))(CONNECT_DATA=(SERVICE_NAME=dev_apex_regiocom)))',
+            'USER': 'KO',
+        	'PASSWORD': 'dJeJ3Vga',
+            'HOST': '',
+        	'PORT': '',
+	}
 }
 
 # Clients > Client ID

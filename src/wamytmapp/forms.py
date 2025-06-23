@@ -4,7 +4,12 @@ from django.contrib.auth.models import User
 from django.utils.translation import pgettext_lazy
 
 from .fields import OverlapActionsField
-from .models import mv_odb_org, OrgUnit, OrgUnitDelegate, TimeRange, TeamMember, user_display_name, OMS, ODB_STRUKT
+
+from .model.ODB import mv_odb_org, ODB_STRUKT, OMS
+from .model.Timerange import TimeRange
+from .model.OrgUnit import OrgUnitDelegate, OrgUnit
+from .model.sonst import user_display_name, TeamMember
+
 from .config import RuntimeConfig
 
 
@@ -53,7 +58,7 @@ class TimeRangeEditForm(forms.ModelForm):
 
     class Meta:
         model = TimeRange
-        fields = ['org', 'start', 'end', 'subkind',
+        fields = ['org', 'von', 'bis', 'subkind',
                   'part_of_day', 'description', 'user']
 
     def clean(self):
@@ -102,7 +107,7 @@ class AddTimeRangeForm(forms.Form):
         help_text=pgettext_lazy('AddTimeRangeForm',
                                 'If left blank, it will be set to start date'),
         widget=forms.widgets.DateInput(attrs=dateInputAttrs))
-    #orgunit_id = forms.ChoiceField(
+    
     org_id = forms.ChoiceField(
         required=True,
         disabled=False,
@@ -133,13 +138,12 @@ class AddTimeRangeForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
-        self.can_delegate = self.user.orgunitdelegate_set.count() > 0
+        #self.can_delegate = self.user.orgunitdelegate_set.count() > 0
+        self.can_delegate = False if self.user.is_anonymous else self.user.orgunitdelegate_set.count() > 0
         super(AddTimeRangeForm, self).__init__(*args, **kwargs)
         self.fields['user'].initial = self.user.id
         self.fields['user'].choices = [(self.user.id, user_display_name(self.user))]
 
-
-        #self.fields['orgunit_id'].choices = odb_org.objects.selectListItemsWithAllChoice()
         self.fields['org_id'].choices = mv_odb_org.objects.selectListItemsWithAllChoice()
         M2O_ORG_ID = OMS.objects.getORG_ID(self.user.id)
         if M2O_ORG_ID is not None:
@@ -182,10 +186,9 @@ class AddTimeRangeForm(forms.Form):
             jsondata[TimeRange.DATA_PARTIAL] = cleaned_data['part_of_day']
         initData = {
             'user_id': cleaned_data['user_id'],
-            #'orgunit_id': cleaned_data['orgunit_id'],
             'org_id': cleaned_data['org_id'],
-            'start': cleaned_data['start'],
-            'end': cleaned_data['end'],
+            'von': cleaned_data['start'],
+            'bis': cleaned_data['end'],
             'kind': complexKind[:1],
             'data': jsondata
         }
