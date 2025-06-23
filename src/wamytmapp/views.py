@@ -204,9 +204,9 @@ def index(request):
 #@login_required
 def add(request):
     # manuelles Einloggen
-    user = User.objects.get(id=152)
-    user.backend = 'django.contrib.auth.backends.ModelBackend'
-    login(request, user)
+    #user = User.objects.get(id=152)
+    #user.backend = 'django.contrib.auth.backends.ModelBackend'
+    #login(request, user)
     ###########################################################
 
     def handle_overlaps(form: AddTimeRangeForm):
