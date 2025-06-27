@@ -17,7 +17,6 @@ django-bootstrap4 = "*"
 social-auth-app-django = "*"
 social-auth-core = {extras = ["openidconnect"],version = "*"}
 psycopg2 = "*"
-cx-Oracle = "*"
 cryptography = "*"
 gunicorn = "*"
 whitenoise = "*"
@@ -27,6 +26,7 @@ django-ical = "*"
 django-simple-history = "*"
 django-prometheus = "*"
 django-health-check = "*"
+cx-oracle = "*"
 
 [requires]
 python_version = "3.11"
