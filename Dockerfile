@@ -5,6 +5,14 @@ WORKDIR /usr/src/app
 COPY Pipfile .
 COPY Pipfile.lock .
 
+RUN mkdir -p /opt/oracle
+RUN wget -P /opt/oracle https://download.oracle.com/otn_software/linux/instantclient/2380000/instantclient-basiclite-linux.x64-23.8.0.25.04.zip
+#COPY instantclient*.zip /opt/oracle/
+RUN unzip /opt/oracle/instantclient-basiclite-linux.x64-23.8.0.25.04.zip -d /opt/oracle
+RUN echo "/opt/oracle/instantclient_23_8" > /etc/ld.so.conf.d/oracle-instantclient.conf
+RUN ldconfig
+RUN apt update && apt install libaio1 -y
+
 RUN pip install --no-cache-dir pipenv && pipenv install --system --deploy
 
 COPY src/ .
