@@ -65,14 +65,18 @@ class OMSManager(models.Manager):
         parentslist = tuple(parents if type(parents) is list else [parents])
         if len(parentslist) == 0:
             return list()
-        qu = super().raw("""
-        SELECT g.user_id as id
-        FROM odb_mitarbeiter2strukt t
-        JOIN wamytmapp_oms g ON g.mit_id = t.m2o_mit_id
-        where trunc(sysdate) >= COALESCE(t.m2o_von, to_date('01.01.1970','DD.MM.RRRR'))
-          AND trunc(sysdate) <= COALESCE(t.m2o_bis, to_date('31.12.2099','DD.MM.RRRR'))
-          and t.m2o_org_id in (%s)
-        """, params=[",".join(map(str,parentslist[:4]))])
+        
+        ids = parentslist[:4]
+        placeholders = ','.join(['%s'] * len(ids))
+        query = f"""
+            SELECT g.user_id as id
+            FROM odb_mitarbeiter2strukt t
+            JOIN wamytmapp_oms g ON g.mit_id = t.m2o_mit_id
+            WHERE trunc(sysdate) >= COALESCE(t.m2o_von, TO_DATE('01.01.1970','DD.MM.RRRR'))
+              AND trunc(sysdate) <= COALESCE(t.m2o_bis, TO_DATE('31.12.2099','DD.MM.RRRR'))
+              AND t.m2o_org_id IN ({placeholders})
+            """
+        qu = super().raw(query, params=ids)
         return list(qu)
 
     def queryTeammember(self, parents):

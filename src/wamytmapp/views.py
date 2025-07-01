@@ -201,7 +201,7 @@ def index(request):
     return render(request, 'wamytmapp/index.html', context)
 
 
-#@login_required
+@login_required
 def add(request):
     # manuelles Einloggen
     #user = User.objects.get(id=152)

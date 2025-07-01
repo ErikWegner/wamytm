@@ -13,3 +13,4 @@ src/wamytmsite/settings/migrate2testdb.py
 src/wamytmsite/settings/migrate2proddb.py
 ma2tv.txt
 src/wamytmsite/settings/dev2.py
+instantclient-*.zip
