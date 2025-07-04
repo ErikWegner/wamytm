@@ -176,8 +176,7 @@ wt as
     from config t
   connect by t.von + level - 1 <= t.bis),
 src as
- (select distinct t.id,
-                  t.von,
+ (select distinct t.von,
                   t.bis,
                   t.kind,
                   t.user_id,
