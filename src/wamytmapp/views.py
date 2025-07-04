@@ -240,7 +240,7 @@ def add(request):
                 TimeRange.objects.get(id=itemid).delete()
             elif action == TimeRangeManager.OVERLAP_NEW_END:
                 item = TimeRange.objects.get(id=itemid)
-                item.end = von + datetime.timedelta(days=-1)
+                item.bis = von + datetime.timedelta(days=-1)
                 item.save()
             elif action == TimeRangeManager.OVERLAP_NEW_START:
                 item = TimeRange.objects.get(id=itemid)
@@ -251,16 +251,18 @@ def add(request):
                     today = TimeRange.objects.get(id=itemid)
                     if today.kind != kind:
                         today.pk = None
-                        today.start = von
-                        today.end = end
+                        today.von = von
+                        today.bis = end
                         today.data['partial'] = 'a' if part == 'f' else 'a'
                         today.save()
 
                 prev_item = TimeRange.objects.get(id=itemid)
+                prev_item.bis = von + datetime.timedelta(days=-1)
+                
                 next_item = TimeRange.objects.get(id=itemid)
                 next_item.pk = None
-                prev_item.end = von + datetime.timedelta(days=-1)
-                next_item.start = end + datetime.timedelta(days=1)
+                next_item.von = end + datetime.timedelta(days=1)
+
                 prev_item.save()
                 next_item.save()
 
