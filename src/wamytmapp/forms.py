@@ -157,8 +157,7 @@ class AddTimeRangeForm(forms.Form):
             userfield = self.fields['user']
             userfield.disabled = False
             userfield.required = True
-            #list2 = list(map(lambda u: (u[0], F"{u[2]}, {u[1]} ({u[3]} ({u[4]}))"), OrgUnitDelegate.objects.delegatedUsers2(self.user.id)))
-            list2 = list(map(lambda u: (u[0], F"{u[2]}, {u[1]}"), OrgUnitDelegate.objects.delegatedUsers2(self.user.id)))
+            list2 = list(map(lambda u: (u[0], F"{u[2]}, {u[1]}"), OrgUnitDelegate.objects.delegatedUsers(self.user.id)))
             userfield.choices = sorted(list(dict.fromkeys(userfield.choices + list2)), key=lambda tup: tup[1])
 
     def get_time_range(self):

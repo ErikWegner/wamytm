@@ -106,7 +106,7 @@ def query_events_list1(start, end, orgunit=0):
     orgunit = 0 if orgunit is None else orgunit
     
     if orgunit >= 0:
-        orgunits =  [x.id for x in OrgUnit.objects.queryDescendants2([orgunit])]
+        orgunits =  [x.id for x in OrgUnit.objects.queryDescendants([orgunit])]
         ret = (query_events_timeranges2(start=start, end=end, orgunits=orgunits), start, end)
     else:
         userlist = ma2vt.objects.get_users(orgunit)

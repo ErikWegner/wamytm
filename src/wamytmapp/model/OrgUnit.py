@@ -14,36 +14,22 @@ class OrgUnitManager(models.Manager):
         toplevel.insert(0, ("", pgettext_lazy('OrgUnitManager', "All")))
         return toplevel
 
-    #def queryDescendants(self, parents):
-    #    parentslist = tuple(parents if type(parents) is list else [parents])
-    #    if len(parentslist) == 0:
-    #        return list()
-    #    qu = super().raw('''
-    #    WITH RECURSIVE ou(id, parent_id) AS (
-    #        SELECT id, parent_id
-    #        FROM wamytmapp_orgunit
-    #        WHERE id in %s
-    #    UNION ALL
-    #        SELECT t2.id, t2.parent_id
-    #        FROM wamytmapp_orgunit AS t2, ou AS t1
-    #        WHERE t2.parent_id = t1.id
-    #    )
-    #    SELECT DISTINCT id FROM ou
-    #    ''', params=[parentslist])
-    #    return list(qu)
+    def queryDescendants(self, parents):
+        parentslist = normalize_list(parents)
 
-    def queryDescendants2(self, parents):
-        #parentslist = tuple(parents if type(parents) is list else [parents])
-        parentslist = ','.join(str(x) for x in (parents if type(parents) is list else [parents]))
         if len(parentslist) == 0:
             return list()
-        qu = super().raw('''
-        select distinct t.id
-        from mv_odb_org t
-        where t.id > 0
-        start with t.id in (''' + parentslist + ''') or 0 in (''' + parentslist + ''')
-        connect by t.parent_id = prior t.id
-        ''')
+        
+        placeholders = ','.join(['%s'] * len(parentslist))
+        query = f"""
+            SELECT distinct t.id
+            FROM mv_odb_org t
+            WHERE t.id > 0
+            START WITH t.id in ({placeholders}) or 0 in ({placeholders})
+            CONNECT BY t.parent_id = prior t.id
+        """
+        
+        qu = super().raw(query,params=list(parentslist) * 2)
         return list(qu)
 
     #def queryParents(self, children):
@@ -129,27 +115,12 @@ class OrgUnitDelegateManager(models.Manager):
         return False
 
     def delegatedOUIdList(self, user_id):
-        delegatedOUList = list(super().filter(user__id=user_id).values_list('orgunit_id', flat=True))
+        delegatedOUList = list(super().filter(user__id=user_id).values_list('org_id', flat=True))
         delegatedOUListRecursive = list(map(lambda ou: ou.id, OrgUnit.objects.queryDescendants(delegatedOUList)))
         return delegatedOUListRecursive
 
     def delegatedUsers(self, user_id):
         delegatedOUList = self.delegatedOUIdList(user_id)
-
-        people = list(TeamMember.objects.filter(
-            orgunit__id__in=delegatedOUList))
-
-        return people
-
-    def delegatedOUIdList2(self, user_id):
-        delegatedOUList = list(super().filter(user__id=user_id).values_list('org_id', flat=True))
-        delegatedOUListRecursive = list(map(lambda ou: ou.id, OrgUnit.objects.queryDescendants2(delegatedOUList)))
-        return delegatedOUListRecursive
-
-    def delegatedUsers2(self, user_id):
-        delegatedOUList = self.delegatedOUIdList2(user_id)
-
-        #people = list(TeamMember.objects.filter(orgunit__id__in=delegatedOUList))
         people = list(map(lambda ou: (ou.user_id, ou.first_name, ou.last_name,ou.org_name, ou.org_kbez), OMS.objects.queryTeammember(delegatedOUList)))
         return people
 

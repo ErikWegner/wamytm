@@ -62,7 +62,8 @@ class OMSManager(models.Manager):
         return qu[0]
     
     def queryAllTeammember(self, parents):
-        parentslist = tuple(parents if type(parents) is list else [parents])
+        parentslist = normalize_list(parents)
+        
         if len(parentslist) == 0:
             return list()
         
@@ -70,28 +71,34 @@ class OMSManager(models.Manager):
         placeholders = ','.join(['%s'] * len(ids))
         query = f"""
             SELECT g.user_id as id
-            FROM odb_mitarbeiter2strukt t
-            JOIN wamytmapp_oms g ON g.mit_id = t.m2o_mit_id
-            WHERE trunc(sysdate) >= COALESCE(t.m2o_von, TO_DATE('01.01.1970','DD.MM.RRRR'))
-              AND trunc(sysdate) <= COALESCE(t.m2o_bis, TO_DATE('31.12.2099','DD.MM.RRRR'))
-              AND t.m2o_org_id IN ({placeholders})
-            """
+              FROM odb_mitarbeiter2strukt t
+              JOIN wamytmapp_oms g ON g.mit_id = t.m2o_mit_id
+             WHERE trunc(sysdate) >= COALESCE(t.m2o_von, TO_DATE('01.01.1970','DD.MM.RRRR'))
+               AND trunc(sysdate) <= COALESCE(t.m2o_bis, TO_DATE('31.12.2099','DD.MM.RRRR'))
+               AND t.m2o_org_id IN ({placeholders})"""
+        
         qu = super().raw(query, params=ids)
         return list(qu)
 
     def queryTeammember(self, parents):
-        parentslist = tuple(parents if type(parents) is list else [parents])
+        parentslist = normalize_list(parents)
+        
         if len(parentslist) == 0:
             return list()
-        qu = super().raw('''
-        SELECT t.*, u.first_name, u.last_name, g.org_name, g.org_kbez
-        FROM v_getorgid t
-        JOIN odb_org g
-        ON g.org_id = t.m2o_org_id
-        JOIN auth_user u
-        on u.id = t.user_id
-        where t.m2o_org_id in %s order by u.last_name, u.first_name
-        ''', params=[",".join(map(str,parentslist))])
+        
+        placeholders = ','.join(['%s'] * len(parentslist))
+        query = f"""
+            SELECT t.*, u.first_name, u.last_name, g.org_name, g.org_kbez
+            FROM v_getorgid t
+            JOIN odb_org g
+              ON g.org_id = t.m2o_org_id
+            JOIN auth_user u
+              on u.id = t.user_id
+           WHERE t.m2o_org_id in ({placeholders})
+           ORDER by u.last_name, u.first_name"""
+        
+        qu = super().raw(query, params=parentslist)
+
         return list(qu)
 
 class OMS(models.Model):

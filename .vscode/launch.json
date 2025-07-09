@@ -43,8 +43,7 @@
             "program": "${workspaceFolder}/src/manage.py",
             "args": [
                 "runserver",
-                "0.0.0.0:8000",
-                "--noreload"
+                "0.0.0.0:8000"
             ],
             "env": {
                 "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.dev",
