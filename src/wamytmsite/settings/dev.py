@@ -24,12 +24,12 @@ ALLOWED_HOSTS = ['*']
 DATABASES = {
 #  Oracle
 	'default': {
-		'ENGINE': 'django.db.backends.oracle',
-        	'NAME': '(DESCRIPTION=(ADDRESS = (PROTOCOL = TCP)(HOST = vs1500.intra.regiocom.net)(PORT = 1521))(CONNECT_DATA=(SERVICE_NAME=dev_apex_regiocom)))',
-            'USER': 'KO',
-        	'PASSWORD': 'dJeJ3Vga',
-            'HOST': '',
-        	'PORT': '',
+		'ENGINE':   os.environ['WAMYTM_DEV_DB_ENGINE'],
+        'NAME':     os.environ['WAMYTM_DEV_DB_NAME'],
+        'USER':     os.environ['WAMYTM_DEV_DB_USER'],
+        'PASSWORD': os.environ['WAMYTM_DEV_DB_PW'],
+        'HOST':     os.environ['WAMYTM_DEV_DB_HOST'],
+        'PORT':     os.environ['WAMYTM_DEV_DB_PORT'],
 	}
 }
 

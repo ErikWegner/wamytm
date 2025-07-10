@@ -161,16 +161,14 @@ def get_children(org_units: List[mv_odb_org]):
     return r
 
 def my_custom_sql(orgid, day_of_week, users):
+    user = ''
     if users is not None and len(users) > 0:
-        user =  "and u.username in (" + ','.join(map(lambda x: "'" + x + "'", users)) + ")"
-    else:
-        user = ''
+        user =  "and u.username in (" + ','.join(map(lambda x: F"'{x}'", users)) + ")"        
 
-    with connection.cursor() as cursor:
-        cursor.execute("""
+    query = F"""
 with config as
  (select von, von + 4 as bis, org_id
-    from (select to_date(%s, 'RRRR-MM-DD') as von, %s as org_id
+    from (select to_date(%s, 'RRRR-MM-DD') as von, to_number(%s) as org_id
             from dual) t),
 orgs AS
  (SELECT t.id, t.parent_id, t.name, g.org_id, g.von, g.bis
@@ -213,7 +211,7 @@ src as
       on org.id in (m2o.m2o_org_id, -m2t.vt_id)
   
    where (org.id is not null or g.org_id = 0)
-     """ + user + """
+     {user}
      and t.von <= g.bis
      and t.bis >= g.von),
 ce as
@@ -249,7 +247,7 @@ asd as
                                  g.kind,
                                  JSON_VALUE(g.data, '$.v') as data_v,
                                  JSON_VALUE(g.data, '$.partial') as data_partial,
-                                 JSON_VALUE(g.data, '$.desc') as data_desc,
+                                 JSON_VALUE(g.data, '$.DATA_DESC') as data_desc,
                                  count(JSON_VALUE(g.data, '$.partial')) over(partition by t.tag, t.user_id) as cnt,
                                  o.wertung
                             from ce t
@@ -271,27 +269,26 @@ select t.user_name,
        max(t.lvl) as span,
        dense_rank() over(partition by t.user_name order by min(t.tag)) as dn
   from (select t.*,
-               level           as lvl,
+               level as lvl,
                CONNECT_BY_ROOT to_char(t.tag, 'DDD') as root
           from asd t
         connect by t.user_id = prior t.user_id
-               and coalesce(t.data_v, 'asergasfd') = prior
-                   coalesce(t.data_v, 'asergasfd')
-               and coalesce(t.data_desc, 'asergasfd') = prior
-                   coalesce(t.data_desc, 'asergasfd')
-               and coalesce(t.partial, 'asergasfd') = prior
-                   coalesce(t.partial, 'asergasfd')
-               and coalesce(t.kind, 'asergasfd') = prior
-                   coalesce(t.kind, 'asergasfd')
+               and coalesce(t.data_v, 'asergasfd') = prior coalesce(t.data_v, 'asergasfd')
+               and coalesce(t.data_desc, 'asergasfd') = prior coalesce(t.data_desc, 'asergasfd')
+               and coalesce(t.partial, 'asergasfd') = prior coalesce(t.partial, 'asergasfd')
+               and coalesce(t.kind, 'asergasfd') = prior coalesce(t.kind, 'asergasfd')
                and t.tag = prior t.tag + 1
          start with ca = 1
          order siblings by user_name, tag) t
  group by t.root, t.user_name, t.kind, t.partial, t.data_desc, t.data_v
- order by t.user_name, min(t.tag)
- """, (day_of_week.strftime('%Y-%m-%d'),orgid))
+ order by t.user_name, min(t.tag)"""
+    
+    with connection.cursor() as cursor:
+        cursor.execute(query, (day_of_week.strftime('%Y-%m-%d'), orgid) )
         row = dictfetchall(cursor)
-	
     return row
+    
+    #print(connection.queries[-1]['sql'])
 
 
 def my_custom_sql2(orgid, von, bis):
