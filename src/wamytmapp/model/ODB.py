@@ -284,12 +284,13 @@ select t.user_name,
  group by t.root, t.user_name, t.kind, t.partial, t.data_desc, t.data_v
  order by t.user_name, min(t.tag)"""
     
+    #try:
     with connection.cursor() as cursor:
-        cursor.execute(query, (day_of_week.strftime('%Y-%m-%d'), orgid) )
+        cursor.execute(query, (day_of_week.strftime('%Y-%m-%d'), str(orgid)) )
         row = dictfetchall(cursor)
     return row
-    
-    #print(connection.queries[-1]['sql'])
+    #except:
+    #    print(connection.queries[-1]['sql'])
 
 
 def my_custom_sql2(orgid, von, bis):
