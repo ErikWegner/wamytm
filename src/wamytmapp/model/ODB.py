@@ -165,6 +165,7 @@ def my_custom_sql(orgid, day_of_week, users):
     if users is not None and len(users) > 0:
         user =  "and u.username in (" + ','.join(map(lambda x: F"'{x}'", users)) + ")"        
 
+    day_of_week = day_of_week or datetime.date.today()
     query = F"""
 with config as
  (select von, von + 4 as bis, org_id
