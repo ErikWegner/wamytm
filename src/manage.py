@@ -5,6 +5,7 @@ import sys
 
 
 def main():
+    print(f"✅ Python-Version: {sys.version}")
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'wamytmsite.settings')
     try:
         from django.core.management import execute_from_command_line

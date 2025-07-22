@@ -169,7 +169,7 @@ def my_custom_sql(orgid, day_of_week, users):
     query = F"""
 with config as
  (select von, von + 4 as bis, org_id
-    from (select to_date(%s, 'RRRR-MM-DD') as von, to_number(%s) as org_id
+    from (select to_date(:TAG, 'YYYY-MM-DD') as von, :ORG as org_id
             from dual) t),
 orgs AS
  (SELECT t.id, t.parent_id, t.name, g.org_id, g.von, g.bis
@@ -284,13 +284,16 @@ select t.user_name,
  group by t.root, t.user_name, t.kind, t.partial, t.data_desc, t.data_v
  order by t.user_name, min(t.tag)"""
     
-    #try:
-    with connection.cursor() as cursor:
-        cursor.execute(query, (day_of_week.strftime('%Y-%m-%d'), str(orgid)) )
-        row = dictfetchall(cursor)
-    return row
-    #except:
-    #    print(connection.queries[-1]['sql'])
+    try:
+        with connection.cursor() as cursor:
+            #cursor.execute(query, (day_of_week.strftime('%Y-%m-%d'), str(orgid)) )
+            cursor.execute(query, {"TAG": day_of_week.strftime('%Y-%m-%d'),"ORG": str(orgid)} )
+            #cursor.execute(query)
+            row = dictfetchall(cursor)
+        return row
+    except Exception as e:
+        print(connection.queries[-1]['sql'])
+        print(f"Fehler aufgetreten: {e}")
 
 
 def my_custom_sql2(orgid, von, bis):
