@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from typing import List
 
 from django.contrib.auth.models import User
-from django.contrib.auth import login
+from django.contrib.auth import login,logout
 
 from .config import RuntimeConfig
 
@@ -99,26 +99,33 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
                 event.user.display_name = user_display_name(event.user)
             # and the event to the row
             if event.user in line:
-                if 'partial' not in event.data or 'partial' not in line[event.user].data:
+                if not event.data or not line[event.user].data or 'partial' not in event.data or 'partial' not in line[event.user].data:
                     continue
 
-                if 'desc' in line[event.user].data or 'desc' in event.data:
-                    if 'desc' not in line[event.user].data:
-                       line[event.user].data['desc'] = event.data['desc']
+                if (line[event.user].data and 'desc' in line[event.user].data) or (event.data and 'desc' in event.data):
+                    if not line[event.user].data or 'desc' not in line[event.user].data:
+                       if not line[event.user].data:
+                           line[event.user].data = {}
+                       line[event.user].data['desc'] = event.data.get('desc', '') if event.data else ''
                     else:
-                        if line[event.user].data['partial'] == 'f' and event.data['partial'] == 'a':
-                            line[event.user].data['desc'] = line[event.user].data['desc'] + ("; " + event.data['desc']) if 'desc' in event.data else ''
-                        elif line[event.user].data['partial'] == 'a' and event.data['partial'] == 'f':
-                            line[event.user].data['desc'] = ((event.data['desc'] +"; ") if 'desc' in event.data else '') + line[event.user].data['desc']
+                        if (line[event.user].data and line[event.user].data.get('partial') == 'f' and 
+                            event.data and event.data.get('partial') == 'a'):
+                            line[event.user].data['desc'] = line[event.user].data['desc'] + ("; " + event.data.get('desc', '')) if event.data and 'desc' in event.data else ''
+                        elif (line[event.user].data and line[event.user].data.get('partial') == 'a' and 
+                              event.data and event.data.get('partial') == 'f'):
+                            line[event.user].data['desc'] = ((event.data.get('desc', '') +"; ") if event.data and 'desc' in event.data else '') + line[event.user].data['desc']
 
                 if line[event.user].kind == event.kind:
-                    del line[event.user].data[TimeRange.DATA_PARTIAL]
+                    if line[event.user].data and TimeRange.DATA_PARTIAL in line[event.user].data:
+                        del line[event.user].data[TimeRange.DATA_PARTIAL]
                     continue
 
-                if line[event.user].data['partial'] == 'f' and event.data['partial'] == 'a':
+                if (line[event.user].data and line[event.user].data.get('partial') == 'f' and 
+                    event.data and event.data.get('partial') == 'a'):
                     if line[event.user].kind != event.kind:
                         line[event.user].kind = line[event.user].kind + event.kind
-                elif line[event.user].data['partial'] == 'a' and event.data['partial'] == 'f':
+                elif (line[event.user].data and line[event.user].data.get('partial') == 'a' and 
+                      event.data and event.data.get('partial') == 'f'):
                     if line[event.user].kind != event.kind:
                         line[event.user].kind = event.kind + line[event.user].kind
 
@@ -143,6 +150,13 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 
 @xframe_options_exempt
 def index(request):
+    # manuelles Einloggen
+    #user = User.objects.get(id=152)
+    #user.backend = 'django.contrib.auth.backends.ModelBackend'
+    #login(request, user)
+    #logout(request)
+    ###########################################################
+
     tempdict = request.GET.copy()
 
     if request.user is not None and request.user.is_authenticated and 'orgunit' not in request.GET and 'users' not in request.GET: 
@@ -203,12 +217,6 @@ def index(request):
 
 @login_required
 def add(request):
-    # manuelles Einloggen
-    #user = User.objects.get(id=152)
-    #user.backend = 'django.contrib.auth.backends.ModelBackend'
-    #login(request, user)
-    ###########################################################
-
     def handle_overlaps(form: AddTimeRangeForm):
         if form.cleaned_data['overlap_actions'] is None or form.cleaned_data['overlap_actions'] == "":
             return
@@ -253,6 +261,8 @@ def add(request):
                         today.pk = None
                         today.von = von
                         today.bis = end
+                        if not today.data:
+                            today.data = {}
                         today.data['partial'] = 'a' if part == 'f' else 'a'
                         today.save()
 
@@ -337,43 +347,6 @@ def list1(request):
 
     return render(request, 'wamytmapp/list1.html', viewdata)
 
-@xframe_options_exempt
-def list2(request):
-    filterformvalues = request.GET.copy()
-    if request.user is not None and request.user.is_authenticated and 'orgunit' not in filterformvalues:
-        M2O_ORG_ID = OMS.objects.getORG_ID(request.user.id)
-        if M2O_ORG_ID is not None:
-            filterformvalues['orgunit'] = M2O_ORG_ID.m2o_org_id
-
-    filterform = OrgUnitFilterForm(filterformvalues)
-
-    orgunitparamvalue = None
-    start = None
-    end = None
-    orgunit = None
-
-    if filterform.is_valid():
-        startparamvalue = filterform.cleaned_data['fd']
-        start = datetime.datetime.strptime(startparamvalue, "%Y-%m-%d").date() if startparamvalue else None
-        endparamvalue = filterform.cleaned_data['td']
-        end = datetime.datetime.strptime(endparamvalue, "%Y-%m-%d").date() if endparamvalue else None
-
-        orgunitparamvalue = filterform.cleaned_data['orgunit']
-
-    orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
-
-    (events, alldayevents), start, end = query_events_list1(start, end, orgunit)
-    viewdata = _prepareList1Data(events, start, end)
-    viewdata['ouselect'] = filterform
-    viewdata['orgunit'] = 0 if orgunit is None else orgunit
-    viewdata['orgunit_initial'] = 0 if orgunit is None else orgunit
-    viewdata['orgunit_filter'] = getORGS4FILTER()
-    viewdata['trc'] = RuntimeConfig.TimeRangeViewsLegend
-    viewdata['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
-
-    viewdata['newuser'] = OMS.objects.queryTeammember(orgunit)
-
-    return render(request, 'wamytmapp/list2.html', viewdata)
 
 def weekCSV(request):
     weekdelta = int(request.GET['weekdelta']) if "weekdelta" in request.GET else 0

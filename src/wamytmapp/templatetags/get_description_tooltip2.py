@@ -6,7 +6,7 @@ register = template.Library()
 
 @register.filter
 def get_description_tooltip2(value):
-    if 'desc' not in value:
+    if not value or not isinstance(value, dict) or 'desc' not in value:
         return ''
     description = value['desc']
     if description is None:

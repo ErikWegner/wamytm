@@ -5,4 +5,4 @@ from .model.Timerange import TimeRange
 class TimeRangeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TimeRange
-        fields = ['user', 'orgunit', 'start', 'end', 'kind']
+        fields = ['user', 'orgunit', 'von', 'bis', 'kind']

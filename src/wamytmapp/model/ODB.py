@@ -126,13 +126,13 @@ class odb_org_Manager(models.Manager):
         return toplevel
 
 class mv_odb_org(models.Model):
-	id = models.BigIntegerField(primary_key=True)
-	name = models.CharField(max_length=255)
-	parent = models.ForeignKey('self', on_delete=models.DO_NOTHING, blank=True, null=True)
-	objects = odb_org_Manager()
-	class Meta:
-		managed = False
-		db_table = 'mv_odb_org'
+    id = models.BigIntegerField(primary_key=True)
+    name = models.CharField(max_length=255)
+    parent = models.ForeignKey('self', on_delete=models.DO_NOTHING, blank=True, null=True)
+    objects = odb_org_Manager()
+    class Meta:
+        managed = False
+        db_table = 'mv_odb_org'
 
 
 def get_children(org_units: List[mv_odb_org]):
@@ -165,11 +165,13 @@ def my_custom_sql(orgid, day_of_week, users):
     if users is not None and len(users) > 0:
         user =  "and u.username in (" + ','.join(map(lambda x: F"'{x}'", users)) + ")"        
 
-    day_of_week = day_of_week or datetime.date.today()
-    query = F"""
+    if not day_of_week or not hasattr(day_of_week, 'strftime'):
+        day_of_week = datetime.date.today()
+    
+    query = """
 with config as
  (select von, von + 4 as bis, org_id
-    from (select to_date(%s, 'RRRR-MM-DD') as von, to_number(%s) as org_id
+    from (select to_date(:TAG, 'YYYY-MM-DD') as von, :ORG as org_id
             from dual) t),
 orgs AS
  (SELECT t.id, t.parent_id, t.name, g.org_id, g.von, g.bis
@@ -283,14 +285,16 @@ select t.user_name,
          order siblings by user_name, tag) t
  group by t.root, t.user_name, t.kind, t.partial, t.data_desc, t.data_v
  order by t.user_name, min(t.tag)"""
-    
+    query = query.format(user=user)
     #try:
     with connection.cursor() as cursor:
-        cursor.execute(query, (day_of_week.strftime('%Y-%m-%d'), str(orgid)) )
+        cursor.execute(query, {"TAG": day_of_week.strftime('%Y-%m-%d'),"ORG": str(orgid)} )
         row = dictfetchall(cursor)
     return row
-    #except:
+    #except Exception as e:
     #    print(connection.queries[-1]['sql'])
+    #    print(f"Fehler aufgetreten: {e}")
+    #    raise e
 
 
 def my_custom_sql2(orgid, von, bis):
@@ -323,5 +327,5 @@ select data.tag,
  order by data.tag, data.last_name, data.first_name
  """, (orgid, von.strftime('%d.%m.%Y'),bis.strftime('%d.%m.%Y')))
         row = dictfetchall(cursor)
-	
+    
     return row

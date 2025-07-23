@@ -1,0 +1,19 @@
+{
+  "name": "Django Dev Container",
+  "build": {
+    "dockerfile": "../Dockerfile"
+  },
+  "envFile": ".env",
+  "extensions": [
+    "ms-python.python"
+  ],
+  "forwardPorts": [
+    8000
+  ],
+  "remoteUser": "root",
+  "settings": {
+    "python.pythonPath": "/usr/bin/python3",
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true
+  }
+}

@@ -1,7 +1,6 @@
 [[source]]
 name = "pypi"
 url = "https://pypi.org/simple"
-#url = "https://nexus3.r.regiocom.net/repository/pypi-all/simple"
 verify_ssl = true
 
 [dev-packages]
@@ -25,7 +24,7 @@ django-ical = "*"
 django-simple-history = "*"
 django-prometheus = "*"
 django-health-check = "*"
-cx-oracle = "*"
+oracledb = "*"
 
 [requires]
 python_version = "3.11"
