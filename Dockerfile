@@ -6,8 +6,8 @@ COPY Pipfile .
 COPY Pipfile.lock .
 
 RUN mkdir -p /opt/oracle
-#RUN wget -P /opt/oracle https://download.oracle.com/otn_software/linux/instantclient/2380000/instantclient-basiclite-linux.x64-23.8.0.25.04.zip
-COPY instantclient*.zip /opt/oracle/
+RUN wget -P /opt/oracle https://download.oracle.com/otn_software/linux/instantclient/2380000/instantclient-basiclite-linux.x64-23.8.0.25.04.zip
+#COPY instantclient*.zip /opt/oracle/
 RUN unzip /opt/oracle/instantclient-basiclite-linux.x64-23.8.0.25.04.zip -d /opt/oracle
 RUN echo "/opt/oracle/instantclient_23_8" > /etc/ld.so.conf.d/oracle-instantclient.conf
 RUN ldconfig
