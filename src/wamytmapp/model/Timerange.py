@@ -1,10 +1,29 @@
 from django.core.exceptions import ValidationError
 from django.utils.text import format_lazy
 from simple_history.models import HistoricalRecords
+import json
 
 from .base import *
 from .OrgUnit import OrgUnit
 from .ODB import ODB_ORG, OMS
+
+class SafeJSONField(models.JSONField):
+    """
+    A JSONField that handles cases where the database returns 
+    already-deserialized data instead of JSON strings
+    """
+    def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
+        # If the value is already a dict/list, return it as-is
+        if isinstance(value, (dict, list)):
+            return value
+        # If it's a string, try to parse it as JSON
+        try:
+            return json.loads(value, cls=self.decoder)
+        except (json.JSONDecodeError, TypeError):
+            # If parsing fails, return the value as-is
+            return value
 
 class TimeRangeManager(models.Manager):
     OVERLAP_NEW_END = 'end'
@@ -85,7 +104,7 @@ class TimeRangeManager(models.Manager):
                 mod['res'] = TimeRangeManager.OVERLAP_NEW_START
             
             # Vormittag/Nachmittag 
-            if 'partial' in item.data and part:
+            if item.data and 'partial' in item.data and part:
                 if item.data['partial'] != part and kind != item.kind:
                     continue
 
@@ -111,7 +130,7 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
     von = models.DateField(verbose_name=pgettext_lazy('TimeRange', 'Start'))
     bis = models.DateField(blank=True, verbose_name=pgettext_lazy('TimeRange', 'End'))
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT, verbose_name=pgettext_lazy('TimeRange', 'Kind of time range'))
-    data = models.JSONField(encoder=DjangoJSONEncoder)
+    data = SafeJSONField(encoder=DjangoJSONEncoder)
 
     org = models.ForeignKey(ODB_ORG, blank=True, null=True,on_delete=models.SET_NULL,verbose_name=pgettext_lazy('TimeRange', 'Organizational unit'))
 
@@ -164,9 +183,9 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
 
         return {
             'id': self.id,
-            'von': (self.von if isinstance(self.von, datetime.date) else self.von.date()).strftime('%Y-%m-%d'),
-            'end': (self.bis if isinstance(self.bis, datetime.date) else self.bis.date()).strftime('%Y-%m-%d'),
-            'kind': [ x for x in self.KIND_CHOICES if x[0] == self.kind][0][1],
-            'desc': self.data['desc'] if 'desc' in self.data  else "",
-            'partial': [ x for x in partial if x[0] == self.data['partial']][0][1] if 'partial' in self.data  else "",
+            'start': (self.von if isinstance(self.von, datetime.date) else self.von.date()).strftime('%Y-%m-%d'), # wird nicht verwendet!
+            'end': (self.bis if isinstance(self.bis, datetime.date) else self.bis.date()).strftime('%Y-%m-%d'), # wird nicht verwendet!
+            'kind': [ x for x in self.KIND_CHOICES if x[0] == self.kind][0][1], # wird nicht verwendet!
+            'desc': self.data.get('desc', '') if self.data else "", # wird nicht verwendet!
+            'partial': [ x for x in partial if x[0] == self.data['partial']][0][1] if self.data and 'partial' in self.data else "", # wird nicht verwendet!
         }

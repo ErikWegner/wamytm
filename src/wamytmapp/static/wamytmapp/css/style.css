@@ -97,7 +97,9 @@ body {
     background-color: white;
 }
 #grid_table div:not(.th) {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 #grid_table div {
     padding: 5px;

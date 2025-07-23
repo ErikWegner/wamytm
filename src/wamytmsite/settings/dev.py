@@ -4,8 +4,9 @@ for development.
 """
 
 import os
-
 from . import *
+import oracledb
+oracledb.init_oracle_client()
 
 TIME_ZONE = 'Europe/Berlin'
 
