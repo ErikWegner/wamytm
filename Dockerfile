@@ -1,16 +1,29 @@
 FROM python:3.12
 
+# Oracle Instant Client variables
+ARG INSTANTCLIENT_VERSION=23.8.0.25.04
+ARG INSTANTCLIENT_MAJOR=23_8
+ARG INSTANTCLIENT_URL=https://download.oracle.com/otn_software/linux/instantclient/2380000
+ARG INSTANTCLIENT_FILE=instantclient-basiclite-linux.x64-${INSTANTCLIENT_VERSION}.zip
+
 WORKDIR /usr/src/app
 
 COPY Pipfile .
 COPY Pipfile.lock .
 
 RUN mkdir -p /opt/oracle
-RUN wget -P /opt/oracle https://download.oracle.com/otn_software/linux/instantclient/2380000/instantclient-basiclite-linux.x64-23.8.0.25.04.zip
-#COPY instantclient*.zip /opt/oracle/
-RUN unzip -q /opt/oracle/instantclient-basiclite-linux.x64-23.8.0.25.04.zip -d /opt/oracle
-RUN echo "/opt/oracle/instantclient_23_8" > /etc/ld.so.conf.d/oracle-instantclient.conf
+
+COPY . /tmp/context/
+RUN if [ -f /tmp/context/${INSTANTCLIENT_FILE} ]; then \
+        cp /tmp/context/${INSTANTCLIENT_FILE} /opt/oracle/; \
+    else \
+        wget -P /opt/oracle ${INSTANTCLIENT_URL}/${INSTANTCLIENT_FILE}; \
+    fi && rm -rf /tmp/context
+
+RUN unzip -q /opt/oracle/${INSTANTCLIENT_FILE} -d /opt/oracle
+RUN echo "/opt/oracle/instantclient_${INSTANTCLIENT_MAJOR}" > /etc/ld.so.conf.d/oracle-instantclient.conf
 RUN ldconfig
+
 RUN apt update && apt install libaio1 -y
 
 RUN pip install --no-cache-dir pipenv && pipenv install --system --deploy

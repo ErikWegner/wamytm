@@ -35,10 +35,6 @@ DATABASES = {
         # Fix for gevent workers - don't reuse connections across greenlets
         'CONN_MAX_AGE': 0,
         'CONN_HEALTH_CHECKS': False,
-        # Oracle-specific options for thread safety
-        'OPTIONS': {
-            'threaded': True,
-        },
     }
 }
 
