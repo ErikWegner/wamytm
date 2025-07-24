@@ -16,16 +16,18 @@ RUN apt update && apt install libaio1 -y
 RUN pip install --no-cache-dir pipenv && pipenv install --system --deploy
 
 COPY src/ .
+COPY gunicorn.conf.py .
 
 RUN mkdir -p /usr/src/app/wamytmsite/staticfiles/
 
 RUN DJANGO_SETTINGS_MODULE=wamytmsite.settings.build ./manage.py collectstatic --noinput
 RUN /bin/bash -c "sed -i \"s/Version: [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}/Version: $(date '+%Y-%m-%d')/g\" wamytmapp/templates/wamytmapp/footer.html"
 
-HEALTHCHECK CMD curl --fail http://localhost:8000/status/up || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl --fail --silent http://localhost:8000/status/up || exit 1
 
 EXPOSE 8000
 
 ENV DJANGO_SETTINGS_MODULE=wamytmsite.settings.container \
     WAMYTM_DATABASE_PORT=""
-CMD [ "gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "gevent", "--worker-connections", "100", "--timeout", "120", "--max-requests", "500", "--max-requests-jitter", "100", "wamytmsite.wsgi" ]
+CMD [ "gunicorn", "--config", "gunicorn.conf.py", "wamytmsite.wsgi" ]
