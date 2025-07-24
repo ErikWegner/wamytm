@@ -1,4 +1,5 @@
 from django.db import models, connection
+from django.db import close_old_connections
 from django.contrib.auth.models import User
 from django.utils.translation import pgettext_lazy
 from django_prometheus.models import ExportModelOperationsMixin
@@ -12,6 +13,16 @@ def dictfetchall(cursor):
         dict(zip(columns, row))
         for row in cursor.fetchall()
     ]
+
+def safe_db_query(query_func):
+    """
+    Wrapper to ensure database connections are properly managed in gevent environments.
+    Closes old connections before executing the query function.
+    """
+    def wrapper(*args, **kwargs):
+        close_old_connections()
+        return query_func(*args, **kwargs)
+    return wrapper
 
 def user_display_name(user):
     full_name = user.last_name + ", " + user.first_name

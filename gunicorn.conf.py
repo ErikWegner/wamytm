@@ -14,7 +14,8 @@ timeout = 300
 keepalive = 5
 max_requests = 1000
 max_requests_jitter = 100
-preload_app = True
+# Disable preload_app to prevent database connection sharing across workers
+preload_app = False
 
 # Restart workers after this many requests, with up to 'jitter' random
 # variation, to help prevent memory leaks

@@ -8,6 +8,8 @@ Required settings are available as environment variables.
 import os
 
 from . import *
+import oracledb
+oracledb.init_oracle_client()
 
 TIME_ZONE = 'Europe/Berlin'
 
@@ -23,14 +25,6 @@ ALLOWED_HOSTS = ['*']
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
-
-# SQLite
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#    }
-
-# Postgres
     'default': {
         'ENGINE': os.environ['WAMYTM_DATABASE_ENGINE'],
         'NAME': os.environ['WAMYTM_DATABASE_NAME'],
@@ -38,6 +32,13 @@ DATABASES = {
         'PASSWORD': os.environ['WAMYTM_DATABASE_PASSWORD'],
         'HOST': os.environ['WAMYTM_DATABASE_HOST'],
         'PORT': os.environ['WAMYTM_DATABASE_PORT'],
+        # Fix for gevent workers - don't reuse connections across greenlets
+        'CONN_MAX_AGE': 0,
+        'CONN_HEALTH_CHECKS': False,
+        # Oracle-specific options for thread safety
+        'OPTIONS': {
+            'threaded': True,
+        },
     }
 }
 

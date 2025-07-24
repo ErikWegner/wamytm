@@ -107,6 +107,7 @@ class OMS(models.Model):
     objects = OMSManager()
 
 class odb_org_Manager(models.Manager):  
+    @safe_db_query
     def getORGS4FILTER(self):
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -134,6 +135,7 @@ class mv_odb_org(models.Model):
         managed = False
         db_table = 'mv_odb_org'
 
+@safe_db_query
 def my_custom_sql(orgid, day_of_week, users):
     user = ''
     if users is not None and len(users) > 0:
