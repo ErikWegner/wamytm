@@ -147,11 +147,11 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 
 @xframe_options_exempt
 def index(request):
-    # manuelles Einloggen
-    user = User.objects.get(id=152)
-    user.backend = 'django.contrib.auth.backends.ModelBackend'
-    login(request, user)
-    #logout(request)
+    # manuelles Einloggen - COMMENTED OUT TO PREVENT WORKER TIMEOUTS
+    # user = User.objects.get(id=152)
+    # user.backend = 'django.contrib.auth.backends.ModelBackend'
+    # login(request, user)
+    # logout(request)
     ###########################################################
 
     tempdict = request.GET.copy()
@@ -397,7 +397,9 @@ class TimeRangesList(APIView):
     """
 
     def get(self, request, format=None):
-        timerangeItems = TimeRange.objects.all()
+        # Add filtering and limit to prevent timeouts
+        # Get recent timeranges only, limit to 1000 records
+        timerangeItems = TimeRange.objects.all().order_by('-id')[:1000]
         serializer = TimeRangeSerializer(timerangeItems, many=True)
         return Response(serializer.data)
 

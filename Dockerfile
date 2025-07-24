@@ -28,4 +28,4 @@ EXPOSE 8000
 
 ENV DJANGO_SETTINGS_MODULE=wamytmsite.settings.container \
     WAMYTM_DATABASE_PORT=""
-CMD [ "gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "wamytmsite.wsgi" ]
+CMD [ "gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "--worker-class", "gevent", "--worker-connections", "100", "--timeout", "120", "--max-requests", "500", "--max-requests-jitter", "100", "wamytmsite.wsgi" ]
