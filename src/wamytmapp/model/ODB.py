@@ -134,32 +134,6 @@ class mv_odb_org(models.Model):
         managed = False
         db_table = 'mv_odb_org'
 
-
-def get_children(org_units: List[mv_odb_org]):
-    z = []
-    c = {}
-    for org_unit in org_units:
-        if org_unit.parent is None:
-            if org_unit.id not in c.keys():
-                z.append(org_unit)
-                c[org_unit.id] = []
-        else:
-            if org_unit.parent_id not in c.keys():
-                z.append(org_unit.parent)
-                c[org_unit.parent_id] = []
-            c[org_unit.parent_id].append(org_unit)
-
-    r = []
-    for org_unit in z:
-        if org_unit.parent is None:
-            r.append((org_unit.id, org_unit.name))
-        if org_unit.id in c and len(c[org_unit.id]) > 0:
-            charr = []
-            for child_org_unit in c[org_unit.id]:
-                charr.append((child_org_unit.id, child_org_unit.name))
-            r.append((org_unit.name, tuple(charr)))
-    return r
-
 def my_custom_sql(orgid, day_of_week, users):
     user = ''
     if users is not None and len(users) > 0:
@@ -295,37 +269,3 @@ select t.user_name,
     #    print(connection.queries[-1]['sql'])
     #    print(f"Fehler aufgetreten: {e}")
     #    raise e
-
-
-def my_custom_sql2(orgid, von, bis):
-    with connection.cursor() as cursor:
-        cursor.execute("""
-with mas as
- (select t.user_id, u.first_name, u.last_name
-    FROM v_getorgid t
-    JOIN auth_user u
-      on u.id = t.user_id
-   where t.m2o_org_id = %s),
-tage as
- (select ab + level - 1 as tag
-    from (select to_date(%s, 'DD.MM.RRRR') as ab,
-                 to_date(%s, 'DD.MM.RRRR') as bis
-            from dual)
-  connect by ab + level - 1 <= bis),
-data as
- (select * from tage cross join mas)
-select data.tag,
-       data.last_name,
-       data.first_name,
-       t.kind,
-       JSON_VALUE(t.data, '$.partial') as data_partial,
-       JSON_VALUE(t.data, '$.desc') as data_desc
-  from data
-  left join WAMYTMAPP_TIMERANGE t
-    on data.tag between t.von and t.bis
-   and data.user_id = t.user_id
- order by data.tag, data.last_name, data.first_name
- """, (orgid, von.strftime('%d.%m.%Y'),bis.strftime('%d.%m.%Y')))
-        row = dictfetchall(cursor)
-    
-    return row

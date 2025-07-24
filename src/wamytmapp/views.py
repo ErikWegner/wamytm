@@ -1,7 +1,5 @@
 import csv
 import datetime
-#import cProfile
-#import pstats
 from django_ical.views import ICalFeed
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError, PermissionDenied, SuspiciousOperation
@@ -10,7 +8,6 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import get_language_from_request
 from django.views.decorators.clickjacking import xframe_options_exempt
-#from django.views.generic import FormView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,7 +20,7 @@ from .config import RuntimeConfig
 
 from .model.Timerange import TimeRange, TimeRangeManager
 from .model.sonst import AllDayEvent, query_events_list1, query_events_timeranges_in_week, TeamMember
-from .model.ODB import OMS, mv_odb_org, my_custom_sql, my_custom_sql2
+from .model.ODB import OMS, mv_odb_org, my_custom_sql
 from .model.base import user_display_name
 
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
@@ -151,9 +148,9 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 @xframe_options_exempt
 def index(request):
     # manuelles Einloggen
-    #user = User.objects.get(id=152)
-    #user.backend = 'django.contrib.auth.backends.ModelBackend'
-    #login(request, user)
+    user = User.objects.get(id=152)
+    user.backend = 'django.contrib.auth.backends.ModelBackend'
+    login(request, user)
     #logout(request)
     ###########################################################
 
@@ -168,8 +165,6 @@ def index(request):
     filterform = FrontPageFilterForm(tempdict)
 
     orgunitparamvalue = filterform.cleaned_data['orgunit'] if filterform.is_valid() else None
-    #if filterform.is_valid():
-    #    orgunitparamvalue = filterform.cleaned_data['orgunit']
 
     weekdelta = filterform.cleaned_data['weekdelta']
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else 0
@@ -184,12 +179,6 @@ def index(request):
         days.append(DayHeader(monday + datetime.timedelta(days=weekday)))
 
     alldayevents = AllDayEvent.objects.eventsInRange(monday, monday + datetime.timedelta(days=4))
-
-    #timeranges, alldayevents = query_events_timeranges_in_week(day_of_week=monday, orgunit=orgunit, users=users)
-    #timeranges_thisweek = _prepareWeekdata(timeranges)
-
-    #meins = my_custom_sql(orgid=orgunit, day_of_week=monday, users=users)
-    #orgunit = getORGS4FILTER()
 
     for alldayevent in alldayevents:
         for dh in days:
