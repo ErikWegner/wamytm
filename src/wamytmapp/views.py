@@ -147,7 +147,7 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
 
 @xframe_options_exempt
 def index(request):
-    # manuelles Einloggen - COMMENTED OUT TO PREVENT WORKER TIMEOUTS
+    # manuelles Einloggen
     # user = User.objects.get(id=152)
     # user.backend = 'django.contrib.auth.backends.ModelBackend'
     # login(request, user)

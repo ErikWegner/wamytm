@@ -25,6 +25,7 @@ django-simple-history = "*"
 django-prometheus = "*"
 django-health-check = "*"
 oracledb = "*"
+gevent = "*"
 
 [requires]
 python_version = "3.11"
