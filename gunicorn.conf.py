@@ -6,21 +6,15 @@ bind = "0.0.0.0:8000"
 backlog = 2048
 
 # Worker processes
-#workers = multiprocessing.cpu_count() * 2 + 1
-workers = 2
-worker_class = "gevent"
+workers = 3
+worker_class = "sync"  # Changed from gevent to sync for better Oracle compatibility
 worker_connections = 1000
-timeout = 300
+timeout = 120  # Reduced from 300 to 120 seconds
 keepalive = 5
-max_requests = 1000
-max_requests_jitter = 100
+max_requests = 500  # Reduced from 1000 to prevent memory leaks
+max_requests_jitter = 50
 # Disable preload_app to prevent database connection sharing across workers
 preload_app = False
-
-# Restart workers after this many requests, with up to 'jitter' random
-# variation, to help prevent memory leaks
-max_requests = 1000
-max_requests_jitter = 100
 
 # Logging
 loglevel = "info"

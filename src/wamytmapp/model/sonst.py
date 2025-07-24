@@ -76,7 +76,10 @@ def query_events_timeranges2(
     if users is not None:
         timeranges = timeranges.filter(user__in=users)
     if orgunits is not None:
-        timeranges = timeranges.filter(user__in=list(map(lambda x: x.id,OMS.objects.queryAllTeammember(orgunits))))
+        # Optimize the query to avoid the expensive lambda mapping
+        team_members = OMS.objects.queryAllTeammember(orgunits)
+        user_ids = [tm.id for tm in team_members]  # Use list comprehension instead of map/lambda
+        timeranges = timeranges.filter(user__in=user_ids)
     return timeranges, alldayevents
 
 
