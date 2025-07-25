@@ -213,8 +213,17 @@ class FrontPageFilterForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        if cleaned_data['weekdelta'] is None:
+        weekdelta = cleaned_data.get('weekdelta')
+        
+        # Set default value if None
+        if weekdelta is None:
             cleaned_data['weekdelta'] = 0
+        else:
+            # Validate weekdelta is within reasonable bounds to prevent date calculation issues
+            if weekdelta < -520 or weekdelta > 520:  # roughly ±10 years
+                cleaned_data['weekdelta'] = 0
+        
+        return cleaned_data
 
 
 class OrgUnitFilterForm(forms.Form):

@@ -164,14 +164,36 @@ def index(request):
 
     filterform = FrontPageFilterForm(tempdict)
 
-    orgunitparamvalue = filterform.cleaned_data['orgunit'] if filterform.is_valid() else None
-
-    weekdelta = filterform.cleaned_data['weekdelta']
+    if filterform.is_valid():
+        orgunitparamvalue = filterform.cleaned_data['orgunit']
+        weekdelta = filterform.cleaned_data['weekdelta'] or 0
+        usersStr = filterform.cleaned_data.get('users')
+    else:
+        orgunitparamvalue = None
+        weekdelta = 0
+        usersStr = None
+    
+    # Ensure weekdelta is a valid integer
+    if weekdelta is None:
+        weekdelta = 0
+    
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else 0
-    usersStr = filterform.cleaned_data['users'] if 'users' in filterform.cleaned_data else None
 
     today = datetime.date.today()
+    # Ensure weekdelta doesn't create invalid dates for Oracle (year 0 or beyond valid range)
+    # Limit weekdelta to reasonable bounds to prevent date calculation issues
+    if weekdelta < -520 or weekdelta > 520:  # roughly ±10 years
+        weekdelta = 0
+    
     monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
+    
+    # Additional safety check: ensure the calculated date is within Oracle's valid range
+    min_oracle_date = datetime.date(1, 1, 1)  # Oracle minimum is 4713 BC, but this is safer
+    max_oracle_date = datetime.date(9999, 12, 31)
+    
+    if monday < min_oracle_date or monday > max_oracle_date:
+        monday = today - datetime.timedelta(days=today.weekday())  # Reset to current week
+    
     days = []
     users = usersStr.split(',') if usersStr else None
 
@@ -338,11 +360,27 @@ def list1(request):
 
 
 def weekCSV(request):
-    weekdelta = int(request.GET['weekdelta']) if "weekdelta" in request.GET else 0
+    try:
+        weekdelta = int(request.GET['weekdelta']) if "weekdelta" in request.GET else 0
+    except (ValueError, TypeError):
+        weekdelta = 0
     timeRangeFilter = request.GET['kind'] if 'kind' in request.GET else None
 
     today = datetime.date.today()
+    
+    # Ensure weekdelta doesn't create invalid dates for Oracle
+    if weekdelta < -520 or weekdelta > 520:  # roughly ±10 years
+        weekdelta = 0
+    
     monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
+    
+    # Additional safety check: ensure the calculated date is within Oracle's valid range
+    min_oracle_date = datetime.date(1, 1, 1)
+    max_oracle_date = datetime.date(9999, 12, 31)
+    
+    if monday < min_oracle_date or monday > max_oracle_date:
+        monday = today - datetime.timedelta(days=today.weekday())  # Reset to current week
+    
     timeranges, _ = query_events_timeranges_in_week(monday)
     print(timeranges)
     users = []

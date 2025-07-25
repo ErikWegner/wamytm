@@ -144,6 +144,13 @@ def my_custom_sql(orgid, day_of_week, users):
     if not day_of_week or not hasattr(day_of_week, 'strftime'):
         day_of_week = datetime.date.today()
     
+    # Additional safety check: ensure the date is within Oracle's valid range
+    min_oracle_date = datetime.date(1, 1, 1)
+    max_oracle_date = datetime.date(9999, 12, 31)
+    
+    if day_of_week < min_oracle_date or day_of_week > max_oracle_date:
+        day_of_week = datetime.date.today()
+    
     query = """
 with config as
  (select von, von + 4 as bis, org_id
