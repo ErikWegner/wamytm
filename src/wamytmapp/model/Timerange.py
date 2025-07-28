@@ -134,10 +134,27 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
         if self.bis is not None and self.bis < self.von:
             raise ValidationError(
                 {'end': pgettext_lazy('Models', 'End date may not be before start date.')})
+        
+        # Validate that JSON data field doesn't exceed varchar2(4000) limit
+        if self.data is not None:
+            json_string = json.dumps(self.data, cls=DjangoJSONEncoder)
+            if len(json_string) > 4000:
+                raise ValidationError({
+                    'data': pgettext_lazy('Models', 
+                        'Data field is too long. Maximum allowed size is 4000 characters, current size is {} characters.').format(len(json_string))
+                })
 
     def save(self, *args, **kwargs):
         if self.bis == None:
             self.bis = self.von
+        
+        # Additional safety check for data field size before saving
+        if self.data is not None:
+            json_string = json.dumps(self.data, cls=DjangoJSONEncoder)
+            if len(json_string) > 4000:
+                # Truncate or raise error - depending on your preference
+                raise ValidationError(f'Data field exceeds 4000 character limit: {len(json_string)} characters')
+        
         super().save(*args, **kwargs)
 
     def safe_data(self):

@@ -70,6 +70,16 @@ class TimeRangeEditForm(forms.ModelForm):
             jsondata[TimeRange.DATA_DESCRIPTION] = cleaned_data['description']
         if 'part_of_day' in cleaned_data and cleaned_data['part_of_day'] != '':
             jsondata[TimeRange.DATA_PARTIAL] = cleaned_data['part_of_day']
+        
+        # Validate JSON data size before saving
+        from django.core.serializers.json import DjangoJSONEncoder
+        import json
+        json_string = json.dumps(jsondata, cls=DjangoJSONEncoder)
+        if len(json_string) > 4000:
+            raise forms.ValidationError(
+                f'Die eingegebenen Daten sind zu lang. Maximal erlaubt sind 4000 Zeichen, aktuell sind es {len(json_string)} Zeichen. Bitte kürzen Sie die Beschreibung.'
+            )
+        
         self.cleaned_data['data'] = jsondata
 
     def save(self, commit=True):
