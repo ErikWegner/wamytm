@@ -8,19 +8,6 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.translation import get_language_from_request
 from django.views.decorators.clickjacking import xframe_options_exempt
-
-def safe_get_data(event):
-    """
-    Safely get the data field from a TimeRange event, handling deferred fields
-    """
-    try:
-        return event.safe_data()
-    except AttributeError:
-        # Fallback for older code or if safe_data method is not available
-        try:
-            return event.data if event.data is not None else {}
-        except Exception:
-            return {}
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -63,7 +50,7 @@ def _prepareWeekdata(weekdata: List[TimeRange]):
                 days.append(0)
             collector[item.user] = {"days": days}
         for d in range(item.start_trim.weekday(), 1 + item.end_trim.weekday()):
-            daydata = item.data
+            daydata = item.safe_data()
             daydata['k'] = item.kind_with_details()
             collector[item.user]["days"][d] = daydata
     result = []
@@ -109,8 +96,8 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
                 event.user.display_name = user_display_name(event.user)
             # and the event to the row
             if event.user in line:
-                event_data = safe_get_data(event)
-                line_user_data = safe_get_data(line[event.user])
+                event_data = event.safe_data()
+                line_user_data = line[event.user].safe_data()
                 
                 if not event_data or not line_user_data or 'partial' not in event_data or 'partial' not in line_user_data:
                     continue
@@ -130,13 +117,13 @@ def _prepareList1Data(events: List[TimeRange], start, end, businessDaysOnly=True
                             line[event.user].data['desc'] = ((event_data.get('desc', '') +"; ") if event_data and 'desc' in event_data else '') + line_user_data['desc']
 
                 if line[event.user].kind == event.kind:
-                    line_user_data = safe_get_data(line[event.user])
+                    line_user_data = line[event.user].safe_data()
                     if line_user_data and TimeRange.DATA_PARTIAL in line_user_data:
                         if hasattr(line[event.user], 'data') and line[event.user].data:
                             del line[event.user].data[TimeRange.DATA_PARTIAL]
                     continue
 
-                line_user_data = safe_get_data(line[event.user])
+                line_user_data = line[event.user].safe_data()
                 if (line_user_data and line_user_data.get('partial') == 'f' and 
                     event_data and event_data.get('partial') == 'a'):
                     if line[event.user].kind != event.kind:

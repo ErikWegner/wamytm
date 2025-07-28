@@ -72,27 +72,13 @@ def query_events_timeranges2(
         orgunits: List[int] = None
 ):
     alldayevents = AllDayEvent.objects.eventsInRange(start, end)
-    
-    # Try to get timeranges with error handling for Oracle LOB issues
-    try:
-        timeranges = TimeRange.objects.eventsInRange(start, end)  # Don't defer data - it's needed in views
-        if users is not None:
-            timeranges = timeranges.filter(user__in=users)
-        if orgunits is not None:
-            # Optimize the query to avoid the expensive lambda mapping
-            team_members = OMS.objects.queryAllTeammember(orgunits)
-            user_ids = [tm.id for tm in team_members]  # Use list comprehension instead of map/lambda
-            timeranges = timeranges.filter(user__in=user_ids)
-    except Exception as e:
-        # If there's an Oracle LOB error, try with deferred data field
-        print(f"Oracle LOB error encountered: {e}")
-        timeranges = TimeRange.objects.eventsInRange(start, end).defer('data')
-        if users is not None:
-            timeranges = timeranges.filter(user__in=users)
-        if orgunits is not None:
-            team_members = OMS.objects.queryAllTeammember(orgunits)
-            user_ids = [tm.id for tm in team_members]
-            timeranges = timeranges.filter(user__in=user_ids)
+    timeranges = TimeRange.objects.eventsInRange(start, end)
+    if users is not None:
+        timeranges = timeranges.filter(user__in=users)
+    if orgunits is not None:
+        team_members = OMS.objects.queryAllTeammember(orgunits)
+        user_ids = [tm.id for tm in team_members]  # Use list comprehension instead of map/lambda
+        timeranges = timeranges.filter(user__in=user_ids)
             
     return timeranges, alldayevents
 
@@ -125,37 +111,13 @@ def query_events_list1(start, end, orgunit=0):
     if orgunit >= 0:
         orgunits =  [x.id for x in OrgUnit.objects.queryDescendants([orgunit])]
         timeranges, alldayevents = query_events_timeranges2(start=start, end=end, orgunits=orgunits)
-        
-        # Force evaluation with error handling for Oracle LOB issues
-        try:
-            timeranges = list(timeranges)
-        except Exception as e:
-            print(f"Oracle LOB error when converting timeranges to list: {e}")
-            # Try again with deferred data field
-            timeranges = TimeRange.objects.eventsInRange(start, end).defer('data')
-            if orgunits:
-                team_members = OMS.objects.queryAllTeammember(orgunits)
-                user_ids = [tm.id for tm in team_members]
-                timeranges = timeranges.filter(user__in=user_ids)
-            timeranges = list(timeranges)
-        
+        timeranges = list(timeranges)
         alldayevents = list(alldayevents)
         ret = ((timeranges, alldayevents), start, end)
     else:
         userlist = ma2vt.objects.get_users(orgunit)
         timeranges, alldayevents = query_events_timeranges2(start=start, end=end, users=userlist)
-        
-        # Force evaluation with error handling for Oracle LOB issues
-        try:
-            timeranges = list(timeranges)
-        except Exception as e:
-            print(f"Oracle LOB error when converting timeranges to list: {e}")
-            # Try again with deferred data field
-            timeranges = TimeRange.objects.eventsInRange(start, end).defer('data')
-            if userlist:
-                timeranges = timeranges.filter(user__in=userlist)
-            timeranges = list(timeranges)
-        
+        timeranges = list(timeranges)
         alldayevents = list(alldayevents)
         ret = ((timeranges, alldayevents), start, end)
     return ret

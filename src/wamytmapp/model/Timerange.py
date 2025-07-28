@@ -7,61 +7,6 @@ from .OrgUnit import OrgUnit
 from .ODB import ODB_ORG, OMS
 from django.db.models.functions import Greatest, Least
 
-class SafeJSONField(models.JSONField):
-    """
-    A JSONField that handles cases where the database returns 
-    already-deserialized data instead of JSON strings
-    """
-    def from_db_value(self, value, expression, connection):
-        if value is None:
-            return value
-        
-        # Handle Oracle LOB objects - check for various Oracle LOB types
-        if hasattr(value, '_impl') or hasattr(value, 'read'):
-            # This is a proper LOB object, read its value
-            try:
-                lob_value = value.read()
-                if isinstance(lob_value, bytes):
-                    lob_value = lob_value.decode('utf-8')
-                return json.loads(lob_value, cls=self.decoder) if lob_value else {}
-            except Exception:
-                return {}
-        
-        # Handle Oracle-specific issue where LOB is returned as dict without _impl
-        if isinstance(value, dict):
-            # Check if this is a problematic Oracle LOB dict
-            if not hasattr(value, '_impl') and len(value) == 0:
-                # Empty Oracle LOB dict, return empty dict
-                return {}
-            # Check if it has Oracle-specific internal structure that shouldn't be exposed
-            oracle_internal_keys = ['_connection', '_cursor', '_locator', '_lobtype']
-            if any(key in value for key in oracle_internal_keys):
-                # This is an Oracle internal dict, return empty dict to avoid errors
-                return {}
-            try:
-                # If it's already a proper dict structure, return it
-                if all(isinstance(k, (str, int, float, bool, type(None))) for k in value.keys()):
-                    return value
-                # Otherwise return empty dict
-                return {}
-            except Exception:
-                return {}
-        
-        # If the value is already a list, return it as-is
-        if isinstance(value, list):
-            return value
-            
-        # If it's a string, try to parse it as JSON
-        if isinstance(value, str):
-            try:
-                return json.loads(value, cls=self.decoder)
-            except (json.JSONDecodeError, TypeError):
-                # If parsing fails, return empty dict
-                return {}
-        
-        # For any other type, return empty dict to avoid errors
-        return {}
-
 class TimeRangeManager(models.Manager):
     OVERLAP_NEW_END = 'end'
     OVERLAP_NEW_START = 'beg'
@@ -168,7 +113,7 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
     von = models.DateField(verbose_name=pgettext_lazy('TimeRange', 'Start'))
     bis = models.DateField(blank=True, verbose_name=pgettext_lazy('TimeRange', 'End'))
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT, verbose_name=pgettext_lazy('TimeRange', 'Kind of time range'))
-    data = SafeJSONField(encoder=DjangoJSONEncoder)
+    data = models.JSONField(encoder=DjangoJSONEncoder, null=True, blank=True, default=dict)
 
     org = models.ForeignKey(ODB_ORG, blank=True, null=True,on_delete=models.SET_NULL,verbose_name=pgettext_lazy('TimeRange', 'Organizational unit'))
 
@@ -196,19 +141,7 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
         super().save(*args, **kwargs)
 
     def safe_data(self):
-        """
-        Safely access the data field, handling cases where it might be deferred
-        or cause Oracle LOB issues
-        """
-        try:
-            # Try to access the data field
-            if hasattr(self, '_state') and self._state.fields_cache and 'data' not in self._state.fields_cache:
-                # Field is deferred, return empty dict
-                return {}
-            return self.data if self.data is not None else {}
-        except Exception:
-            # If there's any error accessing the data field, return empty dict
-            return {}
+        return self.data if self.data is not None else {}
 
     def getDayCount(self):
         return (self.bis - self.von).days

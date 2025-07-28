@@ -171,7 +171,7 @@ src as
                   t.bis,
                   t.kind,
                   t.user_id,
-                  dbms_lob.substr(t.data, 4000) as data,
+                  t.data,
                   t.org_id,
                   u.last_name || ', ' || u.first_name || ' (' ||
                   upper(trim(leading '\\' from substr(u.username, 2))) || ')' as user_name
