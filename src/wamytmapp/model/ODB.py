@@ -101,6 +101,24 @@ class OMSManager(models.Manager):
 
         return list(qu)
 
+    def queryDescendants(self, parents):
+        parentslist = normalize_list(parents)
+
+        if len(parentslist) == 0:
+            return list()
+        
+        placeholders = ','.join(['%s'] * len(parentslist))
+        query = f"""
+            SELECT distinct t.id
+            FROM mv_odb_org t
+            WHERE t.id > 0
+            START WITH t.id in ({placeholders}) or 0 in ({placeholders})
+            CONNECT BY t.parent_id = prior t.id
+        """
+        
+        qu = super().raw(query,params=list(parentslist) * 2)
+        return list(qu)
+
 class OMS(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     mit_id = models.IntegerField(null=True)

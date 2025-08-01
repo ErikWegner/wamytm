@@ -512,4 +512,4 @@ class TeamFeed(ICalFeed):
         return item.bis
 
     def item_link(self, item):
-        return reverse('wamytmapp:list1') + F"?orgunit={item.orgunit_id}"
+        return reverse('wamytmapp:list1') + F"?orgunit={item.org_id}"
