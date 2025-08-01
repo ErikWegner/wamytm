@@ -8,7 +8,7 @@ from .fields import OverlapActionsField
 from .model.ODB import mv_odb_org, ODB_STRUKT, OMS
 from .model.Timerange import TimeRange
 from .model.OrgUnit import OrgUnitDelegate, OrgUnit
-from .model.sonst import user_display_name, TeamMember
+from .model.sonst import user_display_name
 
 from .config import RuntimeConfig
 
@@ -251,21 +251,6 @@ class OrgUnitFilterForm(forms.Form):
         super().__init__(*args, **kwargs)
         #self.fields['orgunit'].choices = OrgUnit.objects.selectListItemsWithAllChoice()
         self.fields['orgunit'].choices = mv_odb_org.objects.selectListItemsWithAllChoice()
-
-
-class ProfileForm(forms.Form):
-    orgunit = forms.ChoiceField(
-        required=True,
-        help_text=pgettext_lazy(
-            'ProfileForm', 'Default value when adding new entries and for filter'),
-        label=pgettext_lazy('ProfileForm', 'Organizational unit'))
-
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
-        super().__init__(*args, **kwargs)
-        self.fields['orgunit'].choices = OrgUnit.objects.selectListItems()
-        self.fields['orgunit'].initial = TeamMember.objects.get(
-            pk=self.user.id).orgunit_id
 
 
 class ConflictCheckForm(forms.Form):

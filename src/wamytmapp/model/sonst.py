@@ -42,18 +42,6 @@ class KIND(models.Model):
     kind = models.CharField(choices=TimeRange.KIND_CHOICES, max_length=1,primary_key=True)
     wertung = models.SmallIntegerField(blank=True, null=True)
 
-class TeamMemberManager(models.Manager):
-    pass
-
-
-class TeamMember(models.Model):
-    user = models.OneToOneField(
-        User, on_delete=models.CASCADE, primary_key=True,)
-    orgunit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE, null=True)
-    objects = TeamMemberManager()
-
-    def __str__(self):
-        return f"{self.user} ({self.orgunit})"
     
 def query_events_timeranges(
         start: datetime.date,

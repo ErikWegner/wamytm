@@ -10,7 +10,7 @@ urlpatterns = [
     path('survey', views.weekCSV, name='weekCSV'),
     path('add', views.add, name='add'),
     path('list', views.list1, name='list1'),
-    path('profile', views.profile, name="profile"),
+    # path('profile', views.profile, name="profile"),  # Removed - was dependent on TeamMember
     path('timeranges', views.TimeRangesList.as_view()),
     path('check', views.conflict_check),
     path('getorgid', views.getorgid),

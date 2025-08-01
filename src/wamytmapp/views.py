@@ -19,11 +19,11 @@ from django.contrib.auth import login,logout
 from .config import RuntimeConfig
 
 from .model.Timerange import TimeRange, TimeRangeManager
-from .model.sonst import AllDayEvent, query_events_list1, query_events_timeranges_in_week, TeamMember
+from .model.sonst import AllDayEvent, query_events_list1, query_events_timeranges_in_week
 from .model.ODB import OMS, mv_odb_org, my_custom_sql
 from .model.base import user_display_name
 
-from .forms import AddTimeRangeForm, OrgUnitFilterForm, ProfileForm, FrontPageFilterForm, ConflictCheckForm
+from .forms import AddTimeRangeForm, OrgUnitFilterForm, FrontPageFilterForm, ConflictCheckForm
 from .serializers import TimeRangeSerializer
 
 
@@ -327,7 +327,7 @@ def list1(request):
         if M2O_ORG_ID is not None:
             filterformvalues['orgunit'] = M2O_ORG_ID.m2o_org_id
 
-        #tm = TeamMember.objects.filter(pk=request.user.id)
+        # User profile functionality removed
         # if tm.exists():
             #filterformvalues['orgunit'] = tm.first().orgunit_id
 
@@ -410,28 +410,10 @@ def weekCSV(request):
     return response
 
 
-@login_required
-def profile(request):
-    if request.method == 'POST':
-        form = ProfileForm(data=request.POST, user=request.user)
-        if form.is_valid():
-            orgunit_id = form.cleaned_data['orgunit']
-            try:
-                teammember = TeamMember.objects.get(pk=request.user.id)
-                teammember.orgunit_id = orgunit_id
-                teammember.save()
-                return HttpResponseRedirect(reverse('wamytmapp:index'))
-            except ValidationError as e:
-                for field in e.message_dict.keys():
-                    for error in e.message_dict[field]:
-                        form.add_error(field, error)
-                # Do something based on the errors contained in e.message_dict.
-                # Display them to a user, or handle them programmatically.
-                pass
-    else:
-        form = ProfileForm(user=request.user)
-
-    return render(request, 'wamytmapp/profile.html', {'form': form})
+# Profile functionality removed - was dependent on TeamMember model
+# @login_required
+# def profile(request):
+#     # This functionality has been removed as it depended on the TeamMember model
 
 
 class TimeRangesList(APIView):

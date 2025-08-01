@@ -109,7 +109,6 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
         (MOBILE, pgettext_lazy('TimeRangeChoice', 'mobile')),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=pgettext_lazy('TimeRange', 'User'))
-    orgunit = models.ForeignKey(OrgUnit,blank=True, null=True,on_delete=models.CASCADE,verbose_name=pgettext_lazy('TimeRange', 'Organizational unit'))
     von = models.DateField(verbose_name=pgettext_lazy('TimeRange', 'Start'))
     bis = models.DateField(blank=True, verbose_name=pgettext_lazy('TimeRange', 'End'))
     kind = models.CharField(choices=KIND_CHOICES, max_length=1, default=ABSENT, verbose_name=pgettext_lazy('TimeRange', 'Kind of time range'))
