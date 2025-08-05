@@ -46,7 +46,7 @@ class OrgUnitDelegateManager(models.Manager):
             return False
         if otheruser.id == request.user.id:
             return True
-        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList2(
+        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(
             request.user.id)
         teammember = OMS.objects.getORG_ID(otheruser.id).m2o_org_id
         if teammember in delegatedOUList:

@@ -1,1 +1,0 @@
-# TeamMember model and related signal handlers have been removed

@@ -296,3 +296,81 @@ select t.user_name,
     #    print(connection.queries[-1]['sql'])
     #    print(f"Fehler aufgetreten: {e}")
     #    raise e
+
+
+@safe_db_query
+def my_custom_sql2(start, end, orgid = None):    
+    query = """
+with config as
+ (select to_date(:VON, 'DD.MM.RRRR') as ab,
+         to_date(:BIS, 'DD.MM.RRRR') as bis
+    from dual),
+orgs as
+ ( /*+ MATERIALIZE */
+  select t.m_org_id
+    from ODB_STRUKT t
+   start with t.m_org_id = :ORG_ID
+  connect by t.m_id = prior t.m_parent_id
+         and trunc(sysdate) between t.m_von and
+             coalesce(t.m_bis, to_date('31.12.2099', 'DD.MM.RRRR'))),
+tage as
+ (select tag, n, wt, feiertag, feiertag_desc
+    from (select tag,
+                 n,
+                 to_char(tag, 'd') as wt,
+                 g.id as feiertag,
+                 g.description as feiertag_desc
+            from (select ab + level - 1 as tag, level as n
+                    from config
+                  connect by level < (bis - ab) + 2) t
+            left join WAMYTMAPP_ALLDAYEVENT g
+              on t.tag = g.day)
+   where wt < 7
+     and wt > 1),
+data1 as
+ (select distinct t.kind,
+                  JSON_VALUE(t.data, '$.DATA_DESC') as data_desc,
+                  t.von,
+                  t.bis,
+                  t.user_id,
+                  u.last_name || ', ' || u.first_name as username
+    from wamytmapp_timerange t
+   cross join config g
+    join auth_user u
+      on t.user_id = u.id
+    join orgs o
+      on t.org_id = o.m_org_id
+   where t.bis >= g.ab
+     and t.von <= g.bis
+  
+  ),
+mas as
+ (select distinct user_id, username from data1),
+data2 as
+ (select tage.tag,
+         tage.n,
+         mas.user_id,
+         mas.username,
+         tage.wt,
+         tage.feiertag,
+         tage.feiertag_desc
+    from tage
+   cross join mas)
+select g.tag,
+       g.username,
+       t.kind,
+       t.data_desc,
+       g.n,
+       dense_rank() over (partition by g.tag order by g.username) as ct,
+       g.wt,
+       g.feiertag,
+       g.feiertag_desc
+  from data2 g
+  left join data1 t
+    on g.tag between t.von and t.bis
+   and t.user_id = g.user_id
+"""
+    with connection.cursor() as cursor:
+        cursor.execute(query, {"VON": start.strftime('%d.%m.%Y'),"BIS": end.strftime('%d.%m.%Y'),"ORG_ID": str(orgid)} )
+        row = dictfetchall(cursor)
+    return row

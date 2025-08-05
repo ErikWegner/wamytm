@@ -7,12 +7,33 @@
 
 {% block content %}
 
+<style>
+    .header {
+        display:grid;
+        grid-template-columns: 160px repeat({{ header|length }}, 2fr);
+    }
+    .header > div {
+        padding: .3rem;
+        border-top: 1px solid #dee2e6;
+    }
+    .header>div:nth-child(-n+{{ header|length|add:"1" }}) {
+        color: white;
+        background-color: #6c757d;
+        font-weight: 700;
+        position: sticky;
+        top: 0;
+    }
+    div:has(> .feiertag) {
+        background-color: #b0b0b0;
+    }
+</style>
+
 <form action="{% url 'wamytmapp:list1' %}" method="get" class="mb-3" role="form" id="filterform">
     <label for="id_orgunit">Organisationseinheit</label>
     {% if embeded %}{% bootstrap_field ouselect.embed %}{% endif %}
     <div class="dropdown hierarchy-select" id="id_orgunit">
-        <button type="button" class="btn btn-secondary dropdown-toggle" id="example-three-button"
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+        <button type="button" class="btn btn-secondary dropdown-toggle" id="example-three-button" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false"></button>
         <div class="dropdown-menu" aria-labelledby="example-three-button">
             <div class="hs-searchbox">
                 <input type="text" class="form-control" autocomplete="off">
@@ -20,7 +41,7 @@
             <div class="hs-menu-inner">
                 <a class="dropdown-item" data-value="0" data-level="1" href="#">Alle</a>
                 {% for em in orgunit_filter %}
-                    <a class="dropdown-item" data-value="{{ em.ID }}" data-level="{{ em.LEVEL }}" href="#">{{ em.NAME }}</a>
+                <a class="dropdown-item" data-value="{{ em.ID }}" data-level="{{ em.LEVEL }}" href="#">{{ em.NAME }}</a>
                 {% endfor %}
             </div>
         </div>
@@ -32,17 +53,28 @@
 </form>
 
 {% spaceless %}
-<div style="display:grid;grid-template-columns:100px {% for col in newuser %} 100px {% endfor %} ">
-    <div class="header">Datum</div>
-    {% for col in newuser %}
-        <div class="header">{{ col.user.last_name   }}, {{ col.user.first_name }}</div>
+
+<div class="header presence">
+    <div>Datum</div>
+    {% for username in header %}
+        <div>{{ username }}</div>
+    {% endfor %}
+
+    {% for em in data %}
+        {% if em.CT == 1 %}
+            <div style="font-weight:700;{% if em.WT == '2' %}border-top:#000 3px solid;{% endif %}">{{ em.TAG|date:"d. M (D)" }}{% if em.FEIERTAG %}<br><span class="feiertag">{{ em.FEIERTAG_DESC }}</span>{% endif %}</div>
+        {% endif %}
+        <div style="{% if em.WT == '2' %}border-top:#000 3px solid;{% endif %}" class="kind-{{ em.KIND }}">{% if em.KIND %}{{ trc|get_value_from_dict:em.KIND }}{% endif %}{% if em.DATA_DESC %}<span data-toggle="tooltip" title="{{ em.DATA_DESC|escape }}">💬</span>{% endif %}</div>
     {% endfor %}
 </div>
+
 {% endspaceless %}
 
 {% if orgunit_initial > 0 %}
-    <a class="hide-embedded" href="{% url 'wamytmapp:icalfeed-by-orgunit' orgunit=orgunit %}" role="">{% trans "iCal calendar sync" context "IndexTemplate" %}</a>
+<a class="hide-embedded" href="{% url 'wamytmapp:icalfeed-by-orgunit' orgunit=orgunit %}" role="">{% trans "iCal
+    calendar sync" context "IndexTemplate" %}</a>
 {% endif %}
+
 <script>
     $('#id_orgunit').hierarchySelect({
         width: '100%',

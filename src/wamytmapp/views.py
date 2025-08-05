@@ -20,7 +20,7 @@ from .config import RuntimeConfig
 
 from .model.Timerange import TimeRange, TimeRangeManager
 from .model.sonst import AllDayEvent, query_events_list1, query_events_timeranges_in_week
-from .model.ODB import OMS, mv_odb_org, my_custom_sql
+from .model.ODB import OMS, mv_odb_org, my_custom_sql, my_custom_sql2
 from .model.base import user_display_name
 
 from .forms import AddTimeRangeForm, OrgUnitFilterForm, FrontPageFilterForm, ConflictCheckForm
@@ -365,6 +365,52 @@ def list1(request):
 
     return render(request, 'wamytmapp/list1.html', viewdata)
 
+@xframe_options_exempt
+def list2(request):
+    filterformvalues = request.GET.copy()
+    if request.user is not None and request.user.is_authenticated and 'orgunit' not in filterformvalues:
+        M2O_ORG_ID = OMS.objects.getORG_ID(request.user.id)
+        if M2O_ORG_ID is not None:
+            filterformvalues['orgunit'] = M2O_ORG_ID.m2o_org_id
+
+    filterform = OrgUnitFilterForm(filterformvalues)
+
+    orgunitparamvalue = None
+    start = None
+    end = None
+    orgunit = None
+    if filterform.is_valid():
+        startparamvalue = filterform.cleaned_data['fd']
+        start = datetime.datetime.strptime(
+            startparamvalue, "%Y-%m-%d").date() if startparamvalue else None
+        endparamvalue = filterform.cleaned_data['td']
+        end = datetime.datetime.strptime(
+            endparamvalue, "%Y-%m-%d").date() if endparamvalue else None
+
+        orgunitparamvalue = filterform.cleaned_data['orgunit']
+
+    if start is None:
+        start = datetime.date.today()
+    if end is None or end < start:
+        end = start + datetime.timedelta(days=100)
+
+    orgunit = int(orgunitparamvalue) if orgunitparamvalue else None
+    alldayevents = AllDayEvent.objects.eventsInRange(start, end)
+
+    data = my_custom_sql2(start, end, orgunit)
+    viewdata = {}
+    viewdata['data'] = data
+    viewdata['header'] = [user['USERNAME'] for user in data if user.get('N', None) == 1 and 'USERNAME' in user]
+    viewdata['ouselect'] = filterform
+    viewdata['orgunit'] = 0 if orgunit is None else orgunit
+    viewdata['orgunit_initial'] = 0 if orgunit is None else orgunit
+    viewdata['orgunit_filter'] = mv_odb_org.objects.getORGS4FILTER()
+    viewdata['trc'] = RuntimeConfig.TimeRangeViewsLegend
+    viewdata['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
+
+    print(viewdata['data'][0])
+    
+    return render(request, 'wamytmapp/list2.html', viewdata)
 
 def weekCSV(request):
     try:
@@ -436,7 +482,7 @@ def getorgid(request):
 
     if request.method == 'POST':
         r = { }
-        r['org_id'] = OMS.objects.getORG_ID(request.POST['uid']).m2o_org_id
+        r['org_idö'] = OMS.objects.getORG_ID(request.POST['uid']).m2o_org_id
 
         return JsonResponse(r)
     return HttpResponseBadRequest()
