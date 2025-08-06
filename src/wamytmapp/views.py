@@ -193,26 +193,35 @@ def index(request):
         weekdelta = 0
         usersStr = None
     
-    # Ensure weekdelta is a valid integer
+    # Ensure weekdelta is a valid integer and within reasonable bounds
     if weekdelta is None:
+        weekdelta = 0
+    
+    # More restrictive bounds to prevent Oracle date issues
+    if weekdelta < -100 or weekdelta > 100:  # roughly ±2 years
         weekdelta = 0
     
     orgunit = int(orgunitparamvalue) if orgunitparamvalue else 0
 
     today = datetime.date.today()
-    # Ensure weekdelta doesn't create invalid dates for Oracle (year 0 or beyond valid range)
-    # Limit weekdelta to reasonable bounds to prevent date calculation issues
-    if weekdelta < -520 or weekdelta > 520:  # roughly ±10 years
-        weekdelta = 0
     
-    monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
-    
-    # Additional safety check: ensure the calculated date is within Oracle's valid range
-    min_oracle_date = datetime.date(1, 1, 1)  # Oracle minimum is 4713 BC, but this is safer
-    max_oracle_date = datetime.date(9999, 12, 31)
-    
-    if monday < min_oracle_date or monday > max_oracle_date:
-        monday = today - datetime.timedelta(days=today.weekday())  # Reset to current week
+    # Calculate monday with safer approach
+    try:
+        # Calculate the target date more safely
+        target_days = today.weekday() - weekdelta * 7
+        monday = today - datetime.timedelta(days=target_days)
+        
+        # Ensure the date is within Oracle's valid range
+        min_oracle_date = datetime.date(100, 1, 1)  # More conservative minimum
+        max_oracle_date = datetime.date(9000, 12, 31)  # More conservative maximum
+        
+        if monday < min_oracle_date or monday > max_oracle_date:
+            # Reset to current week if outside valid range
+            monday = today - datetime.timedelta(days=today.weekday())
+            
+    except (OverflowError, ValueError):
+        # If any date calculation fails, reset to current week
+        monday = today - datetime.timedelta(days=today.weekday())
     
     days = []
     users = usersStr.split(',') if usersStr else None
@@ -388,18 +397,26 @@ def weekCSV(request):
 
     today = datetime.date.today()
     
-    # Ensure weekdelta doesn't create invalid dates for Oracle
-    if weekdelta < -520 or weekdelta > 520:  # roughly ±10 years
+    # More restrictive bounds to prevent Oracle date issues
+    if weekdelta < -100 or weekdelta > 100:  # roughly ±2 years
         weekdelta = 0
     
-    monday = today - datetime.timedelta(days=today.weekday() - weekdelta * 7)
-    
-    # Additional safety check: ensure the calculated date is within Oracle's valid range
-    min_oracle_date = datetime.date(1, 1, 1)
-    max_oracle_date = datetime.date(9999, 12, 31)
-    
-    if monday < min_oracle_date or monday > max_oracle_date:
-        monday = today - datetime.timedelta(days=today.weekday())  # Reset to current week
+    try:
+        # Calculate the target date more safely
+        target_days = today.weekday() - weekdelta * 7
+        monday = today - datetime.timedelta(days=target_days)
+        
+        # Ensure the date is within Oracle's valid range
+        min_oracle_date = datetime.date(100, 1, 1)  # More conservative minimum
+        max_oracle_date = datetime.date(9000, 12, 31)  # More conservative maximum
+        
+        if monday < min_oracle_date or monday > max_oracle_date:
+            # Reset to current week if outside valid range
+            monday = today - datetime.timedelta(days=today.weekday())
+            
+    except (OverflowError, ValueError):
+        # If any date calculation fails, reset to current week
+        monday = today - datetime.timedelta(days=today.weekday())
     
     timeranges, _ = query_events_timeranges_in_week(monday)
     print(timeranges)

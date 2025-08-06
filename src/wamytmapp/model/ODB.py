@@ -141,14 +141,19 @@ def my_custom_sql(orgid, day_of_week, users):
     if users is not None and len(users) > 0:
         user =  "and u.username in (" + ','.join(map(lambda x: F"'{x}'", users)) + ")"        
 
+    # Validate and sanitize the day_of_week parameter
     if not day_of_week or not hasattr(day_of_week, 'strftime'):
         day_of_week = datetime.date.today()
     
     # Additional safety check: ensure the date is within Oracle's valid range
-    min_oracle_date = datetime.date(1, 1, 1)
-    max_oracle_date = datetime.date(9999, 12, 31)
+    min_oracle_date = datetime.date(100, 1, 1)  # More conservative minimum
+    max_oracle_date = datetime.date(9000, 12, 31)  # More conservative maximum
     
     if day_of_week < min_oracle_date or day_of_week > max_oracle_date:
+        day_of_week = datetime.date.today()
+    
+    # Additional validation: ensure year is not 0
+    if day_of_week.year <= 0:
         day_of_week = datetime.date.today()
     
     query = """
@@ -269,9 +274,15 @@ select t.user_name,
  group by t.root, t.user_name, t.kind, t.partial, t.data_desc, t.data_v
  order by t.user_name, min(t.tag)"""
     query = query.format(user=user)
+    
+    # Additional validation before executing the query
+    formatted_date = day_of_week.strftime('%Y-%m-%d')
+    if not formatted_date or len(formatted_date) < 10:
+        formatted_date = datetime.date.today().strftime('%Y-%m-%d')
+    
     #try:
     with connection.cursor() as cursor:
-        cursor.execute(query, {"TAG": day_of_week.strftime('%Y-%m-%d'),"ORG": str(orgid)} )
+        cursor.execute(query, {"TAG": formatted_date, "ORG": str(orgid)})
         row = dictfetchall(cursor)
     return row
     #except Exception as e:
