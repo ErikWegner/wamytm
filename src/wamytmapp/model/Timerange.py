@@ -76,20 +76,30 @@ class TimeRangeManager(models.Manager):
         overlapping_items = self.eventsInRange(start, end, userid=userid)
         for item in overlapping_items:
             mod = {'res': None, 'item': item.buildConflictJsonStructure()}
-            if item.von >= start and item.bis <= end:
-                mod['res'] = TimeRangeManager.OVERLAP_DELETE
-            elif item.von < start and item.bis > end:
-                mod['res'] = TimeRangeManager.OVERLAP_SPLIT
-            elif item.von < start:
-                mod['res'] = TimeRangeManager.OVERLAP_NEW_END
-            elif item.bis > end:
-                mod['res'] = TimeRangeManager.OVERLAP_NEW_START
             
-            # Vormittag/Nachmittag 
-            item_data = item.safe_data()
-            if item_data and 'partial' in item_data and part:
-                if item_data['partial'] != part and kind != item.kind:
-                    continue
+            if part is None or part == '':
+                if item.von >= start and item.bis <= end:
+                    mod['res'] = TimeRangeManager.OVERLAP_DELETE
+                elif item.von < start and item.bis > end:
+                    mod['res'] = TimeRangeManager.OVERLAP_SPLIT
+                elif item.von < start:
+                    mod['res'] = TimeRangeManager.OVERLAP_NEW_END
+                elif item.bis > end:
+                    mod['res'] = TimeRangeManager.OVERLAP_NEW_START
+            else:
+                # Vormittag/Nachmittag 
+                item_data = item.safe_data()
+                if item_data and 'partial' in item_data:
+                    # partial Tag vorhanden
+                    if item_data['partial'] == part:
+                        # gleicher partial vorhanden (egal welcher Typ)
+                        mod['res'] = TimeRangeManager.OVERLAP_DELETE
+                    if item_data['partial'] != part:
+                        # anderer partial vorhanden
+                        continue
+                else:
+                    # vorhanden ganzen Tag aufsplitten
+                    mod['res'] = TimeRangeManager.OVERLAP_SPLIT
 
             r['mods'].append(mod)
 

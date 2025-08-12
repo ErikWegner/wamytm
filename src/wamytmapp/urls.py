@@ -9,9 +9,7 @@ urlpatterns = [
     path('ical/a/ou-<int:orgunit>.ics', views.TeamFeed(), name='icalfeed-by-orgunit'),
     path('survey', views.weekCSV, name='weekCSV'),
     path('add', views.add, name='add'),
-    path('list', views.list1, name='list1'),
-    path('list2', views.list2, name='list2'),
-    # path('profile', views.profile, name="profile"),  # Removed - was dependent on TeamMember
+    path('list', views.list2, name='list2'),
     path('timeranges', views.TimeRangesList.as_view()),
     path('check', views.conflict_check),
     path('getorgid', views.getorgid),

@@ -17,7 +17,7 @@ from .model.sonst import *
 
 from .forms import TimeRangeEditForm, orgs4wamytmEditForm
 
-admin.site.register(OrgUnit)
+#admin.site.register(OrgUnit)
 admin.site.register(TimeRange)
 #admin.site.register(AllDayEvent)
 
@@ -113,7 +113,7 @@ class TimeRangeBasicAdmin(SimpleHistoryAdmin):
         qs = super().get_queryset(request)
         delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(request.user.id)
         return qs.filter(
-            Q(user=request.user) | Q(orgunit__id__in=delegatedOUList)
+            Q(user=request.user) | Q(org_id__in=delegatedOUList)
         )
 
 

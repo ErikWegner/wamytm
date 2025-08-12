@@ -28,7 +28,7 @@
     }
 </style>
 
-<form action="{% url 'wamytmapp:list1' %}" method="get" class="mb-3" role="form" id="filterform">
+<form action="{% url 'wamytmapp:list2' %}" method="get" class="mb-3" role="form" id="filterform">
     <label for="id_orgunit">Organisationseinheit</label>
     {% if embeded %}{% bootstrap_field ouselect.embed %}{% endif %}
     <div class="dropdown hierarchy-select" id="id_orgunit">
@@ -71,8 +71,7 @@
 {% endspaceless %}
 
 {% if orgunit_initial > 0 %}
-<a class="hide-embedded" href="{% url 'wamytmapp:icalfeed-by-orgunit' orgunit=orgunit %}" role="">{% trans "iCal
-    calendar sync" context "IndexTemplate" %}</a>
+<a class="hide-embedded" href="{% url 'wamytmapp:icalfeed-by-orgunit' orgunit=orgunit %}" role="">{% trans "iCal calendar sync" context "IndexTemplate" %}</a>
 {% endif %}
 
 <script>

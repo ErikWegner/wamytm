@@ -16,3 +16,4 @@ src/wamytmsite/settings/dev2.py
 instantclient-*.zip
 .vscode/tmp.yaml
 .devcontainer/.env
+src/sigapp
