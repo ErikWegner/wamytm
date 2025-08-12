@@ -25,8 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'simple_history',
-    'django_prometheus',
-    'sigapp',
+    'django_prometheus'
 ]
 
 MIDDLEWARE = [
