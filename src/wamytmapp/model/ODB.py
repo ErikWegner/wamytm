@@ -101,6 +101,24 @@ class OMSManager(models.Manager):
 
         return list(qu)
 
+    def queryDescendants(self, parents):
+        parentslist = normalize_list(parents)
+
+        if len(parentslist) == 0:
+            return list()
+        
+        placeholders = ','.join(['%s'] * len(parentslist))
+        query = f"""
+            SELECT distinct t.id
+            FROM mv_odb_org t
+            WHERE t.id > 0
+            START WITH t.id in ({placeholders}) or 0 in ({placeholders})
+            CONNECT BY t.parent_id = prior t.id
+        """
+        
+        qu = super().raw(query,params=list(parentslist) * 2)
+        return list(qu)
+
 class OMS(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     mit_id = models.IntegerField(null=True)
@@ -136,10 +154,10 @@ class mv_odb_org(models.Model):
         db_table = 'mv_odb_org'
 
 @safe_db_query
-def my_custom_sql(orgid, day_of_week, users):
+def my_custom_sql2(orgid, day_of_week, users):
     user = ''
     if users is not None and len(users) > 0:
-        user =  "and u.username in (" + ','.join(map(lambda x: F"'{x}'", users)) + ")"        
+        user =  ':'.join(map(lambda x: F"{x}", users))
 
     # Validate and sanitize the day_of_week parameter
     if not day_of_week or not hasattr(day_of_week, 'strftime'):
@@ -157,123 +175,9 @@ def my_custom_sql(orgid, day_of_week, users):
         day_of_week = datetime.date.today()
     
     query = """
-with config as
- (select von, von + 4 as bis, org_id
-    from (select to_date(:TAG, 'YYYY-MM-DD') as von, :ORG as org_id
-            from dual) t),
-orgs AS
- (SELECT t.id, t.parent_id, t.name, g.org_id, g.von, g.bis
-    FROM mv_odb_org t
-   cross join config g
-   start with t.id = g.org_id
-  connect by t.parent_id = prior t.id),
-wt as
- (select t.von + level - 1 as tag, t.bis, level
-    from config t
-  connect by t.von + level - 1 <= t.bis),
-src as
- (select distinct t.von,
-                  t.bis,
-                  t.kind,
-                  t.user_id,
-                  dbms_lob.substr(t.data, 4000) as data,
-                  t.org_id,
-                  u.last_name || ', ' || u.first_name || ' (' ||
-                  upper(trim(leading '\\' from substr(u.username, 2))) || ')' as user_name
-    from wamytmapp_timerange t
-  
-   cross join config g
-  
-    left join auth_user u
-      on u.id = t.user_id
-  
-    left join wamytmapp_oms oms
-      on oms.user_id = t.user_id
-  
-    left join odb_mitarbeiter2strukt m2o
-      on m2o.m2o_mit_id = oms.mit_id
-     and trunc(sysdate) >= m2o.m2o_von
-     AND trunc(sysdate) <= COALESCE(m2o.m2o_bis, to_date('31.12.2099', 'DD.MM.RRRR'))
-  
-    left join wamytmapp_ma2vt m2t
-      on m2t.user_id = t.user_id
-  
-    left join orgs org
-      on org.id in (m2o.m2o_org_id, -m2t.vt_id)
-  
-   where (org.id is not null or g.org_id = 0)
-     {user}
-     and t.von <= g.bis
-     and t.bis >= g.von),
-ce as
- (select distinct wt.tag, src.user_id, src.user_name from src cross join wt),
-asd as
- (select t.*,
-         case
-           when coalesce(t.lag, 'yaa') != coalesce(t.kind, 'yaa') or
-                coalesce(t.lag_desc, 'yaa') != coalesce(t.data_desc, 'yaa') or
-                coalesce(t.lag_partial, 'yaa') != coalesce(t.partial, 'yaa') then
-            1
-         end as ca
-    from (select t.*,
-                 lag(t.kind, 1, 'easd') over(partition by t.user_name order by t.tag) as lag,
-                 lag(t.data_desc, 1, 'easd') over(partition by t.user_name order by t.tag) as lag_desc,
-                 lag(t.partial, 1, 'easd') over(partition by t.user_name order by t.tag) as lag_partial
-            from (select t.tag,
-                         t.user_id,
-                         t.user_name,
-                         t.data_v,
-                         min(t.wertung) as wertung,
-                         listagg(t.data_desc, '; ') within group(order by t.data_partial desc) as data_desc,
-                         DENSE_RANK() OVER(partition by t.tag, t.user_id order by min(t.wertung) desc, min(t.data_desc) nulls last) as rn,
-                         case
-                           when t.cnt = 1 then
-                            coalesce('-' || min(t.data_partial), '')
-                         end as partial,
-                         listagg(t.kind, '') within group(order by t.data_partial desc) as kind
-                  
-                    from (select t.tag,
-                                 t.user_id,
-                                 t.user_name,
-                                 g.kind,
-                                 JSON_VALUE(g.data, '$.v') as data_v,
-                                 JSON_VALUE(g.data, '$.partial') as data_partial,
-                                 JSON_VALUE(g.data, '$.DATA_DESC') as data_desc,
-                                 count(JSON_VALUE(g.data, '$.partial')) over(partition by t.tag, t.user_id) as cnt,
-                                 o.wertung
-                            from ce t
-                          
-                            left join src g
-                              on t.user_name = g.user_name
-                             and t.tag between g.von and g.bis
-                          
-                            left join wamytmapp_kind o
-                              on o.kind = g.kind) t
-                   group by t.tag, t.user_id, t.user_name, t.data_v, t.cnt) t
-           where t.rn = 1) t)
-select t.user_name,
-       t.kind,
-       t.data_v,
-       t.data_desc,
-       coalesce(t.partial, ' ') as partial,
-       min(t.tag),
-       max(t.lvl) as span,
-       dense_rank() over(partition by t.user_name order by min(t.tag)) as dn
-  from (select t.*,
-               level as lvl,
-               CONNECT_BY_ROOT to_char(t.tag, 'DDD') as root
-          from asd t
-        connect by t.user_id = prior t.user_id
-               and coalesce(t.data_v, 'asergasfd') = prior coalesce(t.data_v, 'asergasfd')
-               and coalesce(t.data_desc, 'asergasfd') = prior coalesce(t.data_desc, 'asergasfd')
-               and coalesce(t.partial, 'asergasfd') = prior coalesce(t.partial, 'asergasfd')
-               and coalesce(t.kind, 'asergasfd') = prior coalesce(t.kind, 'asergasfd')
-               and t.tag = prior t.tag + 1
-         start with ca = 1
-         order siblings by user_name, tag) t
- group by t.root, t.user_name, t.kind, t.partial, t.data_desc, t.data_v
- order by t.user_name, min(t.tag)"""
-    query = query.format(user=user)
+        SELECT USER_NAME, KIND, DATA_V, DATA_DESC, PARTIAL, MIN_TAG, SPAN, DN
+          FROM TABLE(get_events4index(:TAG, :ORG, :USERS))
+         ORDER BY USER_NAME, MIN_TAG"""
     
     # Additional validation before executing the query
     formatted_date = day_of_week.strftime('%Y-%m-%d')
@@ -282,10 +186,24 @@ select t.user_name,
     
     #try:
     with connection.cursor() as cursor:
-        cursor.execute(query, {"TAG": formatted_date, "ORG": str(orgid)})
+        cursor.execute(query, {"TAG": formatted_date, "ORG": str(orgid), "USERS": user })
         row = dictfetchall(cursor)
     return row
-    #except Exception as e:
-    #    print(connection.queries[-1]['sql'])
-    #    print(f"Fehler aufgetreten: {e}")
-    #    raise e
+
+@safe_db_query
+def my_custom_sql3(start, end, orgid = None):
+    query = """
+        SELECT TAG, USERNAME, KIND, DATA_DESC, N, CT, WT, FEIERTAG, FEIERTAG_DESC
+          FROM TABLE(get_events4list(:VON, :BIS, :ORG_ID))
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(
+            query,
+            {
+                "VON": start,
+                "BIS": end,
+                "ORG_ID": orgid
+            }
+        )
+        row = dictfetchall(cursor)
+    return row

@@ -1,5 +1,6 @@
 from .base import *
 from .ODB import ODB_ORG, OMS
+from django.utils.text import format_lazy
 
 class OrgUnitManager(models.Manager):
     def selectListItems(self):
@@ -12,24 +13,6 @@ class OrgUnitManager(models.Manager):
         toplevel = get_children(all_org_units)
         toplevel.insert(0, ("", pgettext_lazy('OrgUnitManager', "All")))
         return toplevel
-
-    def queryDescendants(self, parents):
-        parentslist = normalize_list(parents)
-
-        if len(parentslist) == 0:
-            return list()
-        
-        placeholders = ','.join(['%s'] * len(parentslist))
-        query = f"""
-            SELECT distinct t.id
-            FROM mv_odb_org t
-            WHERE t.id > 0
-            START WITH t.id in ({placeholders}) or 0 in ({placeholders})
-            CONNECT BY t.parent_id = prior t.id
-        """
-        
-        qu = super().raw(query,params=list(parentslist) * 2)
-        return list(qu)
 
     def listDescendants(self, parent_id):
         all_org_units = super().all()
@@ -63,7 +46,7 @@ class OrgUnitDelegateManager(models.Manager):
             return False
         if otheruser.id == request.user.id:
             return True
-        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList2(
+        delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(
             request.user.id)
         teammember = OMS.objects.getORG_ID(otheruser.id).m2o_org_id
         if teammember in delegatedOUList:
@@ -72,7 +55,7 @@ class OrgUnitDelegateManager(models.Manager):
 
     def delegatedOUIdList(self, user_id):
         delegatedOUList = list(super().filter(user__id=user_id).values_list('org_id', flat=True))
-        delegatedOUListRecursive = list(map(lambda ou: ou.id, OrgUnit.objects.queryDescendants(delegatedOUList)))
+        delegatedOUListRecursive = list(map(lambda ou: ou.id, OMS.objects.queryDescendants(delegatedOUList)))
         return delegatedOUListRecursive
 
     def delegatedUsers(self, user_id):

@@ -3,7 +3,7 @@ from random import choice, randint
 from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth.models import User
 
-from wamytmapp.models import OrgUnit, TeamMember, TimeRange, AllDayEvent
+from wamytmapp.models import OrgUnit, TimeRange, AllDayEvent
 
 
 class Command(BaseCommand):
@@ -40,19 +40,14 @@ class Command(BaseCommand):
         self._orgunits = [o, rd, hr, t]
 
     def generateUsers(self, count):
-        self._teammembers = []
+        self._users = []
         for user_index in range(count):
             user = User.objects.create_user(
                 F'user{user_index}',
                 first_name=choice(Command.first_names),
                 last_name=choice(Command.last_names))
             user.save()
-            tm = TeamMember(
-                user=user,
-                orgunit=choice(self._orgunits)
-            )
-            tm.save()
-            self._teammembers.append(tm)
+            self._users.append(user)
 
     def generateTimeRanges(self, count):
         today = datetime.date.today()
@@ -63,10 +58,10 @@ class Command(BaseCommand):
             end = start + \
                 datetime.timedelta(days=choice(
                     [1, 1, 1, 1, 1, 3, 5, 7, 14, 21]))
-            tm = choice(self._teammembers)
+            tm = choice(self._users)
             tr = TimeRange(
-                user=tm.user,
-                orgunit=tm.orgunit,
+                user=tm,
+                orgunit=choice(self._orgunits),
                 start=start,
                 end=end,
                 kind=choice(TimeRange.KIND_CHOICES)[0],
@@ -99,7 +94,6 @@ class Command(BaseCommand):
     def removeData(self):
         AllDayEvent.objects.all().delete()
         TimeRange.objects.all().delete()
-        TeamMember.objects.all().delete()
         User.objects.filter(is_staff=False).delete()
         OrgUnit.objects.all().delete()
 

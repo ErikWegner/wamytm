@@ -4,7 +4,7 @@ from django.test import Client, TestCase
 from django.contrib.auth.models import User
 
 from .helpers import d, createAbsentTimeRangeObject
-from ..models import OrgUnit, TimeRange, TimeRangeManager, OrgUnitDelegate, TeamMember
+from ..models import OrgUnit, TimeRange, TimeRangeManager, OrgUnitDelegate
 
 
 @dataclass
@@ -28,8 +28,6 @@ class ConflictResolverTests(TestCase):
         self.user.save()
         self.org_unit = OrgUnit(name='unittestou')
         self.org_unit.save()
-        tm = TeamMember(user=self.user, orgunit=self.org_unit)
-        tm.save()
 
     def _hasTimeRangeObject(self, start: str, end: str):
         return createAbsentTimeRangeObject(start, end, self.user, self.org_unit)

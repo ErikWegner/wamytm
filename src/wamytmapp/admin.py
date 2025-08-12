@@ -17,35 +17,9 @@ from .model.sonst import *
 
 from .forms import TimeRangeEditForm, orgs4wamytmEditForm
 
-admin.site.register(OrgUnit)
+#admin.site.register(OrgUnit)
 admin.site.register(TimeRange)
 #admin.site.register(AllDayEvent)
-
-
-class TeamMemberInline(admin.StackedInline):
-    model = TeamMember
-    can_delete = False
-    verbose_name_plural = 'team members'
-
-    def has_add_permission(self, request, obj=None):
-        return self._hasPermission(request)
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return self._hasPermission(request)
-
-    def has_module_permission(self, request):
-        return self._hasPermission(request)
-
-    def has_view_permission(self, request, obj=None):
-        if obj is None:
-            return True  # False will be interpreted as meaning that the current user is not permitted to view any object of this type
-        return self._hasPermission(request)
-
-    def _hasPermission(self, request):
-        return request.user.has_perm('wamytmapp.assign_delegates')
 
 
 class OrgUnitDelegateInline(admin.TabularInline):
@@ -77,7 +51,7 @@ class OrgUnitDelegateInline(admin.TabularInline):
 
 
 class UserAdmin(BaseUserAdmin):
-    inlines = (TeamMemberInline, OrgUnitDelegateInline)
+    inlines = (OrgUnitDelegateInline,)
 
 
 # Re-register UserAdmin
@@ -139,7 +113,7 @@ class TimeRangeBasicAdmin(SimpleHistoryAdmin):
         qs = super().get_queryset(request)
         delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(request.user.id)
         return qs.filter(
-            Q(user=request.user) | Q(orgunit__id__in=delegatedOUList)
+            Q(user=request.user) | Q(org_id__in=delegatedOUList)
         )
 
 
@@ -156,10 +130,9 @@ class AllDayEventAdmin(admin.ModelAdmin):
 
 class DelegatesAdmin(admin.ModelAdmin):
     list_display = ('username', 'last_name', 'first_name', 'org_unit')
-    list_filter = ('teammember__orgunit__name',)
     fields = ('username', 'last_name', 'first_name',)
     readonly_fields = ('username', 'last_name', 'first_name',)
-    inlines = (TeamMemberInline, OrgUnitDelegateInline,)
+    inlines = (OrgUnitDelegateInline,)
 
     def has_add_permission(self, request):
         return False
@@ -180,9 +153,12 @@ class DelegatesAdmin(admin.ModelAdmin):
         return request.user.has_perm('wamytmapp.assign_delegates')
 
     def org_unit(self, obj):
-        if obj.teammember.orgunit is None:
+        user_org = OMS.objects.getORG_ID(obj.id)
+        if user_org is None:
             return None
-        return obj.teammember.orgunit.name
+        # Get the org unit name from the mv_odb_org table
+        org_record = mv_odb_org.objects.filter(m_org_id=user_org.m2o_org_id).first()
+        return org_record.m_org if org_record else None
 
 class KindAdmin(admin.ModelAdmin):
     list_display = [ 'kind', 'wertung' ]

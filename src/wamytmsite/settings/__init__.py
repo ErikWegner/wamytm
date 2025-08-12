@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'simple_history',
     'django_prometheus',
+    'sigapp',
 ]
 
 MIDDLEWARE = [

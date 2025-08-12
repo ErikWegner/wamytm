@@ -31,6 +31,9 @@ DATABASES = {
         'PASSWORD': os.environ['WAMYTM_DEV_DB_PW'],
         'HOST':     os.environ['WAMYTM_DEV_DB_HOST'],
         'PORT':     os.environ['WAMYTM_DEV_DB_PORT'],
+        # Database connection settings for better stability
+        'CONN_MAX_AGE': 0,  # Don't reuse connections
+        'CONN_HEALTH_CHECKS': True,  # Enable health checks
 	}
 }
 
