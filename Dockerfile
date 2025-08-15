@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.12-bookworm
 
 # Oracle Instant Client variables
 ARG INSTANTCLIENT_VERSION=23.8.0.25.04

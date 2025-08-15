@@ -8,15 +8,15 @@
 {% block content %}
 
 <style>
-    .header {
+    .presence {
         display:grid;
         grid-template-columns: 160px repeat({{ header|length }}, 2fr);
     }
-    .header > div {
+    .presence > div {
         padding: .3rem;
         border-top: 1px solid #dee2e6;
     }
-    .header>div:nth-child(-n+{{ header|length|add:"1" }}) {
+    .presence>div:nth-child(-n+{{ header|length|add:"1" }}) {
         color: white;
         background-color: #6c757d;
         font-weight: 700;
@@ -25,6 +25,11 @@
     }
     div:has(> .feiertag) {
         background-color: #b0b0b0;
+    }
+    .presence > div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 </style>
 
@@ -54,7 +59,7 @@
 
 {% spaceless %}
 
-<div class="header presence">
+<div class="presence">
     <div>Datum</div>
     {% for username in header %}
         <div>{{ username }}</div>
