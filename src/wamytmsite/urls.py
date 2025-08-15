@@ -22,7 +22,7 @@ from wamytmapp.admin import korporator_admin
 
 urlpatterns = [
     path('cal/', include('wamytmapp.urls')),
-    path('sig/', include('sigapp.urls')),
+    #path('sig/', include('sigapp.urls')),
     path('admin/', admin.site.urls),
     path('ka/', korporator_admin.urls, name="ka"),
     path('', include('social_django.urls', namespace='social')),
