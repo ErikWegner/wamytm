@@ -37,9 +37,9 @@ class DayHeader:
 @xframe_options_exempt
 def index(request):
     # manuelles Einloggen
-    user = User.objects.get(id=152)
-    user.backend = 'django.contrib.auth.backends.ModelBackend'
-    login(request, user)
+    #user = User.objects.get(id=152)
+    #user.backend = 'django.contrib.auth.backends.ModelBackend'
+    #login(request, user)
     # logout(request)
     ###########################################################
 
