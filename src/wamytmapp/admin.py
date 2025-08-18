@@ -72,14 +72,23 @@ korporator_admin = BasicAdminSite(name="ka")
 
 
 class TimeRangeBasicAdmin(SimpleHistoryAdmin):
-    readonly_fields = ('user',)
+    readonly_fields = ('user', 'description_display')
     view_on_site = False
-    list_display = ('von', 'bis', 'kind')
+    list_display = ('von', 'bis', 'kind', 'description_display')
     list_filter = ('von', 'kind')
     date_hierarchy = 'von'
     ordering = ['-von']
     form = TimeRangeEditForm
     history_list_display = ['von', 'bis', 'kind']
+    fields = ('org', 'von', 'bis', 'subkind', 'part_of_day', 'user', 'description_display')
+    
+    def description_display(self, obj):
+        """Display description from JSON data field"""
+        if obj and obj.data and TimeRange.DATA_DESCRIPTION in obj.data:
+            return obj.data[TimeRange.DATA_DESCRIPTION] or '-'
+        return '-'
+    
+    description_display.short_description = pgettext_lazy('TimeRange', 'Description')
 
     def has_module_permission(self, request):
         return True
@@ -105,7 +114,7 @@ class TimeRangeBasicAdmin(SimpleHistoryAdmin):
             return True
         delegatedOUList = OrgUnitDelegate.objects.delegatedOUIdList(
             request.user.id)
-        if obj.orgunit_id in delegatedOUList:
+        if obj.org_id in delegatedOUList:
             return True
         return False
 

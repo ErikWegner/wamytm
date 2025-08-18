@@ -25,10 +25,6 @@ class orgs4wamytmEditForm(forms.ModelForm):
         self.fields['ko_m'].choices = ODB_STRUKT.objects.SelectList_with_Orgs()
 
 class TimeRangeEditForm(forms.ModelForm):
-    description = forms.CharField(
-        max_length=150,
-        required=False,
-        label=pgettext_lazy('AddTimeRangeForm', 'Description'))
     part_of_day = forms.ChoiceField(
         help_text=pgettext_lazy(
             'AddTimeRangeForm', 'Entry can be associated to a part of the day'),
@@ -45,20 +41,28 @@ class TimeRangeEditForm(forms.ModelForm):
         choices=RuntimeConfig().TimeRangeChoices)
 
     def __init__(self, *args, **kwargs):
+        # Extract data from instance before calling super()
+        instance = kwargs.get('instance')
+        
         super().__init__(*args, **kwargs)
-        instance = kwargs['instance']
-        if instance and instance.data:
-            if 'v' in instance.data:
-                if TimeRange.DATA_DESCRIPTION in instance.data:
-                    self.fields['description'].initial = instance.data[TimeRange.DATA_DESCRIPTION]
-                if TimeRange.DATA_PARTIAL in instance.data:
-                    self.fields['part_of_day'].initial = instance.data[TimeRange.DATA_PARTIAL]
-        self.fields['subkind'].initial = instance.kind + "_"
+        
+        # Set initial values AFTER super() call
+        if instance and hasattr(instance, 'data') and instance.data:
+            if TimeRange.DATA_PARTIAL in instance.data:
+                part_value = instance.data[TimeRange.DATA_PARTIAL]
+                self.fields['part_of_day'].initial = part_value
+                if not (hasattr(self, 'data') and self.data):
+                    self.initial['part_of_day'] = part_value
+        
+        if instance:
+            self.fields['subkind'].initial = instance.kind + "_"
+            if not (hasattr(self, 'data') and self.data):
+                self.initial['subkind'] = instance.kind + "_"
 
     class Meta:
         model = TimeRange
         fields = ['org', 'von', 'bis', 'subkind',
-                  'part_of_day', 'description', 'user']
+                  'part_of_day', 'user']
 
     def clean(self):
         super().clean()

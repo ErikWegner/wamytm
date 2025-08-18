@@ -201,6 +201,6 @@ class TimeRange(ExportModelOperationsMixin('timerange'), models.Model):
             'start': (self.von if isinstance(self.von, datetime.date) else self.von.date()).strftime('%Y-%m-%d'), # wird nicht verwendet!
             'end': (self.bis if isinstance(self.bis, datetime.date) else self.bis.date()).strftime('%Y-%m-%d'), # wird nicht verwendet!
             'kind': [ x for x in self.KIND_CHOICES if x[0] == self.kind][0][1], # wird nicht verwendet!
-            'desc': data.get('desc', '') if data else "", # wird nicht verwendet!
+            'desc': data.get(self.DATA_DESCRIPTION, '') if data else "", # wird nicht verwendet!
             'partial': [ x for x in partial if x[0] == data['partial']][0][1] if data and 'partial' in data else "", # wird nicht verwendet!
         }
