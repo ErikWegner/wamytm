@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import os
 from django.contrib import admin
 from django.urls import include, path, re_path
 from django.shortcuts import redirect
@@ -22,7 +23,6 @@ from wamytmapp.admin import korporator_admin
 
 urlpatterns = [
     path('cal/', include('wamytmapp.urls')),
-    #path('sig/', include('sigapp.urls')),
     path('admin/', admin.site.urls),
     path('ka/', korporator_admin.urls, name="ka"),
     path('', include('social_django.urls', namespace='social')),
@@ -31,3 +31,7 @@ urlpatterns = [
     re_path(r'^status/up$', lambda _: HttpResponse('ok')),
     re_path(r'^status/ht/', include('health_check.urls'))
 ]
+
+# Bedingte Einbindung der sigapp URLs
+if os.getenv('ENABLE_SIGAPP', 'false').lower() == 'true':
+    urlpatterns.insert(1, path('sig/', include('sigapp.urls')))

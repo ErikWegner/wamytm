@@ -62,3 +62,30 @@ VERIFY_SSL = False
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Development-spezifisches Auto-Login
+class DevAutoLoginMiddleware:
+    """
+    Middleware für automatisches Einloggen in der Entwicklungsumgebung
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Auto-Login nur wenn nicht bereits eingeloggt
+        if not request.user.is_authenticated:
+            from django.contrib.auth.models import User
+            from django.contrib.auth import login
+            try:
+                # Hier können Sie die User-ID anpassen
+                user = User.objects.get(id=152)
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                login(request, user)
+            except User.DoesNotExist:
+                pass  # User existiert nicht, nichts tun
+        
+        response = self.get_response(request)
+        return response
+
+# Middleware zur Liste hinzufügen (nur in dev)
+MIDDLEWARE = MIDDLEWARE + ['wamytmsite.settings.dev.DevAutoLoginMiddleware']

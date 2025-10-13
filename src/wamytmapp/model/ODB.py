@@ -1,4 +1,7 @@
 from .base import *
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import User
 
 class ODB_ORG(models.Model):
     org_id = models.IntegerField(primary_key=True)
@@ -61,6 +64,20 @@ class OMSManager(models.Manager):
             return None
         return qu[0]
     
+    def calculate_mit_id(self, user_id):
+        """
+        Berechnet mit_id für einen User (ersetzt F_UPDATE_USER2OMS)
+        """
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT F_UPDATE_USER2OMS(%s) FROM DUAL
+                """, [user_id])
+                result = cursor.fetchone()
+                return result[0] if result else None
+        except Exception:
+            return None
+        
     def queryAllTeammember(self, parents):
         parentslist = normalize_list(parents)
         
@@ -207,3 +224,27 @@ def my_custom_sql3(start, end, orgid = None):
         )
         row = dictfetchall(cursor)
     return row
+
+@receiver(post_save, sender=User)
+def create_oms_for_user(sender, instance, created, **kwargs):
+    """
+    Erstellt automatisch OMS-Eintrag nach User-Erstellung
+    Ersetzt die Trigger AUTH_USER_AI und WAMYTM_OMS_BI
+    """
+    if created:  # Nur bei neuen Usern
+        try:
+            # Prüfen ob OMS bereits existiert (falls Trigger parallel läuft)
+            if not OMS.objects.filter(user_id=instance.id).exists():
+                # mit_id berechnen (ersetzt F_UPDATE_USER2OMS Funktion)
+                mit_id = OMS.objects.calculate_mit_id(instance.id)
+                
+                # OMS erstellen
+                OMS.objects.create(
+                    user=instance,
+                    mit_id=mit_id
+                )
+        except Exception as e:
+            # Logging falls gewünscht
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Fehler beim Erstellen von OMS für User {instance.id}: {e}")
