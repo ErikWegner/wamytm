@@ -27,6 +27,8 @@ INSTALLED_APPS = [
     'simple_history',
     'django_prometheus'
 ]
+if os.getenv('ENABLE_SIGAPP', 'false').lower() == 'true':
+    INSTALLED_APPS.append('sigapp.apps.SigappConfig')
 
 MIDDLEWARE = [
     'django_prometheus.middleware.PrometheusBeforeMiddleware',
