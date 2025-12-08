@@ -26,16 +26,38 @@ ALLOWED_HOSTS = ['*']
 
 DATABASES = {
     'default': {
-        'ENGINE': os.environ['WAMYTM_DATABASE_ENGINE'],
-        'NAME': os.environ['WAMYTM_DATABASE_NAME'],
-        'USER': os.environ['WAMYTM_DATABASE_USERNAME'],
+        'ENGINE':   os.environ['WAMYTM_DATABASE_ENGINE'],
+        'NAME':     os.environ['WAMYTM_DATABASE_NAME'],
+        'USER':     os.environ['WAMYTM_DATABASE_USERNAME'],
         'PASSWORD': os.environ['WAMYTM_DATABASE_PASSWORD'],
-        'HOST': os.environ['WAMYTM_DATABASE_HOST'],
-        'PORT': os.environ['WAMYTM_DATABASE_PORT'],
+        'HOST':     os.environ['WAMYTM_DATABASE_HOST'],
+        'PORT':     os.environ['WAMYTM_DATABASE_PORT'],
         # Database connection settings for better stability
         'CONN_MAX_AGE': 0,  # Don't reuse connections
         'CONN_HEALTH_CHECKS': True,  # Enable health checks
-    }
+    },
+    'sigapp': {
+        'ENGINE':   os.environ['WAMYTM_DATABASE_ENGINE'],
+        'NAME':     os.environ['WAMYTM_DATABASE_NAME'],
+        'USER':     os.environ['WAMYTM_DATABASE_USERNAME'],
+        'PASSWORD': os.environ['WAMYTM_DATABASE_PASSWORD'],
+        'HOST':     os.environ['WAMYTM_DATABASE_HOST'],
+        'PORT':     os.environ['WAMYTM_DATABASE_PORT'],
+        # Database connection settings for better stability
+        'CONN_MAX_AGE': 0,  # Don't reuse connections
+        'CONN_HEALTH_CHECKS': True,  # Enable health checks 
+        },
+    'imap_app': {
+        'ENGINE':   os.environ['WAMYTM_DATABASE_ENGINE'],
+        'NAME':     os.environ['WAMYTM_DATABASE_NAME'],
+        'USER':     os.environ['WAMYTM_DATABASE_USERNAME'],
+        'PASSWORD': os.environ['WAMYTM_DATABASE_PASSWORD'],
+        'HOST':     os.environ['WAMYTM_DATABASE_HOST'],
+        'PORT':     os.environ['WAMYTM_DATABASE_PORT'],
+        # Database connection settings for better stability
+        'CONN_MAX_AGE': 0,  # Don't reuse connections
+        'CONN_HEALTH_CHECKS': True,  # Enable health checks 
+        }
 }
 
 # Clients > Client ID

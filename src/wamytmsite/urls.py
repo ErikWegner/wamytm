@@ -34,4 +34,14 @@ urlpatterns = [
 
 # Bedingte Einbindung der sigapp URLs
 if os.getenv('ENABLE_SIGAPP', 'false').lower() == 'true':
-    urlpatterns.insert(1, path('sig/', include('sigapp.urls')))
+    print("Adding sigapp URLs")
+    urlpatterns += [
+        path('sig/', include('sigapp.urls')),
+    ]
+
+# Bedingte Einbindung der imap_app URLs
+if os.getenv('ENABLE_IMAPAPP', 'false').lower() == 'true':
+    print("Adding imap_app URLs")
+    urlpatterns += [
+        path('imap/', include('imap_app.urls')),
+    ]

@@ -159,12 +159,20 @@ def add(request):
                     item.save()
                 elif action == TimeRangeManager.OVERLAP_SPLIT:
                     prev_item = TimeRange.objects.get(id=itemid)
+                    
+                    # Create new item BEFORE modifying the old one to avoid history issues
+                    next_item = TimeRange(
+                        user=prev_item.user,
+                        von=end + datetime.timedelta(days=1),
+                        bis=prev_item.bis,
+                        kind=prev_item.kind,
+                        data=prev_item.data,
+                        org_id=prev_item.org_id
+                    )
+                    
+                    # Now modify the original item
                     prev_item.bis = von + datetime.timedelta(days=-1)
-
-                    next_item = TimeRange.objects.get(id=itemid)
-                    next_item.pk = None
-                    next_item.von = end + datetime.timedelta(days=1)
-
+                    
                     prev_item.save()
                     next_item.save()
             else:

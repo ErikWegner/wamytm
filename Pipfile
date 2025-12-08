@@ -26,6 +26,7 @@ django-prometheus = "*"
 django-health-check = "*"
 oracledb = "*"
 gevent = "*"
+django-q2 = "*"
 
 [requires]
 python_version = "3.12"

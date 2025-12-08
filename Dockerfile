@@ -1,8 +1,8 @@
-FROM python:3.12-bookworm
+FROM python:bookworm
 
 # Oracle Instant Client variables
-ARG INSTANTCLIENT_VERSION=23.8.0.25.04
-ARG INSTANTCLIENT_MAJOR=23_8
+ARG INSTANTCLIENT_VERSION=23.26.0.0.0
+ARG INSTANTCLIENT_MAJOR=23_26
 ARG INSTANTCLIENT_URL=https://download.oracle.com/otn_software/linux/instantclient/2380000
 ARG INSTANTCLIENT_FILE=instantclient-basiclite-linux.x64-${INSTANTCLIENT_VERSION}.zip
 
@@ -26,7 +26,7 @@ RUN ldconfig
 
 RUN apt update && apt install libaio1 -y
 
-RUN pip install --no-cache-dir pipenv && pipenv install --system --deploy
+RUN pip install --upgrade pip && pip install --no-cache-dir pipenv && pipenv install --system --deploy
 
 COPY src/ .
 COPY gunicorn.conf.py .

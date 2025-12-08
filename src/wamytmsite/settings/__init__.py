@@ -25,10 +25,21 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'simple_history',
-    'django_prometheus'
+    'django_prometheus',
 ]
+
+# Database Routers
+DATABASE_ROUTERS = []
+
 if os.getenv('ENABLE_SIGAPP', 'false').lower() == 'true':
     INSTALLED_APPS.append('sigapp.apps.SigappConfig')
+    DATABASE_ROUTERS.append('sigapp.db_router.SigappRouter')
+
+if os.getenv('ENABLE_IMAPAPP', 'false').lower() == 'true':
+    INSTALLED_APPS.append('imap_app.apps.ImapAppConfig')
+    INSTALLED_APPS.append('django_q')
+    INSTALLED_APPS.append('rest_framework.authtoken')  # For API authentication
+    DATABASE_ROUTERS.append('imap_app.db_router.IMapAppRouter')
 
 MIDDLEWARE = [
     'django_prometheus.middleware.PrometheusBeforeMiddleware',
@@ -58,6 +69,7 @@ AUTHENTICATION_BACKENDS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',  # For API Token Auth
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         'rest_framework_social_oauth2.authentication.SocialAuthentication',
     ),
@@ -121,7 +133,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'de'
+
+LANGUAGES = [
+    ('de', 'Deutsch'),
+]
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
 
 TIME_ZONE = 'Europe/Berlin'
 
@@ -158,3 +178,25 @@ DRFSO2_URL_NAMESPACE = "social_core.backends"
 
 # Update to Django 3.2, see https://docs.djangoproject.com/en/3.2/releases/3.2/#customizing-type-of-auto-created-primary-keys
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
+
+# Django Q Configuration
+Q_CLUSTER = {
+    'name': 'wamytm',
+    'workers': 2,  # Reduced for Oracle stability
+    'recycle': 50,  # Recycle workers more frequently for Oracle
+    'timeout': 300,
+    'retry': 360,  # Retry after 360 seconds (must be > timeout)
+    'compress': True,
+    'save_limit': 250,
+    'queue_limit': 500,
+    'cpu_affinity': 1,
+    'label': 'Django Q',
+    'redis': None,  # Use Django ORM as broker
+    'orm': 'default',  # Use default database
+    'sync': False,  # Run tasks async
+    'catch_up': True,  # Catch up on missed schedules
+    'max_attempts': 1,  # Don't retry tasks on Oracle connection errors
+    'bulk': 1,  # Process one task at a time for stability
+    'guard_cycle': 5,  # Check for new tasks every 5 seconds
+    'poll': 0.2,  # Poll interval for pusher
+}

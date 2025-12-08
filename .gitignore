@@ -17,3 +17,4 @@ instantclient-*.zip
 .vscode/tmp.yaml
 .devcontainer/.env
 src/sigapp
+src/imap_app
