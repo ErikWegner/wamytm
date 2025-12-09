@@ -3,7 +3,7 @@ from django.test import Client, TestCase
 from django.contrib.auth.models import User
 from django.test.utils import setup_test_environment, teardown_test_environment
 from ..models import TimeRange, OrgUnit, AllDayEvent, query_events_timeranges_in_week, user_display_name
-from ..views import _prepareWeekdata, _prepareList1Data
+from ..views.views import _prepareWeekdata, _prepareList1Data
 
 
 class ViewsTests(TestCase):
