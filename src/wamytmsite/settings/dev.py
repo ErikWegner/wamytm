@@ -8,6 +8,8 @@ from . import *
 import oracledb
 oracledb.init_oracle_client()
 
+print("wamytmsite.settings.dev")
+
 TIME_ZONE = 'Europe/Berlin'
 
 

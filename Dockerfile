@@ -24,12 +24,14 @@ RUN unzip -q /opt/oracle/${INSTANTCLIENT_FILE} -d /opt/oracle
 RUN echo "/opt/oracle/instantclient_${INSTANTCLIENT_MAJOR}" > /etc/ld.so.conf.d/oracle-instantclient.conf
 RUN ldconfig
 
-RUN apt update && apt install libaio1 -y
+RUN apt update && apt install libaio1 supervisor -y
 
 RUN pip install --upgrade pip && pip install --no-cache-dir pipenv && pipenv install --system --deploy
 
 COPY src/ .
 COPY gunicorn.conf.py .
+# Konfiguration kopieren
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 RUN mkdir -p /usr/src/app/wamytmsite/staticfiles/
 
@@ -44,3 +46,4 @@ EXPOSE 8000
 ENV DJANGO_SETTINGS_MODULE=wamytmsite.settings.container \
     WAMYTM_DATABASE_PORT=""
 CMD [ "gunicorn", "--config", "gunicorn.conf.py", "wamytmsite.wsgi" ]
+#CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

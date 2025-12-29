@@ -27,6 +27,7 @@ django-health-check = "*"
 oracledb = "*"
 gevent = "*"
 django-q2 = "*"
+graphviz = "*"
 
 [requires]
-python_version = "3.12"
+python_version = "3.14"

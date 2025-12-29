@@ -54,23 +54,6 @@
             "justMyCode": false
         },
         {
-            "name": "Django Q Cluster (dev)",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/src",
-            "program": "${workspaceFolder}/src/manage.py",
-            "args": [
-                "qcluster"
-            ],
-            "env": {
-                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.dev",
-                "DEBUG": "TRUE"
-            },
-            "django": true,
-            "justMyCode": false,
-            "console": "integratedTerminal"
-        },
-        {
             "name": "Python: Django prodDaten",
             "type": "python",
             "request": "launch",
@@ -83,24 +66,6 @@
             ],
             "env": {
                 "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.migrate2proddb",
-                "DEBUG": "TRUE"
-            },
-            "django": true,
-            "justMyCode": false
-        },
-        {
-            "name": "Python: Django testDaten",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/src",
-            "program": "${workspaceFolder}/src/manage.py",
-            "args": [
-                "runserver",
-                "0.0.0.0:8000",
-                "--noreload"
-            ],
-            "env": {
-                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.migrate2testdb",
                 "DEBUG": "TRUE"
             },
             "django": true,
@@ -121,21 +86,6 @@
             },
             "django": true,
             "justMyCode": false
-        }
-    ],
-    "compounds": [
-        {
-            "name": "Django Dev + Q Cluster",
-            "configurations": [
-                "Python: Django devDaten",
-                "Django Q Cluster (dev)"
-            ],
-            "presentation": {
-                "hidden": false,
-                "group": "development",
-                "order": 1
-            },
-            "stopAll": true
         }
     ]
 }

@@ -86,10 +86,12 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
+                'imap_app.context_processors.konfiguration_context',
             ],
         },
     },
@@ -137,10 +139,13 @@ LANGUAGE_CODE = 'de'
 
 LANGUAGES = [
     ('de', 'Deutsch'),
+    ('en', 'English'),
 ]
 
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
+    # project-level locale directory (e.g. src/locale)
+    os.path.join(os.path.dirname(BASE_DIR), 'locale'),
 ]
 
 TIME_ZONE = 'Europe/Berlin'

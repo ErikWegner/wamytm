@@ -11,6 +11,8 @@ from . import *
 import oracledb
 oracledb.init_oracle_client()
 
+print("wamytmsite.settings.container")
+
 TIME_ZONE = 'Europe/Berlin'
 
 # SECURITY WARNING: keep the secret key used in production secret!

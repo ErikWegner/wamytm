@@ -1,0 +1,45 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Generate ER Diagram (PNG)",
+            "type": "shell",
+            "command": "cd ${workspaceFolder} && PYTHONPATH=${workspaceFolder}:${workspaceFolder}/src DJANGO_SETTINGS_MODULE=temp_diagram_settings .venv-dev-tools/bin/python src/manage.py graph_models imap_app -o src/imap_app/doku/imap_app_models.png",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Generate ER Diagram (SVG)",
+            "type": "shell",
+            "command": "cd ${workspaceFolder} && PYTHONPATH=${workspaceFolder}:${workspaceFolder}/src DJANGO_SETTINGS_MODULE=temp_diagram_settings .venv-dev-tools/bin/python src/manage.py graph_models imap_app -o src/imap_app/doku/imap_app_models.svg --rankdir TB",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Generate ER Diagram (Both)",
+            "dependsOn": [
+                "Generate ER Diagram (PNG)",
+                "Generate ER Diagram (SVG)"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        }
+    ]
+}
