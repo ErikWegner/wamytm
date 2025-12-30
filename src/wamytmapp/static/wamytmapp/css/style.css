@@ -117,3 +117,156 @@ body {
   .dropdown-item.active, .dropdown-item:active {
     background-color: #5a6268 !important;
   }
+
+/* Dark Mode Styles (copied from imap_app implementation) */
+[data-bs-theme="dark"] {
+    background-color: #212529;
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .card {
+    background-color: #2c3136;
+    border-color: #495057;
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .card-body {
+    background-color: #2c3136;
+}
+
+[data-bs-theme="dark"] .list-group-item {
+    background-color: #2c3136;
+    border-color: #495057;
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .table {
+    color: #dee2e6;
+    border-color: #495057;
+}
+
+[data-bs-theme="dark"] .table-striped>tbody>tr:nth-of-type(odd) {
+    background-color: #2c3136;
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: #2c3136;
+    border-color: #495057;
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    background-color: #2c3136;
+    border-color: #6c757d;
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .modal-content {
+    background-color: #2c3136;
+    border-color: #495057;
+}
+
+[data-bs-theme="dark"] .modal-header,
+[data-bs-theme="dark"] .modal-footer {
+    border-color: #495057;
+}
+
+[data-bs-theme="dark"] footer {
+    background-color: #2c3136 !important;
+    border-color: #495057 !important;
+}
+
+[data-bs-theme="dark"] footer .text-muted {
+    color: #adb5bd !important;
+}
+
+/* Dark Mode Toggle Button */
+.dark-mode-toggle {
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.25rem 0.5rem;
+    border: none;
+    background: transparent;
+    color: inherit;
+    transition: transform 0.2s ease;
+    text-decoration: none !important;
+}
+
+.dark-mode-toggle:hover {
+    transform: scale(1.05);
+}
+
+/* Additional dark-mode overrides for wamytmapp (navbar, bg-light, links, dropdowns) */
+[data-bs-theme="dark"] .navbar,
+[data-bs-theme="dark"] .navbar-light,
+[data-bs-theme="dark"] .bg-light {
+    background-color: #2c3136 !important;
+    color: #dee2e6 !important;
+}
+
+[data-bs-theme="dark"] .navbar .nav-link,
+[data-bs-theme="dark"] .navbar-brand,
+[data-bs-theme="dark"] .navbar-toggler {
+    color: #dee2e6 !important;
+}
+
+[data-bs-theme="dark"] .dropdown-menu,
+[data-bs-theme="dark"] .dropdown-menu .dropdown-item {
+    background-color: #2c3136 !important;
+    color: #dee2e6 !important;
+    border-color: #495057 !important;
+}
+
+[data-bs-theme="dark"] .btn,
+[data-bs-theme="dark"] .btn-link,
+[data-bs-theme="dark"] .form-check-label {
+    color: #dee2e6 !important;
+}
+
+[data-bs-theme="dark"] .content,
+[data-bs-theme="dark"] .content.container {
+    background-color: transparent;
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .hide-embedded {
+    background-color: transparent;
+}
+
+/* Fix for .btn-light in dark mode */
+[data-bs-theme="dark"] .btn-light {
+    background-color: #495057 !important;
+    color: #ffffff !important;
+    border-color: #6c757d !important;
+}
+
+[data-bs-theme="dark"] .btn-light:hover,
+[data-bs-theme="dark"] .btn-light:focus {
+    background-color: #5a6268 !important;
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-light {
+    color: #ffffff !important;
+    border-color: #6c757d !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-light:hover,
+[data-bs-theme="dark"] .btn-outline-light:focus {
+    background-color: rgba(255,255,255,0.05) !important;
+}
+
+/* Header / table header dark-mode fixes */
+[data-bs-theme="dark"] #grid_table .header:not(.allday) {
+    background-color: #343a40 !important;
+    color: #ffffff !important;
+    border-color: #495057 !important;
+}
+
+[data-bs-theme="dark"] #grid_table .header.allday {
+    background-color: #212529 !important;
+    color: #ffffff !important;
+    border-color: #495057 !important;
+}

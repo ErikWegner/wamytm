@@ -55,6 +55,11 @@
                         href="{% url 'ka:index' %}">{% trans "Administration" context "BaseTemplate" %}</a>
                     {% endif %}
                 </div>
+                <div class="ms-auto d-flex align-items-center">
+                    <button class="dark-mode-toggle btn btn-link p-0" id="darkModeToggle" aria-label="Dark Mode umschalten">
+                        <span id="darkModeIcon">🌙</span>
+                    </button>
+                </div>
             </div>
         </nav>
         <div class="row">
@@ -66,6 +71,45 @@
     </div>
 
     {% include 'wamytmapp/footer.html' %}
+
+    <script>
+        // Dark Mode Toggle Funktionalität
+        (function() {
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeIcon = document.getElementById('darkModeIcon');
+            const htmlElement = document.documentElement;
+            const bodyElement = document.body;
+            
+            // Lade gespeicherte Präferenz
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            
+            // Setze initialen Zustand
+            function setTheme(theme) {
+                if (theme === 'dark') {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                    bodyElement.setAttribute('data-bs-theme', 'dark');
+                    darkModeIcon.textContent = '☀️';
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                    bodyElement.setAttribute('data-bs-theme', 'light');
+                    darkModeIcon.textContent = '🌙';
+                }
+                localStorage.setItem('theme', theme);
+            }
+            
+            // Initialisiere Theme
+            setTheme(savedTheme);
+            
+            // Toggle Event
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('click', function() {
+                    const currentTheme = htmlElement.getAttribute('data-bs-theme') || bodyElement.getAttribute('data-bs-theme');
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    setTheme(newTheme);
+                });
+            }
+        })();
+    </script>
 
     </body>
 
