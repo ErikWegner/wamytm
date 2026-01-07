@@ -258,15 +258,21 @@ body {
     background-color: rgba(255,255,255,0.05) !important;
 }
 
+/* Jumbotron dark-mode background */
+[data-bs-theme="dark"] .jumbotron.jumbotron-fluid {
+    background-color: #343a40 !important;
+    color: #dee2e6 !important;
+}
+
 /* Header / table header dark-mode fixes */
 [data-bs-theme="dark"] #grid_table .header:not(.allday) {
-    background-color: #343a40 !important;
+    background-color: #212529 !important;
     color: #ffffff !important;
     border-color: #495057 !important;
 }
 
 [data-bs-theme="dark"] #grid_table .header.allday {
-    background-color: #212529 !important;
+    background-color: #343a40 !important;
     color: #ffffff !important;
     border-color: #495057 !important;
 }

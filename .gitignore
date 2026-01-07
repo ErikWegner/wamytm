@@ -20,3 +20,4 @@ src/sigapp
 src/imap_app
 .venv-dev-tools
 src/locale/de/LC_MESSAGES/django.mo
+*.sqlite3

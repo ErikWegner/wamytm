@@ -54,6 +54,24 @@
             "justMyCode": false
         },
         {
+            "name": "Python: Django HomeOffice",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src",
+            "program": "${workspaceFolder}/src/manage.py",
+            "args": [
+                "runserver",
+                "0.0.0.0:8000",
+                "--noreload"
+            ],
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.homeoffice",
+                "DEBUG": "TRUE"
+            },
+            "django": true,
+            "justMyCode": false
+        },
+        {
             "name": "Python: Django prodDaten",
             "type": "python",
             "request": "launch",
