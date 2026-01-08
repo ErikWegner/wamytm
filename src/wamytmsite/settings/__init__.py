@@ -138,8 +138,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'de'
 
 LANGUAGES = [
-    ('de', 'Deutsch'),
-    ('en', 'English'),
+    ('de', 'DE'),
+    ('en', 'EN'),
 ]
 
 LOCALE_PATHS = [
