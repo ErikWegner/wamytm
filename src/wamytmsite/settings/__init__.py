@@ -57,6 +57,13 @@ MIDDLEWARE = [
     'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
+# Add tenant middleware if imap_app is enabled
+if os.getenv('ENABLE_IMAPAPP', 'false').lower() == 'true':
+    MIDDLEWARE.insert(
+        MIDDLEWARE.index('django.contrib.auth.middleware.AuthenticationMiddleware') + 1,
+        'imap_app.middleware.KonfigurationMiddleware'
+    )
+
 # Application definition
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

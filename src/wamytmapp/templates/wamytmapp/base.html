@@ -4,6 +4,23 @@
 <html>
 
 <head>
+    <script>
+        // Dark Mode sofort setzen um Aufblitzen zu verhindern
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                if (savedTheme === 'dark') {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <style>
+        html[data-bs-theme="dark"] body {
+            background-color: #212529 !important;
+            color: #dee2e6 !important;
+        }
+    </style>
     <title>{% trans "Korporator" context "BaseTemplate" %}</title>
     <script src="{% static 'wamytmapp/js/jquery-3.7.1.min.js' %}"></script>
     <script src="{% static 'wamytmapp/js/bootstrap.bundle.js' %}"></script>
@@ -83,22 +100,25 @@
             // Lade gespeicherte Präferenz
             const savedTheme = localStorage.getItem('theme') || 'light';
             
-            // Setze initialen Zustand
+            // Funktion zum Setzen des Themes
             function setTheme(theme) {
                 if (theme === 'dark') {
                     htmlElement.setAttribute('data-bs-theme', 'dark');
                     bodyElement.setAttribute('data-bs-theme', 'dark');
-                    darkModeIcon.textContent = '☀️';
+                    if (darkModeIcon) darkModeIcon.textContent = '☀️';
                 } else {
                     htmlElement.setAttribute('data-bs-theme', 'light');
                     bodyElement.setAttribute('data-bs-theme', 'light');
-                    darkModeIcon.textContent = '🌙';
+                    if (darkModeIcon) darkModeIcon.textContent = '🌙';
                 }
                 localStorage.setItem('theme', theme);
             }
             
-            // Initialisiere Theme
-            setTheme(savedTheme);
+            // Initialisiere Icon basierend auf vorhandenem Theme
+            if (darkModeIcon) {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme') || 'light';
+                darkModeIcon.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+            }
             
             // Toggle Event
             if (darkModeToggle) {
