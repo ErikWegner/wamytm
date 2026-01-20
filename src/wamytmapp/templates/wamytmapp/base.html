@@ -24,15 +24,12 @@
     <title>{% trans "Korporator" context "BaseTemplate" %}</title>
     <script src="{% static 'wamytmapp/js/jquery-3.7.1.min.js' %}"></script>
     <script src="{% static 'wamytmapp/js/bootstrap.bundle.js' %}"></script>
-    <script src="{% static 'wamytmapp/js/bootstrap-datepicker.min.js' %}"></script>
-    <script src="{% static 'wamytmapp/js/hierarchy-select.min.js' %}"></script>
-    <script src="{% static 'wamytmapp/js/bootstrap-datepicker.de.min.js' %}"></script>
+    <script src="{% static 'wamytmapp/js/bootstrap-datepicker.min.js' %}"></script>   
     <script src="{% static 'wamytmapp/js/hierarchy-select.min.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/bootstrap.min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/bootstrap-datepicker.standalone.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/bootstrap-datepicker.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/hierarchy-select.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/style.css' %}">
-    <!-- <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/bootstrap-icons.css' %}">-->
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'wamytmapp/favicon/apple-touch-icon.png' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'wamytmapp/favicon/favicon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'wamytmapp/favicon/favicon-16x16.png' %}">
@@ -72,11 +69,22 @@
                         href="{% url 'ka:index' %}">{% trans "Administration" context "BaseTemplate" %}</a>
                     {% endif %}
                 </div>
-                <div class="ms-auto d-flex align-items-center">
+                <div class="ml-auto d-flex align-items-center">
                     <button class="dark-mode-toggle btn btn-link p-0" id="darkModeToggle" aria-label="Dark Mode umschalten">
                         <span id="darkModeIcon">🌙</span>
                     </button>
                 </div>
+                <form action="{% url 'set_language' %}" method="post" class="ml-2 d-flex align-items-center">
+                        {% csrf_token %}
+                        <input name="next" type="hidden" value="{{ request.path }}">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        {% get_available_languages as LANGUAGES %}
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Language selection">
+                            {% for lang_code, lang_name in LANGUAGES %}
+                                <button type="submit" name="language" value="{{ lang_code }}" class="btn btn-outline-secondary btn-sm{% if lang_code == LANGUAGE_CODE %} active{% endif %}">{{ lang_name }}</button>
+                            {% endfor %}
+                        </div>
+                </form>
             </div>
         </nav>
         <div class="row">
