@@ -44,5 +44,5 @@ if os.getenv('ENABLE_SIGAPP', 'false').lower() == 'true':
 if os.getenv('ENABLE_IMAPAPP', 'false').lower() == 'true':
     print("Adding imap_app URLs")
     urlpatterns += [
-        path('tmdb/', include('imap_app.urls')),
+        path('ewosa/', include('imap_app.urls')),
     ]
