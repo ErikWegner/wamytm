@@ -98,11 +98,13 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
-                'imap_app.context_processors.konfiguration_context',
             ],
         },
     },
 ]
+
+if os.getenv('ENABLE_IMAPAPP', 'false').lower() == 'true':
+    TEMPLATES[0]['OPTIONS']['context_processors'].append('imap_app.context_processors.konfiguration_context')
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',

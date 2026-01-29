@@ -285,3 +285,7 @@ body {
     color: #ffffff !important;
     border-color: #495057 !important;
 }
+
+[data-bs-theme="dark"] .form-control:disabled {
+    background-color: #202020 !important;
+}
