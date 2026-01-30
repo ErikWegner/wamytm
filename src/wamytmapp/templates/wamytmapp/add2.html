@@ -331,6 +331,12 @@
         document.getElementById('picker-end-display').value = formatDate(endDate);
         document.getElementById('start-hidden').value = formatDateISO(startDate);
         document.getElementById('end-hidden').value = formatDateISO(endDate || startDate);
+        
+        // Trigger change event for conflict checking
+        const startHidden = document.getElementById('start-hidden');
+        const endHidden = document.getElementById('end-hidden');
+        startHidden.dispatchEvent(new Event('change', { bubbles: true }));
+        endHidden.dispatchEvent(new Event('change', { bubbles: true }));
     }
     
     function isSameDay(date1, date2) {
@@ -468,5 +474,5 @@
 })();
 </script>
 
-<script src="{% static 'wamytmapp/js/add.js' %}"></script>
+<script src="{% static 'wamytmapp/js/add2.js' %}"></script>
 {% endblock %}
