@@ -89,6 +89,9 @@ body {
 #grid_table .th {
     font-weight: bold;
 }
+#grid_table .person-name {
+    font-weight: normal;
+}
 #grid_table .header {
     text-align: center;
     position: sticky;
@@ -100,6 +103,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: default;
 }
 #grid_table div {
     padding: 5px;

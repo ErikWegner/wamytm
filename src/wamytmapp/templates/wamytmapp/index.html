@@ -97,7 +97,7 @@
     {% endfor %}
     {% for item in meins %}
     {% if item.DN == 1 %}
-    <div class="th">{{ item.USER_NAME }}</div>
+    <div class="th{% if item.USER_NAME != current_user_name %} person-name{% endif %}">{{ item.USER_NAME }}</div>
     {% endif %}
     {% if item.KIND == None %}
     <div style="grid-column: span {{ item.SPAN }};" class="empty"></div>

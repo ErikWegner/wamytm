@@ -91,6 +91,7 @@ def index(request):
         'trc': RuntimeConfig.TimeRangeViewsLegend,
         'weekdelta': weekdelta,
         'filterform': filterform,
+        'current_user_name': f"{request.user.last_name}, {request.user.first_name} ({request.user.username.upper()[1:]})".strip() if request.user.is_authenticated else None,
     }
     context['embeded'] = 'embed' in request.GET and request.GET['embed'] == '1'
     if usersStr:

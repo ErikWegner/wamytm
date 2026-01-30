@@ -188,7 +188,6 @@
         background: none;
         font-size: 0.875rem;
         color: var(--bs-body-color, #000);
-        border-radius: 0.25rem;
     }
     
     [data-bs-theme="dark"] .daterangepicker-day {
@@ -227,6 +226,20 @@
         font-weight: 700;
     }
     
+    .daterangepicker-day.start-date {
+        border-top-left-radius: 0.25rem;
+        border-bottom-left-radius: 0.25rem;
+    }
+    
+    .daterangepicker-day.end-date {
+        border-top-right-radius: 0.25rem;
+        border-bottom-right-radius: 0.25rem;
+    }
+    
+    .daterangepicker-day.start-date.today {
+        border-radius: 0.25rem;
+    }
+
     .daterangepicker-inputs {
         display: flex;
         gap: 0.5rem;
@@ -385,6 +398,12 @@
             
             if (isSameDay(date, today)) {
                 classes += ' today';
+            }
+
+            if (isSameDay(date, startDate)) {
+                classes += ' start-date';
+            } else if (isSameDay(date, endDate)) {
+                classes += ' end-date';
             }
             if (isSameDay(date, startDate) || isSameDay(date, endDate)) {
                 classes += ' selected';
