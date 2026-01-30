@@ -12,18 +12,14 @@
 <div class="row align-items-center mb-3">
     <div class="col-md-3">
         <button type="button" onclick="go_week(-1);" class="btn btn-secondary d-inline" role="button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                class="bi bi-caret-left-fill" viewBox="0 0 16 16">
-                <path
-                    d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
+                <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z" />
             </svg>
         </button>
         <button type="button" onclick="setWeekdeltaAndSubmit(0);" class="btn btn-light" role="button">{% trans "Current week" context "IndexTemplate" %}</button>
         <button type="button" onclick="go_week(1);" class="btn btn-secondary d-inline" role="button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                class="bi bi-caret-right-fill" viewBox="0 0 16 16">
-                <path
-                    d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+                <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z" />
             </svg>
         </button>
     </div>
@@ -71,21 +67,6 @@
                     <button type="button" id="goToDate" class="btn btn-secondary d-inline">{% trans "Go" context "IndexTemplateFilters" %}</button>
                 </div>
             </div>
-            <script>
-                $('#goToDate').on('click', function () {
-                    var d = $('#filterDate').datepicker('getDate');
-                    if (!d) {
-                        return;
-                    }
-                    var d_minutes = (d.getTime() / 1000 / 60 - d.getTimezoneOffset());
-                    var d_monday = Math.floor(d_minutes / 60 / 24) - ((d.getDay() + 6) % 7);
-                    var today = new Date();
-                    var t_monday = Math.floor((today.getTime() / 1000 / 60 - today.getTimezoneOffset()) / 60 / 24) - ((today.getDay() + 6) % 7);
-                    var delta = (d_monday - t_monday) / 7;
-                    setWeekdeltaAndSubmit(delta);
-                });
-            </script>
-
         </form>
     </div>
 </div>
@@ -108,6 +89,19 @@
 </div>
 
 <script>
+    $('#goToDate').on('click', function () {
+                    var d = $('#filterDate').datepicker('getDate');
+                    if (!d) {
+                        return;
+                    }
+                    var d_minutes = (d.getTime() / 1000 / 60 - d.getTimezoneOffset());
+                    var d_monday = Math.floor(d_minutes / 60 / 24) - ((d.getDay() + 6) % 7);
+                    var today = new Date();
+                    var t_monday = Math.floor((today.getTime() / 1000 / 60 - today.getTimezoneOffset()) / 60 / 24) - ((today.getDay() + 6) % 7);
+                    var delta = (d_monday - t_monday) / 7;
+                    setWeekdeltaAndSubmit(delta);
+    });
+
     function submitFilter() {
         document.getElementById('filterform').submit();
     }
