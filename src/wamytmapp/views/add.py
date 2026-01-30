@@ -183,4 +183,4 @@ def add(request):
         form.fields['start'].widget.attrs['data-date-language'] = 'de'
         form.fields['end'].widget.attrs['data-date-language'] = 'de'
 
-    return render(request, 'wamytmapp/add2.html', {'form': form})
+    return render(request, 'wamytmapp/add.html', {'form': form})
