@@ -1,0 +1,1 @@
+docker buildx build  --tag harbor.intra.regiocom.net/korporator/korporator:v17.8.2 --push .
