@@ -63,8 +63,9 @@
                         data-date-today-btn="true" data-date-language="{{ LANGUAGE_CODE }}"
                         class="form-control d-inline" title="">
                 </div>
-                <div class="col-md-1">
+                <div class="col-md-2">
                     <button type="button" id="goToDate" class="btn btn-secondary d-inline">{% trans "Go" context "IndexTemplateFilters" %}</button>
+                    <span id="undoContainer" class="ml-1"></span>
                 </div>
             </div>
         </form>
@@ -81,9 +82,9 @@
     <div class="th{% if item.USER_NAME != current_user_name %} person-name{% endif %}">{{ item.USER_NAME }}</div>
     {% endif %}
     {% if item.KIND == None %}
-    <div style="grid-column: span {{ item.SPAN }};" class="empty"></div>
+    <div style="grid-column: span {{ item.SPAN }}" class="empty{% if item.USER_NAME == current_user_name %} current-user-entry{% endif %}" data-span="{{ item.SPAN }}" data-user="{{ item.USER_NAME }}" data-min-tag="{{ item.MIN_TAG|date:'Y-m-d' }}" data-kind="" data-partial=""></div>
     {% else %}
-    <div style="grid-column: span {{ item.SPAN }};" class="kind-{{ item.KIND }}{{ item.PARTIAL }}">{{ trc|get_value_from_dict:item.KIND }}{{ item|get_description_tooltip }}</div>
+    <div style="grid-column: span {{ item.SPAN }}" class="kind-{{ item.KIND }}{{ item.PARTIAL }}{% if item.USER_NAME == current_user_name %} current-user-entry{% endif %}" data-span="{{ item.SPAN }}" data-user="{{ item.USER_NAME }}" data-min-tag="{{ item.MIN_TAG|date:'Y-m-d' }}" data-kind="{{ item.KIND }}" data-partial="{{ item.PARTIAL }}">{{ trc|get_value_from_dict:item.KIND }}{{ item|get_description_tooltip }}</div>
     {% endif %}
     {% endfor %}
 </div>
@@ -125,5 +126,497 @@
             }
         }
     });
+
+    (function () {
+        var gridTable = document.getElementById('grid_table');
+        if (!gridTable) {
+            return;
+        }
+
+        var edgeThreshold = 6;
+        var lastTarget = null;
+        var isDragging = false;
+        var dragStart = null;
+        var resizeData = null;
+
+        // Check sessionStorage after page load and create undo button if data exists
+        function checkAndCreateUndoButton() {
+            var undoData = sessionStorage.getItem('resizeUndo');
+            var container = document.getElementById('undoContainer');
+            
+            if (container) {
+                container.innerHTML = '';
+                
+                if (undoData) {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.id = 'undoResizeBtn';
+                    btn.className = 'btn btn-warning d-inline';
+                    btn.setAttribute('role', 'button');
+                    btn.setAttribute('title', '{% trans "Undo last resize" %}');
+                    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/></svg>';
+                    container.appendChild(btn);
+                    btn.addEventListener('click', performUndo);
+                }
+            }
+        }
+        checkAndCreateUndoButton();
+
+        // CSRF Token helper
+        function getCsrfToken() {
+            var cookieValue = null;
+            var name = 'csrftoken';
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Get all entries in grid
+        function getAllEntries() {
+            return Array.from(gridTable.querySelectorAll('div')).filter(function(el) {
+                return !el.classList.contains('th') && !el.classList.contains('header');
+            });
+        }
+
+        // Find left and right neighbors of an element in the same row
+        function getNeighbors(element) {
+            var entries = getAllEntries();
+            var userName = element.dataset.user;
+            var rowEntries = entries.filter(function(el) {
+                return el.dataset.user === userName;
+            });
+            
+            var rowIdx = rowEntries.indexOf(element);
+            return {
+                left: rowIdx > 0 ? rowEntries[rowIdx - 1] : null,
+                right: rowIdx < rowEntries.length - 1 ? rowEntries[rowIdx + 1] : null
+            };
+        }
+
+        // Calculate the grid column start position of an element
+        function calculateGridStart(element) {
+            var entries = getAllEntries();
+            var userName = element.dataset.user;
+            var rowEntries = entries.filter(function(el) {
+                return el.dataset.user === userName;
+            });
+            
+            var gridStart = 2; // Column 1 is for names, entries start at column 2
+            for (var i = 0; i < rowEntries.length; i++) {
+                if (rowEntries[i] === element) {
+                    return gridStart;
+                }
+                gridStart += parseInt(rowEntries[i].dataset.span);
+            }
+            return gridStart;
+        }
+
+        // Mousemove handler for cursor change
+        gridTable.addEventListener('mousemove', function (event) {
+            if (isDragging) {
+                return;
+            }
+
+            var target = event.target.closest('#grid_table div');
+            
+            if (lastTarget && lastTarget !== target) {
+                lastTarget.style.cursor = '';
+            }
+            
+            if (!target) {
+                lastTarget = null;
+                return;
+            }
+
+            if (target.classList.contains('th') || target.classList.contains('header')) {
+                target.style.cursor = '';
+                lastTarget = target;
+                return;
+            }
+
+            var isCurrentUser = target.classList.contains('current-user-entry');
+            var isEntry = !target.classList.contains('empty');
+
+            if (!isCurrentUser || !isEntry) {
+                target.style.cursor = '';
+                lastTarget = target;
+                return;
+            }
+
+            var rect = target.getBoundingClientRect();
+            var nearLeftEdge = event.clientX - rect.left <= edgeThreshold;
+            var nearRightEdge = rect.right - event.clientX <= edgeThreshold;
+            
+            // Check if there are neighbors on the side we're near
+            var neighbors = getNeighbors(target);
+            var hasLeftNeighbor = nearLeftEdge && neighbors.left && !neighbors.left.classList.contains('empty');
+            var hasRightNeighbor = nearRightEdge && neighbors.right && !neighbors.right.classList.contains('empty');
+
+            target.style.cursor = (hasLeftNeighbor || hasRightNeighbor) ? 'col-resize' : '';
+            lastTarget = target;
+        });
+
+        // Mousedown handler to start drag
+        gridTable.addEventListener('mousedown', function(event) {
+            var target = event.target.closest('#grid_table div');
+            if (!target || target.style.cursor !== 'col-resize') {
+                return;
+            }
+
+            console.log('Mousedown: starting drag on', target.dataset.user, target.dataset.minTag, 'span=' + target.dataset.span);
+
+            event.preventDefault();
+            isDragging = true;
+            dragStart = {
+                x: event.clientX,
+                target: target
+            };
+
+            var rect = target.getBoundingClientRect();
+            var nearLeftEdge = event.clientX - rect.left <= edgeThreshold;
+            var neighbors = getNeighbors(target);
+
+            resizeData = {
+                center: target,
+                side: nearLeftEdge ? 'left' : 'right',
+                neighbor: nearLeftEdge ? neighbors.left : neighbors.right,
+                centerOriginalSpan: parseInt(target.dataset.span),
+                neighborOriginalSpan: neighbors[nearLeftEdge ? 'left' : 'right'] ? parseInt(neighbors[nearLeftEdge ? 'left' : 'right'].dataset.span) : 0,
+                centerGridStart: calculateGridStart(target),
+                neighborGridStart: nearLeftEdge ? calculateGridStart(neighbors.left) : calculateGridStart(neighbors.right)
+            };
+
+            console.log('Mousedown: side=' + resizeData.side + ', neighbor=' + (resizeData.neighbor ? resizeData.neighbor.dataset.minTag : 'null') + ', centerGridStart=' + resizeData.centerGridStart + ', neighborGridStart=' + resizeData.neighborGridStart);
+
+            document.body.style.userSelect = 'none';
+            document.body.style.cursor = 'col-resize';
+        });
+
+        // Mousemove handler during drag
+        document.addEventListener('mousemove', function(event) {
+            if (!isDragging || !resizeData) {
+                return;
+            }
+
+            var deltaX = event.clientX - dragStart.x;
+            var columnWidth = 166; // From CSS grid-template-columns
+            var deltaColumns = Math.round(deltaX / columnWidth);
+
+            if (deltaColumns === 0) {
+                // Reset to original state when back at starting position
+                resizeData.center.style.display = '';
+                resizeData.center.style.gridColumn = resizeData.centerGridStart + ' / span ' + resizeData.centerOriginalSpan;
+                if (resizeData.neighbor) {
+                    resizeData.neighbor.style.display = '';
+                    resizeData.neighbor.style.gridColumn = resizeData.neighborGridStart + ' / span ' + resizeData.neighborOriginalSpan;
+                }
+                return;
+            }
+
+            var newCenterSpan, newNeighborSpan;
+            var newCenterStart, newNeighborStart;
+            
+            if (resizeData.side === 'right') {
+                // Dragging right edge: Center grows/shrinks to the right
+                newCenterSpan = resizeData.centerOriginalSpan + deltaColumns;
+                newNeighborSpan = resizeData.neighborOriginalSpan - deltaColumns;
+                // Center stays at same position, neighbor moves to after center
+                newCenterStart = resizeData.centerGridStart;
+                newNeighborStart = resizeData.centerGridStart + newCenterSpan;
+            } else {
+                // Dragging left edge: Center grows/shrinks to the left
+                newCenterSpan = resizeData.centerOriginalSpan - deltaColumns;
+                newNeighborSpan = resizeData.neighborOriginalSpan + deltaColumns;
+                // Neighbor stays at same position, center moves to after neighbor
+                newNeighborStart = resizeData.neighborGridStart;
+                newCenterStart = resizeData.neighborGridStart + newNeighborSpan;
+            }
+
+            // Validate: spans must not be negative
+            if (newCenterSpan < 0 || newNeighborSpan < 0) {
+                return;
+            }
+
+            // Visual feedback for Center with dynamic show/hide
+            if (newCenterSpan < 1) {
+                // Hide element when span < 1, but keep in DOM
+                resizeData.center.style.display = 'none';
+            } else {
+                // Show element and set grid position with explicit start
+                resizeData.center.style.display = '';
+                resizeData.center.style.gridColumn = newCenterStart + ' / span ' + newCenterSpan;
+            }
+            
+            // Visual feedback for Neighbor with dynamic show/hide
+            if (resizeData.neighbor) {
+                if (newNeighborSpan < 1) {
+                    // Hide element when span < 1, but keep in DOM
+                    resizeData.neighbor.style.display = 'none';
+                } else {
+                    // Show element and set grid position with explicit start
+                    resizeData.neighbor.style.display = '';
+                    resizeData.neighbor.style.gridColumn = newNeighborStart + ' / span ' + newNeighborSpan;
+                }
+            }
+        });
+
+        // Mouseup handler to finish drag
+        document.addEventListener('mouseup', function(event) {
+            if (!isDragging) {
+                return;
+            }
+
+            isDragging = false;
+            document.body.style.userSelect = '';
+            document.body.style.cursor = '';
+
+            if (!resizeData || !resizeData.neighbor) {
+                // Reset display if drag was cancelled
+                if (resizeData && resizeData.center) {
+                    resizeData.center.style.display = '';
+                }
+                resizeData = null;
+                return;
+            }
+
+            var deltaX = event.clientX - dragStart.x;
+            var columnWidth = 166;
+            var deltaColumns = Math.round(deltaX / columnWidth);
+
+            console.log('Mouseup: deltaX=' + deltaX + ', deltaColumns=' + deltaColumns + ', neighbor=' + (resizeData.neighbor ? 'found' : 'null'));
+
+            if (deltaColumns === 0) {
+                // No change, reset visual
+                console.log('deltaColumns === 0, aborting');
+                resizeData.center.style.gridColumn = 'span ' + resizeData.centerOriginalSpan;
+                resizeData.center.style.display = '';
+                resizeData.neighbor.style.gridColumn = 'span ' + resizeData.neighborOriginalSpan;
+                resizeData.neighbor.style.display = '';
+                resizeData = null;
+                return;
+            }
+
+            var newCenterSpan, newNeighborSpan;
+            
+            if (resizeData.side === 'right') {
+                newCenterSpan = resizeData.centerOriginalSpan + deltaColumns;
+                newNeighborSpan = resizeData.neighborOriginalSpan - deltaColumns;
+            } else {
+                newCenterSpan = resizeData.centerOriginalSpan - deltaColumns;
+                newNeighborSpan = resizeData.neighborOriginalSpan + deltaColumns;
+            }
+
+            console.log('Calculated spans: newCenter=' + newCenterSpan + ', newNeighbor=' + newNeighborSpan);
+
+            // Validate: spans must be at least 0 (0 means delete)
+            // Negative spans are not allowed
+            if (newCenterSpan < 0 || newNeighborSpan < 0) {
+                console.log('Negative span detected, aborting');
+                // Reset visual and display
+                resizeData.center.style.gridColumn = 'span ' + resizeData.centerOriginalSpan;
+                resizeData.center.style.display = '';
+                resizeData.neighbor.style.gridColumn = 'span ' + resizeData.neighborOriginalSpan;
+                resizeData.neighbor.style.display = '';
+                resizeData = null;
+                return;
+            }
+            
+            // If either becomes 0, it will be deleted - that's OK, continue with request
+            if (newCenterSpan === 0 || newNeighborSpan === 0) {
+                console.log('Entry will be deleted (span=0)');
+            }
+
+            // Send to backend
+            // Clear any existing undo data before new resize
+            sessionStorage.removeItem('resizeUndo');
+            var payload = {
+                delta: deltaColumns,
+                center: {
+                    user: resizeData.center.dataset.user,
+                    min_tag: resizeData.center.dataset.minTag,
+                    kind: (resizeData.center.dataset.kind || '').trim(),
+                    partial: (resizeData.center.dataset.partial || '').trim(),
+                    new_span: newCenterSpan
+                },
+                neighbor: {
+                    user: resizeData.neighbor.dataset.user,
+                    min_tag: resizeData.neighbor.dataset.minTag,
+                    kind: (resizeData.neighbor.dataset.kind || '').trim(),
+                    partial: (resizeData.neighbor.dataset.partial || '').trim(),
+                    new_span: newNeighborSpan
+                },
+                side: resizeData.side
+            };
+
+            console.log('Sending resize payload:', payload);
+
+            fetch('{% url "wamytmapp:resize_entry" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(function(response) {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    return response.json().then(function(data) {
+                        throw new Error(data.error || 'Server error');
+                    });
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('Response data:', data);
+                if (data.success) {
+                    // Save undo data to sessionStorage and create undo button
+                    if (data.undo_data) {
+                        sessionStorage.setItem('resizeUndo', JSON.stringify(data.undo_data));
+                        checkAndCreateUndoButton();
+                    }
+                    
+                    // Calculate new grid positions
+                    var newCenterStart, newNeighborStart;
+                    if (resizeData.side === 'right') {
+                        // Dragging right edge: Center stays at same position, neighbor moves
+                        newCenterStart = resizeData.centerGridStart;
+                        newNeighborStart = resizeData.centerGridStart + newCenterSpan;
+                    } else {
+                        // Dragging left edge: Neighbor stays at same position, center moves
+                        newNeighborStart = resizeData.neighborGridStart;
+                        newCenterStart = resizeData.neighborGridStart + newNeighborSpan;
+                    }
+                    
+                    // Calculate new min_tag dates based on delta
+                    var deltaColumns = Math.round((event.clientX - dragStart.x) / 166);
+                    var newCenterMinTag, newNeighborMinTag;
+                    
+                    if (resizeData.side === 'right') {
+                        // Dragging right: neighbor moves, center stays
+                        newCenterMinTag = resizeData.center.dataset.minTag;
+                        if (resizeData.neighbor) {
+                            var neighborDate = new Date(resizeData.neighbor.dataset.minTag);
+                            neighborDate.setDate(neighborDate.getDate() + deltaColumns);
+                            newNeighborMinTag = neighborDate.toISOString().split('T')[0];
+                        }
+                    } else {
+                        // Dragging left: center moves, neighbor stays
+                        var centerDate = new Date(resizeData.center.dataset.minTag);
+                        centerDate.setDate(centerDate.getDate() + deltaColumns);
+                        newCenterMinTag = centerDate.toISOString().split('T')[0];
+                        if (resizeData.neighbor) {
+                            newNeighborMinTag = resizeData.neighbor.dataset.minTag;
+                        }
+                    }
+                    
+                    // If an entry was deleted (span=0), remove it from DOM
+                    if (newCenterSpan === 0) {
+                        console.log('Removing center from DOM (span=0)');
+                        resizeData.center.remove();
+                    } else {
+                        // Update center: data attributes, visual style with explicit start, and ensure it's visible
+                        resizeData.center.dataset.span = newCenterSpan;
+                        resizeData.center.dataset.minTag = newCenterMinTag;
+                        resizeData.center.style.gridColumn = newCenterStart + ' / span ' + newCenterSpan;
+                        resizeData.center.style.display = '';
+                        console.log('Updated center: span=' + newCenterSpan + ', start=' + newCenterStart + ', minTag=' + newCenterMinTag);
+                    }
+                    
+                    if (newNeighborSpan === 0 && resizeData.neighbor) {
+                        console.log('Removing neighbor from DOM (span=0)');
+                        resizeData.neighbor.remove();
+                    } else if (resizeData.neighbor) {
+                        // Update neighbor: data attributes, visual style with explicit start, and ensure it's visible
+                        resizeData.neighbor.dataset.span = newNeighborSpan;
+                        resizeData.neighbor.dataset.minTag = newNeighborMinTag;
+                        resizeData.neighbor.style.gridColumn = newNeighborStart + ' / span ' + newNeighborSpan;
+                        resizeData.neighbor.style.display = '';
+                        console.log('Updated neighbor: span=' + newNeighborSpan + ', start=' + newNeighborStart + ', minTag=' + newNeighborMinTag);
+                    }
+                    
+                    console.log('Resize completed successfully');
+                } else {
+                    alert('Fehler beim Speichern: ' + (data.error || 'Unbekannter Fehler'));
+                    // Reset visual and display
+                    resizeData.center.style.gridColumn = 'span ' + resizeData.centerOriginalSpan;
+                    resizeData.center.style.display = '';
+                    resizeData.neighbor.style.gridColumn = 'span ' + resizeData.neighborOriginalSpan;
+                    resizeData.neighbor.style.display = '';
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('Fehler beim Speichern der Änderungen');
+                // Reset visual and display
+                resizeData.center.style.gridColumn = 'span ' + resizeData.centerOriginalSpan;
+                resizeData.center.style.display = '';
+                resizeData.neighbor.style.gridColumn = 'span ' + resizeData.neighborOriginalSpan;
+                resizeData.neighbor.style.display = '';
+            })
+            .finally(function() {
+                resizeData = null;
+                dragStart = null;
+            });
+        });
+
+        // Undo action (called when undo button is dynamically created)
+        function performUndo() {
+            var undoData = sessionStorage.getItem('resizeUndo');
+            if (!undoData) {
+                return;
+            }
+
+            /*if (!confirm('Wirklich rückgängig machen?')) {
+                return;
+            }*/
+
+            fetch('{% url "wamytmapp:undo_resize" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: undoData
+            })
+            .then(function(response) {
+                console.log('Undo response status:', response.status);
+                if (!response.ok) {
+                    return response.json().then(function(data) {
+                        throw new Error(data.error || 'Server error');
+                    });
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('Undo response data:', data);
+                if (data.success) {
+                    sessionStorage.removeItem('resizeUndo');
+                    location.reload();
+                } else {
+                    alert('Fehler beim Rückgängig machen: ' + (data.error || 'Unbekannter Fehler'));
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('Fehler beim Rückgängig machen');
+            });
+        }
+
+        gridTable.addEventListener('mouseleave', function () {
+            if (lastTarget && !isDragging) {
+                lastTarget.style.cursor = '';
+                lastTarget = null;
+            }
+        });
+    })();
 </script>
 {% endblock %}

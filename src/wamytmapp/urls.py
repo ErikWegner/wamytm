@@ -1,6 +1,6 @@
 from django.urls import include, path
 
-from .views import index, add, list as list_views
+from .views import index, add, list as list_views, overlap
 from .admin import korporator_admin
 
 app_name = "wamytmapp"
@@ -13,4 +13,6 @@ urlpatterns = [
     path('timeranges', list_views.TimeRangesList.as_view()),
     path('check', list_views.conflict_check),
     path('getorgid', list_views.getorgid),
+    path('api/resize-entry/', overlap.resize_entry, name='resize_entry'),
+    path('api/undo-resize/', overlap.undo_resize, name='undo_resize'),
 ]
