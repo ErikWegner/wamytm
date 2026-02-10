@@ -115,7 +115,11 @@ body {
 }
 
 .table thead th {
-    color: white;
+    color: #212529 !important;
+  }
+
+[data-bs-theme="dark"] .table thead th {
+    color: white !important;
   }
 
   .dropdown-item.active, .dropdown-item:active {

@@ -1,7 +1,6 @@
 class WordCount extends HTMLTableRowElement {
     constructor() {
         super();
-        this.appendChild(document.createElement('td')).scope = "row";
         [...Array(5).keys()].map(e => this.appendChild(document.createElement('td')));
     }
     setData(p_val) {
@@ -38,6 +37,14 @@ customElements.define('word-count', WordCount, { extends: "tr" });
         return localDate.toISOString().substring(0, 10);
     }
 
+    function formatDateDDMMYYYY(dateStr) {
+        // Convert YYYY-MM-DD to DD.MM.YYYY
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) return dateStr;
+        return `${parts[2]}.${parts[1]}.${parts[0]}`;
+    }
+
     function updateTable(data) {
         org$.value = data.org_id
         overlappingcontainer$.style.display = (!data || !data.mods || data.mods.length === 0) ? 'none' : '';
@@ -46,7 +53,13 @@ customElements.define('word-count', WordCount, { extends: "tr" });
         while (tbody$.firstChild) tbody$.removeChild(tbody$.firstChild);
 
         data.mods.forEach(e => {
-            tbody$.appendChild(document.createElement('tr', { is: 'word-count' })).setData([e.item.id, e.item.start, e.item.end, e.item.kind, e.item.partial, overlapactionsselection(e.item.id, e.res)]);
+            tbody$.appendChild(document.createElement('tr', { is: 'word-count' })).setData([
+                formatDateDDMMYYYY(e.item.start),
+                formatDateDDMMYYYY(e.item.end),
+                e.item.kind,
+                e.item.partial,
+                overlapactionsselection(e.item.id, e.res)
+            ]);
         });
     }
 
