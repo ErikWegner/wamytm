@@ -88,6 +88,8 @@ def index(request):
         'orgunit_vt': list(filter(lambda x: (x['ID'] < 0),orgunits)),
         'orgunit_initial': m2o_org_id.m2o_org_id if m2o_org_id is not None else str(orgunit or '0'),
         'days': days,
+        'visible_start': monday,
+        'visible_end': monday + datetime.timedelta(days=4),
         'trc': RuntimeConfig.TimeRangeViewsLegend,
         'weekdelta': weekdelta,
         'filterform': filterform,
@@ -98,3 +100,8 @@ def index(request):
         context['users'] = usersStr
 
     return render(request, 'wamytmapp/index.html', context)
+
+
+def info(request):
+    """View für die Info/Versions-Seite"""
+    return render(request, 'wamytmapp/info.html')

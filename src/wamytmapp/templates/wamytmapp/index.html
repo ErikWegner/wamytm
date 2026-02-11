@@ -72,7 +72,7 @@
     </div>
 </div>
 
-<div id="grid_table" class="presence">
+<div id="grid_table" class="presence" data-visible-start="{{ visible_start|date:'Y-m-d' }}" data-visible-end="{{ visible_end|date:'Y-m-d' }}">
     <div class="header th">{% trans "Person" context "IndexTemplate" %}</div>
     {% for day in days %}
     <div class="header th {% if day.allday %} allday{% endif %}">{{ day.day }}{% if day.allday %}<br>{{ day.allday.description }}{% endif %}</div>
@@ -138,10 +138,102 @@
         var isDragging = false;
         var dragStart = null;
         var resizeData = null;
+        var dragState = {
+            columnWidth: 166,
+            lastDeltaColumns: 0,
+            latestClientX: null,
+            rafId: null
+        };
+
+        function measureColumnWidth() {
+            // Use actual rendered width of a day column (2nd header cell).
+            var headers = gridTable.querySelectorAll('.header.th');
+            if (headers && headers.length >= 2) {
+                var w = headers[1].getBoundingClientRect().width;
+                if (w && isFinite(w) && w > 0) {
+                    return w;
+                }
+            }
+            return 166;
+        }
+
+        function quantizeDeltaColumns(rawColumns, lastDelta) {
+            // Hysteresis to prevent jitter around boundaries.
+            // - change step when crossing +/- 0.70 from current integer
+            // - snap back to 0 only when near center
+            var stepThreshold = 0.70;
+            var zeroSnapThreshold = 0.25;
+
+            var delta = lastDelta;
+            // allow multiple steps when dragging fast
+            while (rawColumns > delta + stepThreshold) {
+                delta += 1;
+            }
+            while (rawColumns < delta - stepThreshold) {
+                delta -= 1;
+            }
+            if (delta !== 0 && Math.abs(rawColumns) < zeroSnapThreshold) {
+                delta = 0;
+            }
+            return delta;
+        }
+
+        function resetVisualToOriginal() {
+            resizeData.center.style.display = '';
+            resizeData.center.style.gridColumn = resizeData.centerGridStart + ' / span ' + resizeData.centerOriginalSpan;
+            if (resizeData.neighbor) {
+                resizeData.neighbor.style.display = '';
+                resizeData.neighbor.style.gridColumn = resizeData.neighborGridStart + ' / span ' + resizeData.neighborOriginalSpan;
+            }
+        }
+
+        function applyResizePreview(deltaColumns) {
+            if (deltaColumns === 0) {
+                resetVisualToOriginal();
+                return;
+            }
+
+            var newCenterSpan, newNeighborSpan;
+            var newCenterStart, newNeighborStart;
+
+            if (resizeData.side === 'right') {
+                newCenterSpan = resizeData.centerOriginalSpan + deltaColumns;
+                newNeighborSpan = resizeData.neighborOriginalSpan - deltaColumns;
+                newCenterStart = resizeData.centerGridStart;
+                newNeighborStart = resizeData.centerGridStart + newCenterSpan;
+            } else {
+                newCenterSpan = resizeData.centerOriginalSpan - deltaColumns;
+                newNeighborSpan = resizeData.neighborOriginalSpan + deltaColumns;
+                newNeighborStart = resizeData.neighborGridStart;
+                newCenterStart = resizeData.neighborGridStart + newNeighborSpan;
+            }
+
+            if (newCenterSpan < 0 || newNeighborSpan < 0) {
+                return;
+            }
+
+            if (newCenterSpan < 1) {
+                resizeData.center.style.display = 'none';
+            } else {
+                resizeData.center.style.display = '';
+                resizeData.center.style.gridColumn = newCenterStart + ' / span ' + newCenterSpan;
+            }
+
+            if (resizeData.neighbor) {
+                if (newNeighborSpan < 1) {
+                    resizeData.neighbor.style.display = 'none';
+                } else {
+                    resizeData.neighbor.style.display = '';
+                    resizeData.neighbor.style.gridColumn = newNeighborStart + ' / span ' + newNeighborSpan;
+                }
+            }
+        }
 
         // Check sessionStorage after page load and create undo button if data exists
         function checkAndCreateUndoButton() {
             var undoData = sessionStorage.getItem('resizeUndo');
+            var undoTypeData = sessionStorage.getItem('typeChangeUndo');
+            var undoAddData = sessionStorage.getItem('addEntryUndo');
             var container = document.getElementById('undoContainer');
             
             if (container) {
@@ -157,6 +249,30 @@
                     btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/></svg>';
                     container.appendChild(btn);
                     btn.addEventListener('click', performUndo);
+                }
+
+                if (undoTypeData) {
+                    var btn2 = document.createElement('button');
+                    btn2.type = 'button';
+                    btn2.id = 'undoTypeChangeBtn';
+                    btn2.className = 'btn btn-warning d-inline ml-1';
+                    btn2.setAttribute('role', 'button');
+                    btn2.setAttribute('title', '{% trans "Undo last type change" %}');
+                    btn2.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/></svg>';
+                    container.appendChild(btn2);
+                    btn2.addEventListener('click', performUndoTypeChange);
+                }
+
+                if (undoAddData) {
+                    var btn3 = document.createElement('button');
+                    btn3.type = 'button';
+                    btn3.id = 'undoAddEntryBtn';
+                    btn3.className = 'btn btn-warning d-inline ml-1';
+                    btn3.setAttribute('role', 'button');
+                    btn3.setAttribute('title', '{% trans "Undo last add" %}');
+                    btn3.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/></svg>';
+                    container.appendChild(btn3);
+                    btn3.addEventListener('click', performUndoAddEntry);
                 }
             }
         }
@@ -260,7 +376,12 @@
             var hasLeftNeighbor = nearLeftEdge && neighbors.left && !neighbors.left.classList.contains('empty');
             var hasRightNeighbor = nearRightEdge && neighbors.right && !neighbors.right.classList.contains('empty');
 
-            target.style.cursor = (hasLeftNeighbor || hasRightNeighbor) ? 'col-resize' : '';
+            // Set cursor: col-resize at edges with neighbors, otherwise pointer
+            if (hasLeftNeighbor || hasRightNeighbor) {
+                target.style.cursor = 'col-resize';
+            } else {
+                target.style.cursor = 'pointer';
+            }
             lastTarget = target;
         });
 
@@ -271,7 +392,13 @@
                 return;
             }
 
-            console.log('Mousedown: starting drag on', target.dataset.user, target.dataset.minTag, 'span=' + target.dataset.span);
+            dragState.columnWidth = measureColumnWidth();
+            dragState.lastDeltaColumns = 0;
+            dragState.latestClientX = event.clientX;
+            if (dragState.rafId) {
+                cancelAnimationFrame(dragState.rafId);
+                dragState.rafId = null;
+            }
 
             event.preventDefault();
             isDragging = true;
@@ -306,66 +433,21 @@
                 return;
             }
 
-            var deltaX = event.clientX - dragStart.x;
-            var columnWidth = 166; // From CSS grid-template-columns
-            var deltaColumns = Math.round(deltaX / columnWidth);
-
-            if (deltaColumns === 0) {
-                // Reset to original state when back at starting position
-                resizeData.center.style.display = '';
-                resizeData.center.style.gridColumn = resizeData.centerGridStart + ' / span ' + resizeData.centerOriginalSpan;
-                if (resizeData.neighbor) {
-                    resizeData.neighbor.style.display = '';
-                    resizeData.neighbor.style.gridColumn = resizeData.neighborGridStart + ' / span ' + resizeData.neighborOriginalSpan;
-                }
+            dragState.latestClientX = event.clientX;
+            if (dragState.rafId) {
                 return;
             }
-
-            var newCenterSpan, newNeighborSpan;
-            var newCenterStart, newNeighborStart;
-            
-            if (resizeData.side === 'right') {
-                // Dragging right edge: Center grows/shrinks to the right
-                newCenterSpan = resizeData.centerOriginalSpan + deltaColumns;
-                newNeighborSpan = resizeData.neighborOriginalSpan - deltaColumns;
-                // Center stays at same position, neighbor moves to after center
-                newCenterStart = resizeData.centerGridStart;
-                newNeighborStart = resizeData.centerGridStart + newCenterSpan;
-            } else {
-                // Dragging left edge: Center grows/shrinks to the left
-                newCenterSpan = resizeData.centerOriginalSpan - deltaColumns;
-                newNeighborSpan = resizeData.neighborOriginalSpan + deltaColumns;
-                // Neighbor stays at same position, center moves to after neighbor
-                newNeighborStart = resizeData.neighborGridStart;
-                newCenterStart = resizeData.neighborGridStart + newNeighborSpan;
-            }
-
-            // Validate: spans must not be negative
-            if (newCenterSpan < 0 || newNeighborSpan < 0) {
-                return;
-            }
-
-            // Visual feedback for Center with dynamic show/hide
-            if (newCenterSpan < 1) {
-                // Hide element when span < 1, but keep in DOM
-                resizeData.center.style.display = 'none';
-            } else {
-                // Show element and set grid position with explicit start
-                resizeData.center.style.display = '';
-                resizeData.center.style.gridColumn = newCenterStart + ' / span ' + newCenterSpan;
-            }
-            
-            // Visual feedback for Neighbor with dynamic show/hide
-            if (resizeData.neighbor) {
-                if (newNeighborSpan < 1) {
-                    // Hide element when span < 1, but keep in DOM
-                    resizeData.neighbor.style.display = 'none';
-                } else {
-                    // Show element and set grid position with explicit start
-                    resizeData.neighbor.style.display = '';
-                    resizeData.neighbor.style.gridColumn = newNeighborStart + ' / span ' + newNeighborSpan;
+            dragState.rafId = requestAnimationFrame(function() {
+                dragState.rafId = null;
+                var deltaX = (dragState.latestClientX != null ? dragState.latestClientX : event.clientX) - dragStart.x;
+                var rawColumns = deltaX / (dragState.columnWidth || 166);
+                var nextDelta = quantizeDeltaColumns(rawColumns, dragState.lastDeltaColumns);
+                if (nextDelta === dragState.lastDeltaColumns) {
+                    return;
                 }
-            }
+                dragState.lastDeltaColumns = nextDelta;
+                applyResizePreview(nextDelta);
+            });
         });
 
         // Mouseup handler to finish drag
@@ -387,9 +469,15 @@
                 return;
             }
 
+            if (dragState.rafId) {
+                cancelAnimationFrame(dragState.rafId);
+                dragState.rafId = null;
+            }
+
             var deltaX = event.clientX - dragStart.x;
-            var columnWidth = 166;
-            var deltaColumns = Math.round(deltaX / columnWidth);
+            var rawColumns = deltaX / (dragState.columnWidth || 166);
+            var deltaColumns = quantizeDeltaColumns(rawColumns, dragState.lastDeltaColumns);
+            dragState.lastDeltaColumns = deltaColumns;
 
             console.log('Mouseup: deltaX=' + deltaX + ', deltaColumns=' + deltaColumns + ', neighbor=' + (resizeData.neighbor ? 'found' : 'null'));
 
@@ -497,7 +585,6 @@
                     }
                     
                     // Calculate new min_tag dates based on delta
-                    var deltaColumns = Math.round((event.clientX - dragStart.x) / 166);
                     var newCenterMinTag, newNeighborMinTag;
                     
                     if (resizeData.side === 'right') {
@@ -611,12 +698,538 @@
             });
         }
 
+        function performUndoTypeChange() {
+            var undoData = sessionStorage.getItem('typeChangeUndo');
+            if (!undoData) {
+                return;
+            }
+
+            fetch('{% url "wamytmapp:undo_change_type" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: undoData
+            })
+            .then(function(response) {
+                console.log('Undo type-change response status:', response.status);
+                if (!response.ok) {
+                    return response.json().then(function(data) {
+                        throw new Error(data.error || 'Server error');
+                    });
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('Undo type-change response data:', data);
+                if (data.success) {
+                    sessionStorage.removeItem('typeChangeUndo');
+                    location.reload();
+                } else {
+                    alert('Fehler beim Rückgängig machen: ' + (data.error || 'Unbekannter Fehler'));
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('Fehler beim Rückgängig machen');
+            });
+        }
+
+        function performUndoAddEntry() {
+            var undoData = sessionStorage.getItem('addEntryUndo');
+            if (!undoData) {
+                return;
+            }
+
+            fetch('{% url "wamytmapp:undo_add_entry" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: undoData
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    return response.json().then(function(data) {
+                        throw new Error(data.error || 'Server error');
+                    });
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    sessionStorage.removeItem('addEntryUndo');
+                    location.reload();
+                } else {
+                    alert('Fehler beim Rückgängig machen: ' + (data.error || 'Unbekannter Fehler'));
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('Fehler beim Rückgängig machen');
+            });
+        }
+
         gridTable.addEventListener('mouseleave', function () {
             if (lastTarget && !isDragging) {
                 lastTarget.style.cursor = '';
                 lastTarget = null;
             }
         });
+    })();
+
+    // Context Menu functionality
+    (function() {
+        var contextMenu = null;
+        var contextMenuTarget = null;
+        var contextMenuPos = { x: 0, y: 0 };
+        var typeChooser = null;
+        var dayHighlight = null;
+        var clickedDayIso = null;
+
+        function ensureDayHighlight() {
+            if (dayHighlight) {
+                return dayHighlight;
+            }
+            var h = document.createElement('div');
+            h.id = 'contextMenuDayHighlight';
+            h.style.position = 'fixed';
+            h.style.backgroundColor = '#495057';
+            h.style.border = '1px solid #2c3136';
+            h.style.borderRadius = '15px';
+            h.style.pointerEvents = 'none';
+            h.style.zIndex = '9999';
+            h.style.display = 'none';
+            document.body.appendChild(h);
+            dayHighlight = h;
+            return dayHighlight;
+        }
+
+        function hideDayHighlight() {
+            if (dayHighlight) {
+                dayHighlight.style.display = 'none';
+            }
+            clickedDayIso = null;
+        }
+
+        function measureColumnWidth() {
+            var gridTable = document.getElementById('grid_table');
+            if (!gridTable) {
+                return 166;
+            }
+            var headers = gridTable.querySelectorAll('.header.th');
+            if (headers && headers.length >= 2) {
+                var w = headers[1].getBoundingClientRect().width;
+                if (w && isFinite(w) && w > 0) {
+                    return w;
+                }
+            }
+            return 166;
+        }
+
+        function addDaysIso(iso, days) {
+            // Timezone-safe date arithmetic in UTC.
+            // Avoid `toISOString()` on a local-midnight Date, which can shift the date.
+            var parts = iso.split('-');
+            if (parts.length !== 3) {
+                return iso;
+            }
+            var y = parseInt(parts[0], 10);
+            var m = parseInt(parts[1], 10) - 1;
+            var d = parseInt(parts[2], 10);
+            var dt = new Date(Date.UTC(y, m, d));
+            dt.setUTCDate(dt.getUTCDate() + days);
+            var yy = dt.getUTCFullYear();
+            var mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+            var dd = String(dt.getUTCDate()).padStart(2, '0');
+            return yy + '-' + mm + '-' + dd;
+        }
+
+        function computeClickedDay(target, clientX) {
+            var minTag = (target.dataset.minTag || '').trim();
+            if (!minTag) {
+                return null;
+            }
+            var rect = target.getBoundingClientRect();
+            var colW = measureColumnWidth();
+            var offset = clientX - rect.left;
+            if (offset < 0) offset = 0;
+            var dayOffset = Math.floor(offset / colW);
+            if (dayOffset < 0) dayOffset = 0;
+            // Clamp to visible week (5 days)
+            if (dayOffset > 4) dayOffset = 4;
+            return {
+                iso: addDaysIso(minTag, dayOffset),
+                rect: {
+                    left: rect.left + dayOffset * colW,
+                    top: rect.top,
+                    width: colW,
+                    height: rect.height
+                }
+            };
+        }
+
+        function getCsrfToken() {
+            var cookieValue = null;
+            var name = 'csrftoken';
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function hideTypeChooser() {
+            if (typeChooser) {
+                typeChooser.style.display = 'none';
+            }
+        }
+
+        function createTypeChooser() {
+            var chooser = document.createElement('div');
+            chooser.id = 'entryTypeChooser';
+            chooser.style.position = 'fixed';
+            chooser.style.borderRadius = '4px';
+            //chooser.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+            chooser.style.zIndex = '10001';
+            chooser.style.display = 'none';
+            chooser.style.padding = '6px';
+            chooser.className = 'wamytm-context-popover';
+
+            document.body.appendChild(chooser);
+            return chooser;
+        }
+
+        function showTypeChooser(x, y, target, mode) {
+            if (!typeChooser) {
+                typeChooser = createTypeChooser();
+            }
+
+            var currentKind = (target.dataset.kind || '').trim();
+            var kinds = [
+                { kind: 'a', label: 'A' },
+                { kind: 'p', label: 'P' },
+                { kind: 'm', label: 'M' }
+            ];
+
+            typeChooser.innerHTML = '';
+
+            kinds.forEach(function(k) {
+                if (mode === 'changeType') {
+                    if (k.kind === currentKind) {
+                        return;
+                    }
+                }
+                if (mode === 'add') {
+                    // Only hide the existing kind if there is an entry at the clicked day.
+                    if (currentKind && k.kind === currentKind) {
+                        return;
+                    }
+                }
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn-sm btn-secondary';
+                btn.textContent = k.label;
+                btn.style.margin = '0 4px';
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (mode === 'changeType') {
+                        changeTypeForVisibleSlice(target, k.kind);
+                    } else if (mode === 'add') {
+                        addEntryAtClickedDay(target, k.kind);
+                    }
+                    hideTypeChooser();
+                });
+                typeChooser.appendChild(btn);
+            });
+
+            typeChooser.style.left = (x + 8) + 'px';
+            typeChooser.style.top = (y + 8) + 'px';
+            typeChooser.style.display = 'block';
+        }
+
+        function changeTypeForVisibleSlice(target, newKind) {
+            var gridTable = document.getElementById('grid_table');
+            if (!gridTable) {
+                alert('Grid nicht gefunden');
+                return;
+            }
+
+            var visibleStart = gridTable.dataset.visibleStart;
+            var visibleEnd = gridTable.dataset.visibleEnd;
+
+            if (!visibleStart || !visibleEnd) {
+                alert('Sichtbarer Zeitraum fehlt');
+                return;
+            }
+
+            var payload = {
+                target: {
+                    user: target.dataset.user,
+                    min_tag: target.dataset.minTag,
+                    kind: (target.dataset.kind || '').trim(),
+                    partial: (target.dataset.partial || '').trim()
+                },
+                new_kind: newKind,
+                visible_start: visibleStart,
+                visible_end: visibleEnd
+            };
+
+            // Clear previous undo data before new change
+            sessionStorage.removeItem('typeChangeUndo');
+
+            fetch('{% url "wamytmapp:change_type_visible" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    return response.json().then(function(data) {
+                        throw new Error(data.error || 'Server error');
+                    });
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    if (data.undo_data) {
+                        sessionStorage.setItem('typeChangeUndo', JSON.stringify(data.undo_data));
+                        // Re-create undo buttons immediately
+                        if (typeof checkAndCreateUndoButton === 'function') {
+                            checkAndCreateUndoButton();
+                        }
+                    }
+                    location.reload();
+                    return;
+                }
+                alert('Fehler beim Speichern: ' + (data.error || 'Unbekannter Fehler'));
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('Fehler beim Speichern: ' + (error && error.message ? error.message : 'Unbekannter Fehler'));
+            });
+        }
+
+        function addEntryAtClickedDay(target, newKind) {
+            if (!clickedDayIso) {
+                alert('Tag nicht bestimmt');
+                return;
+            }
+
+            // Clear previous undo data before new add
+            sessionStorage.removeItem('addEntryUndo');
+
+            var payload = {
+                day: clickedDayIso,
+                new_kind: newKind
+            };
+
+            fetch('{% url "wamytmapp:add_entry_at_day" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(function(response) {
+                if (!response.ok) {
+                    return response.json().then(function(data) {
+                        throw new Error(data.error || 'Server error');
+                    });
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    if (data.undo_data) {
+                        sessionStorage.setItem('addEntryUndo', JSON.stringify(data.undo_data));
+                    }
+                    location.reload();
+                    return;
+                }
+                alert('Fehler beim Speichern: ' + (data.error || 'Unbekannter Fehler'));
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('Fehler beim Speichern: ' + (error && error.message ? error.message : 'Unbekannter Fehler'));
+            });
+        }
+
+        // Create context menu element
+        function createContextMenu() {
+            var menu = document.createElement('div');
+            menu.id = 'entryContextMenu';
+            menu.style.position = 'fixed';
+            menu.style.borderRadius = '4px';
+            menu.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+            menu.style.zIndex = '10000';
+            menu.style.display = 'none';
+            menu.style.minWidth = '150px';
+            menu.style.padding = '4px 0';
+            menu.className = 'wamytm-context-popover';
+
+            var menuItems = [
+                { text: 'Typ ändern', action: 'changeType' },
+                { text: 'Hinzufügen', action: 'add' }
+            ];
+
+            menuItems.forEach(function(item) {
+                var menuItem = document.createElement('div');
+                menuItem.textContent = item.text;
+                menuItem.className = 'wamytm-context-popover-item';
+                menuItem.dataset.action = item.action;
+
+                menuItem.addEventListener('click', function() {
+                    handleContextMenuAction(item.action, contextMenuTarget);
+                    hideContextMenu();
+                });
+
+                menu.appendChild(menuItem);
+            });
+
+            document.body.appendChild(menu);
+            return menu;
+        }
+
+        // Show context menu at position
+        function showContextMenu(x, y, target) {
+            if (!contextMenu) {
+                contextMenu = createContextMenu();
+            }
+
+            contextMenuTarget = target;
+            contextMenuPos.x = x;
+            contextMenuPos.y = y;
+
+            // Hide/disable changeType for empty or partial entries
+            var changeTypeItem = contextMenu.querySelector('[data-action="changeType"]');
+            if (changeTypeItem) {
+                var isEmpty = target.classList.contains('empty') || !(target.dataset.kind || '').trim();
+                var isPartial = (target.dataset.partial || '').trim().length > 0;
+                changeTypeItem.style.display = (isEmpty || isPartial) ? 'none' : '';
+            }
+
+            contextMenu.style.left = x + 'px';
+            contextMenu.style.top = y + 'px';
+            contextMenu.style.display = 'block';
+        }
+
+        // Hide context menu
+        function hideContextMenu() {
+            if (contextMenu) {
+                contextMenu.style.display = 'none';
+            }
+            contextMenuTarget = null;
+        }
+
+        // Handle context menu actions
+        function handleContextMenuAction(action, target) {
+            if (!target) return;
+
+            console.log('Context menu action:', action, 'on entry:', {
+                user: target.dataset.user,
+                minTag: target.dataset.minTag,
+                kind: target.dataset.kind,
+                partial: target.dataset.partial
+            });
+
+            // TODO: Implement actual functionality
+            switch(action) {
+                case 'changeType':
+                    showTypeChooser(contextMenuPos.x, contextMenuPos.y, target, 'changeType');
+                    break;
+                case 'add':
+                    showTypeChooser(contextMenuPos.x, contextMenuPos.y, target, 'add');
+                    break;
+            }
+        }
+
+        // Add context menu to grid entries
+        var gridTable = document.getElementById('grid_table');
+        if (gridTable) {
+            gridTable.addEventListener('contextmenu', function(event) {
+                var target = event.target.closest('#grid_table div');
+
+                if (!target) {
+                    return;
+                }
+
+                // Never open a context menu on headers.
+                if (target.classList.contains('th') || target.classList.contains('header')) {
+                    return;
+                }
+
+                // Disable the browser's default context menu inside the grid.
+                event.preventDefault();
+
+                // Only show custom context menu for current user's entries (same logic as resize)
+                if (!target.classList.contains('current-user-entry')) {
+                    hideContextMenu();
+                    hideTypeChooser();
+                    hideDayHighlight();
+                    return;
+                }
+
+                // Determine clicked day and highlight it (exact day, not whole entry)
+                var clicked = computeClickedDay(target, event.clientX);
+                if (clicked && clicked.iso) {
+                    clickedDayIso = clicked.iso;
+                    var h = ensureDayHighlight();
+                    h.style.left = clicked.rect.left + 'px';
+                    h.style.top = clicked.rect.top + 'px';
+                    h.style.width = clicked.rect.width + 'px';
+                    h.style.height = clicked.rect.height + 'px';
+                    h.style.display = 'block';
+                } else {
+                    hideDayHighlight();
+                }
+
+                showContextMenu(event.clientX, event.clientY, target);
+            });
+        }
+
+        // Hide context menu when clicking elsewhere
+        document.addEventListener('click', function(event) {
+            if (contextMenu && !contextMenu.contains(event.target)) {
+                hideContextMenu();
+            }
+            if (typeChooser && !typeChooser.contains(event.target) && (!contextMenu || !contextMenu.contains(event.target))) {
+                hideTypeChooser();
+            }
+            if (dayHighlight && (!contextMenu || !contextMenu.contains(event.target)) && (!typeChooser || !typeChooser.contains(event.target))) {
+                hideDayHighlight();
+            }
+        });
+
+        // Hide context menu on scroll
+        window.addEventListener('scroll', hideContextMenu);
+        if (gridTable) {
+            gridTable.addEventListener('scroll', hideContextMenu);
+        }
+
+        window.addEventListener('scroll', hideTypeChooser);
+        if (gridTable) {
+            gridTable.addEventListener('scroll', hideTypeChooser);
+        }
+
+        window.addEventListener('scroll', hideDayHighlight);
+        if (gridTable) {
+            gridTable.addEventListener('scroll', hideDayHighlight);
+        }
     })();
 </script>
 {% endblock %}

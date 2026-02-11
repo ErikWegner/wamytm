@@ -10,9 +10,434 @@ from django.core.exceptions import ValidationError, SuspiciousOperation
 from wamytmapp.model.Timerange import TimeRange, TimeRangeManager
 from wamytmapp.forms import AddTimeRangeForm
 from ..model.Timerange import TimeRange
+from ..model.ODB import OMS
 from .timerange_utils import extract_username, find_timerange, find_user_by_display_name
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_date_yyyy_mm_dd(value, field_name):
+    if isinstance(value, datetime.date):
+        return value
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name} muss ein Datum-String sein")
+    try:
+        return datetime.datetime.strptime(value, '%Y-%m-%d').date()
+    except ValueError as e:
+        raise ValueError(f"{field_name} hat ein ungültiges Format (erwartet YYYY-MM-DD)") from e
+
+
+def _clone_timerange(base_tr, *, von, bis, kind):
+    data = dict(base_tr.data) if base_tr.data else {}
+    # For this feature we only support full-day entries; enforce no partial.
+    if data.get(TimeRange.DATA_PARTIAL):
+        raise ValueError('Partial-Einträge werden für "Typ ändern" nicht unterstützt')
+    data.pop(TimeRange.DATA_PARTIAL, None)
+    return TimeRange(
+        user=base_tr.user,
+        von=von,
+        bis=bis,
+        kind=kind,
+        data=data,
+        org=base_tr.org
+    )
+
+
+def _user_default_org_id(user):
+    try:
+        m2o = OMS.objects.getORG_ID(user.id)
+        return m2o.m2o_org_id if m2o is not None else None
+    except Exception:
+        return None
+
+
+def _ensure_full_day_timerange(tr, context):
+    if (tr.data or {}).get(TimeRange.DATA_PARTIAL):
+        raise ValueError(f'Halbtägige Einträge werden bei "{context}" aktuell nicht unterstützt')
+
+
+def _find_full_day_timerange_for_day(user, day):
+    # Find a full-day TimeRange overlapping day for this user.
+    candidates = list(TimeRange.objects.filter(user=user, von__lte=day, bis__gte=day))
+    full_day = []
+    for tr in candidates:
+        if not (tr.data or {}).get(TimeRange.DATA_PARTIAL):
+            full_day.append(tr)
+    if len(full_day) > 1:
+        raise ValueError('Mehrere ganztägige Einträge an diesem Tag gefunden')
+    return full_day[0] if full_day else None
+
+
+@require_http_methods(["POST"])
+@login_required
+def add_entry_at_day(request):
+    """Create a new one-day entry at the given day and split an existing entry if needed.
+
+    Expected payload:
+    {
+      "day": "YYYY-MM-DD",
+      "new_kind": "a"|"p"|"m"
+    }
+    """
+    try:
+        data = json.loads(request.body)
+        day = _parse_date_yyyy_mm_dd(data.get('day'), 'day')
+        new_kind = (data.get('new_kind') or '').strip()
+
+        if new_kind not in {'a', 'p', 'm'}:
+            return JsonResponse({'success': False, 'error': 'Ungültiger Typ'}, status=400)
+
+        existing = _find_full_day_timerange_for_day(request.user, day)
+
+        undo_data = {
+            'original': None,
+            'created_ids': [],
+        }
+
+        with transaction.atomic():
+            # Validate existing entry if present
+            if existing is not None:
+                _ensure_full_day_timerange(existing, 'Hinzufügen')
+                if existing.kind == new_kind:
+                    return JsonResponse({'success': False, 'error': 'Es existiert bereits ein Eintrag mit diesem Typ an dem Tag'}, status=400)
+
+                undo_data['original'] = {
+                    'deleted': False,
+                    'id': existing.id,
+                    'von': existing.von.strftime('%Y-%m-%d'),
+                    'bis': existing.bis.strftime('%Y-%m-%d'),
+                    'kind': existing.kind,
+                    'data': dict(existing.data) if existing.data else {},
+                    'org_id': existing.org_id,
+                }
+
+                original_von = existing.von
+                original_bis = existing.bis
+                old_kind = existing.kind
+
+                # Remove the day from existing by shrinking/splitting
+                if original_von == day and original_bis == day:
+                    # Single-day existing -> delete
+                    undo_data['original']['deleted'] = True
+                    existing.delete()
+                elif original_von == day:
+                    existing.von = day + datetime.timedelta(days=1)
+                    existing.save()
+                elif original_bis == day:
+                    existing.bis = day - datetime.timedelta(days=1)
+                    existing.save()
+                else:
+                    # Split: keep existing as BEFORE, create AFTER
+                    existing.bis = day - datetime.timedelta(days=1)
+                    existing.save()
+                    after_tr = _clone_timerange(existing, von=day + datetime.timedelta(days=1), bis=original_bis, kind=old_kind)
+                    after_tr.save()
+                    undo_data['created_ids'].append(after_tr.id)
+
+                # Create the new one-day entry
+                base_org = existing.org_id if existing is not None else _user_default_org_id(request.user)
+                new_tr = TimeRange(
+                    user=request.user,
+                    von=day,
+                    bis=day,
+                    kind=new_kind,
+                    data={'v': 1},
+                    org_id=base_org
+                )
+                new_tr.save()
+                undo_data['created_ids'].append(new_tr.id)
+            else:
+                # No existing full-day entry -> just create new
+                base_org = _user_default_org_id(request.user)
+                new_tr = TimeRange(
+                    user=request.user,
+                    von=day,
+                    bis=day,
+                    kind=new_kind,
+                    data={'v': 1},
+                    org_id=base_org
+                )
+                new_tr.save()
+                undo_data['created_ids'].append(new_tr.id)
+
+        return JsonResponse({'success': True, 'undo_data': undo_data})
+
+    except ValueError as e:
+        logger.error(f"ValueError in add_entry_at_day: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Unexpected error in add_entry_at_day: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'error': f'Unerwarteter Fehler: {str(e)}'}, status=500)
+
+
+@require_http_methods(["POST"])
+@login_required
+def undo_add_entry(request):
+    """Undo the last 'Hinzufügen' operation.
+
+    Expected payload:
+    {
+      "original": null | {"deleted": bool, "id": int, "von": "YYYY-MM-DD", "bis": "YYYY-MM-DD", "kind": "a", "data": {...}, "org_id": 123},
+      "created_ids": [1,2]
+    }
+    """
+    try:
+        data = json.loads(request.body)
+        original = data.get('original')
+        created_ids = data.get('created_ids') or []
+
+        with transaction.atomic():
+            # Delete created entries
+            if created_ids:
+                TimeRange.objects.filter(user=request.user, id__in=created_ids).delete()
+
+            if original:
+                original_deleted = bool(original.get('deleted'))
+                original_id = original.get('id')
+                original_von = _parse_date_yyyy_mm_dd(original.get('von'), 'original.von')
+                original_bis = _parse_date_yyyy_mm_dd(original.get('bis'), 'original.bis')
+                original_kind = (original.get('kind') or '').strip()
+                original_data = original.get('data') if isinstance(original.get('data'), dict) else {}
+                original_org_id = original.get('org_id')
+
+                if original_kind not in {'a', 'p', 'm'}:
+                    return JsonResponse({'success': False, 'error': 'Ungültige Undo-Daten (kind)'}, status=400)
+
+                if original_deleted:
+                    restored = TimeRange(
+                        user=request.user,
+                        von=original_von,
+                        bis=original_bis,
+                        kind=original_kind,
+                        data=original_data,
+                        org_id=original_org_id
+                    )
+                    restored.save()
+                else:
+                    if original_id is None:
+                        return JsonResponse({'success': False, 'error': 'Ungültige Undo-Daten (id)'}, status=400)
+                    tr = TimeRange.objects.filter(user=request.user, id=original_id).first()
+                    if not tr:
+                        return JsonResponse({'success': False, 'error': 'Original-Eintrag nicht gefunden'}, status=404)
+                    tr.von = original_von
+                    tr.bis = original_bis
+                    tr.kind = original_kind
+                    tr.data = original_data
+                    tr.org_id = original_org_id
+                    tr.save()
+
+        return JsonResponse({'success': True})
+
+    except ValueError as e:
+        logger.error(f"ValueError in undo_add_entry: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Unexpected error in undo_add_entry: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'error': f'Unerwarteter Fehler: {str(e)}'}, status=500)
+
+
+@require_http_methods(["POST"])
+@login_required
+def change_type_visible(request):
+    """Change the kind/type of the currently visible slice of a TimeRange.
+
+    Creates a new TimeRange with the new kind for the intersection of the clicked
+    entry with the visible week range (Mo–Fr). The old entry is shortened/split
+    into before/after segments with the old kind.
+
+    Expected payload:
+    {
+      "target": {"user": "Nachname, Vorname (USERNAME)", "min_tag": "YYYY-MM-DD", "kind": "a", "partial": ""},
+      "new_kind": "p",
+      "visible_start": "YYYY-MM-DD",
+      "visible_end": "YYYY-MM-DD"
+    }
+    """
+    try:
+        data = json.loads(request.body)
+        target = data['target']
+        new_kind = (data.get('new_kind') or '').strip()
+        visible_start = _parse_date_yyyy_mm_dd(data.get('visible_start'), 'visible_start')
+        visible_end = _parse_date_yyyy_mm_dd(data.get('visible_end'), 'visible_end')
+
+        if visible_start > visible_end:
+            return JsonResponse({'success': False, 'error': 'Ungültiger sichtbarer Zeitraum'}, status=400)
+
+        if new_kind not in {'a', 'p', 'm'}:
+            return JsonResponse({'success': False, 'error': 'Ungültiger Typ'}, status=400)
+
+        # Only full-day entries supported for now.
+        if (target.get('partial') or '').strip():
+            return JsonResponse({'success': False, 'error': 'Halbtägige Einträge werden beim Typwechsel aktuell nicht unterstützt'}, status=400)
+
+        old_tr = find_timerange(
+            target['user'],
+            target['min_tag'],
+            (target.get('kind') or '').strip(),
+            (target.get('partial') or '').strip()
+        )
+
+        if old_tr.user != request.user:
+            return JsonResponse({'success': False, 'error': 'Sie können nur Ihre eigenen Einträge bearbeiten'}, status=403)
+
+        if (old_tr.data or {}).get(TimeRange.DATA_PARTIAL):
+            return JsonResponse({'success': False, 'error': 'Halbtägige Einträge werden beim Typwechsel aktuell nicht unterstützt'}, status=400)
+
+        if old_tr.kind == new_kind:
+            return JsonResponse({'success': False, 'error': 'Eintrag hat bereits diesen Typ'}, status=400)
+
+        slice_start = max(old_tr.von, visible_start)
+        slice_end = min(old_tr.bis, visible_end)
+        if slice_start > slice_end:
+            return JsonResponse({'success': False, 'error': 'Eintrag ist im sichtbaren Zeitraum nicht enthalten'}, status=400)
+
+        original_von = old_tr.von
+        original_bis = old_tr.bis
+        old_kind = old_tr.kind
+        original_data = dict(old_tr.data) if old_tr.data else {}
+        original_org_id = old_tr.org_id
+
+        undo_data = {
+            'original': {
+                'deleted': False,
+                'id': old_tr.id,
+                'von': original_von.strftime('%Y-%m-%d'),
+                'bis': original_bis.strftime('%Y-%m-%d'),
+                'kind': old_kind,
+                'data': original_data,
+                'org_id': original_org_id,
+            },
+            'created_ids': [],
+        }
+
+        with transaction.atomic():
+            # Case: slice covers entire original -> delete old, create one new
+            if slice_start == original_von and slice_end == original_bis:
+                undo_data['original']['deleted'] = True
+                old_tr.delete()
+                new_tr = _clone_timerange(old_tr, von=slice_start, bis=slice_end, kind=new_kind)
+                new_tr.save()
+                undo_data['created_ids'] = [new_tr.id]
+                return JsonResponse({'success': True, 'undo_data': undo_data})
+
+            # Case: slice at start -> keep old as AFTER by moving start
+            if slice_start == original_von and slice_end < original_bis:
+                # Shrink old to after slice
+                old_tr.von = slice_end + datetime.timedelta(days=1)
+                old_tr.save()
+                new_tr = _clone_timerange(old_tr, von=slice_start, bis=slice_end, kind=new_kind)
+                new_tr.save()
+                undo_data['created_ids'] = [new_tr.id]
+                return JsonResponse({'success': True, 'undo_data': undo_data})
+
+            # Case: slice at end -> keep old as BEFORE by moving end
+            if slice_end == original_bis and slice_start > original_von:
+                old_tr.bis = slice_start - datetime.timedelta(days=1)
+                old_tr.save()
+                new_tr = _clone_timerange(old_tr, von=slice_start, bis=slice_end, kind=new_kind)
+                new_tr.save()
+                undo_data['created_ids'] = [new_tr.id]
+                return JsonResponse({'success': True, 'undo_data': undo_data})
+
+            # Case: slice strictly inside -> split into before + after, plus new middle
+            if slice_start > original_von and slice_end < original_bis:
+                # Shrink old to BEFORE
+                old_tr.bis = slice_start - datetime.timedelta(days=1)
+                old_tr.save()
+
+                after_tr = _clone_timerange(old_tr, von=slice_end + datetime.timedelta(days=1), bis=original_bis, kind=old_kind)
+                after_tr.save()
+
+                new_tr = _clone_timerange(old_tr, von=slice_start, bis=slice_end, kind=new_kind)
+                new_tr.save()
+
+                undo_data['created_ids'] = [after_tr.id, new_tr.id]
+                return JsonResponse({'success': True, 'undo_data': undo_data})
+
+            # Fallback (shouldn't happen)
+            return JsonResponse({'success': False, 'error': 'Unerwarteter Fall beim Aufsplitten'}, status=500)
+
+    except KeyError as e:
+        logger.error(f"KeyError in change_type_visible: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'error': f'Fehlende Daten: {str(e)}'}, status=400)
+    except ValueError as e:
+        logger.error(f"ValueError in change_type_visible: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Unexpected error in change_type_visible: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'error': f'Unerwarteter Fehler: {str(e)}'}, status=500)
+
+
+@require_http_methods(["POST"])
+@login_required
+def undo_change_type(request):
+    """Undo the last "Typ ändern" operation.
+
+    Expected payload (from sessionStorage):
+    {
+      "original": {"deleted": bool, "id": int, "von": "YYYY-MM-DD", "bis": "YYYY-MM-DD", "kind": "a", "data": {...}, "org_id": 123},
+      "created_ids": [1,2]
+    }
+    """
+    try:
+        data = json.loads(request.body)
+        original = data.get('original') or {}
+        created_ids = data.get('created_ids') or []
+
+        original_deleted = bool(original.get('deleted'))
+        original_id = original.get('id')
+        original_von = _parse_date_yyyy_mm_dd(original.get('von'), 'original.von')
+        original_bis = _parse_date_yyyy_mm_dd(original.get('bis'), 'original.bis')
+        original_kind = (original.get('kind') or '').strip()
+        original_data = original.get('data') if isinstance(original.get('data'), dict) else {}
+        original_org_id = original.get('org_id')
+
+        if original_kind not in {'a', 'p', 'm'}:
+            return JsonResponse({'success': False, 'error': 'Ungültige Undo-Daten (kind)'}, status=400)
+
+        with transaction.atomic():
+            # Delete any created entries (must belong to current user)
+            if created_ids:
+                TimeRange.objects.filter(user=request.user, id__in=created_ids).delete()
+
+            if original_deleted:
+                # Recreate original (since it was deleted)
+                restored = TimeRange(
+                    user=request.user,
+                    von=original_von,
+                    bis=original_bis,
+                    kind=original_kind,
+                    data=original_data,
+                    org_id=original_org_id
+                )
+                restored.save()
+            else:
+                # Restore original by ID
+                if original_id is None:
+                    return JsonResponse({'success': False, 'error': 'Ungültige Undo-Daten (id)'}, status=400)
+
+                tr = TimeRange.objects.filter(user=request.user, id=original_id).first()
+                if not tr:
+                    return JsonResponse({'success': False, 'error': 'Original-Eintrag nicht gefunden'}, status=404)
+
+                tr.von = original_von
+                tr.bis = original_bis
+                tr.kind = original_kind
+                tr.data = original_data
+                tr.org_id = original_org_id
+                tr.save()
+
+        return JsonResponse({'success': True})
+
+    except KeyError as e:
+        logger.error(f"KeyError in undo_change_type: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'error': f'Fehlende Daten: {str(e)}'}, status=400)
+    except ValueError as e:
+        logger.error(f"ValueError in undo_change_type: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    except Exception as e:
+        logger.error(f"Unexpected error in undo_change_type: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'error': f'Unerwarteter Fehler: {str(e)}'}, status=500)
 
 
 @require_http_methods(["POST"])
