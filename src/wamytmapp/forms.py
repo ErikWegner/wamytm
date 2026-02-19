@@ -269,6 +269,9 @@ class ConflictCheckForm(forms.Form):
     )
     kind = forms.CharField(required=True)
     part = forms.CharField(required=False)
+    periodic_end = forms.DateField(
+        label=pgettext_lazy('ConflictCheckForm', 'Periodic End'),
+        required=False)
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")

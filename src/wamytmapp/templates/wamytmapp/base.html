@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 {% load static %}
 {% load i18n %}
+{% load django_bootstrap5 %}
 <html>
 
 <head>
@@ -21,12 +22,12 @@
             color: #dee2e6 !important;
         }
     </style>
-    <title>{% trans "Korporator" context "BaseTemplate" %}</title>
+    <title>Korporator</title>
     <script src="{% static 'wamytmapp/js/jquery-3.7.1.min.js' %}"></script>
-    <script src="{% static 'wamytmapp/js/bootstrap.bundle.js' %}"></script>
+    {% bootstrap_javascript %}
     <script src="{% static 'wamytmapp/js/bootstrap-datepicker.min.js' %}"></script>   
     <script src="{% static 'wamytmapp/js/hierarchy-select.min.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/bootstrap.min.css' %}">
+    {% bootstrap_css %}
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/bootstrap-datepicker.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/hierarchy-select.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'wamytmapp/css/style.css' %}">
@@ -46,7 +47,7 @@
 
 <body{% if embeded %} class="embedded" {% endif %}>
     <div class="content container">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light hide-embedded">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light hide-embedded px-3">
             <a class="navbar-brand" href="{% url 'wamytmapp:index' %}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 20 20">
                     <path d="M0 0h20v20H0z" fill="#ccc" fill-opacity=".992" paint-order="fill markers stroke" />
@@ -54,8 +55,7 @@
                         d="M15.127 1.763l-2.102.025c-3.27 2.907-5.45 4.68-8.75 7.546l-1.283 9.95h3.86l-.05-4.22 5.885 4.197 4.325.028-10.16-8.737v-.057zM4.274.813v5.603L6.85 4.182V.376z"
                         fill="#00ab00" fill-opacity=".992" paint-order="fill markers stroke" /></svg>
                 {% trans "Korporator" context "BaseTemplate" %}</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
-                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
@@ -69,12 +69,12 @@
                         href="{% url 'ka:index' %}">{% trans "Administration" context "BaseTemplate" %}</a>
                     {% endif %}
                 </div>
-                <div class="ml-auto d-flex align-items-center">
+                <div class="ms-auto d-flex align-items-center">
                     <button class="dark-mode-toggle btn btn-link p-0" id="darkModeToggle" aria-label="Dark Mode umschalten">
                         <span id="darkModeIcon">🌙</span>
                     </button>
                 </div>
-                <form action="{% url 'set_language' %}" method="post" class="ml-2 d-flex align-items-center">
+                <form action="{% url 'set_language' %}" method="post" class="ms-2 d-flex align-items-center">
                         {% csrf_token %}
                         <input name="next" type="hidden" value="{{ request.path }}">
                         {% get_current_language as LANGUAGE_CODE %}
@@ -88,7 +88,7 @@
             </div>
         </nav>
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-12 mx-auto">
                 {% block content %}
                 {% endblock %}
             </div>

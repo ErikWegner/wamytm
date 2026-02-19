@@ -82,7 +82,7 @@ body {
 }
 #grid_table {
     display: grid;
-    grid-template-columns: 270px 166px 166px 166px 166px 166px;
+    grid-template-columns: 300px 180px 180px 180px 180px 180px;
     grid-row-gap: 3px;
     grid-column-gap: 1px;
 }

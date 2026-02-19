@@ -99,6 +99,22 @@ customElements.define('word-count', WordCount, { extends: "tr" });
 
         const endDateStr = e2$.value || startDateStr;
         log("query for conflicts", startDateStr, endDateStr);
+        
+        // Check if periodic entry is enabled
+        const createPeriodicCheckbox = document.getElementById('create_periodic');
+        const periodicEndInput = document.getElementById('periodic_end');
+        const requestData = {
+            start: startDateStr,
+            end: endDateStr,
+            uid: uid$.value,
+            kind: kind$.value[0],
+            part: part$.value
+        };
+        
+        // Add periodic_end if checkbox is checked
+        if (createPeriodicCheckbox && createPeriodicCheckbox.checked && periodicEndInput && periodicEndInput.value) {
+            requestData.periodic_end = periodicEndInput.value;
+        }
 
         $.ajax({
             url: wamytmroot + 'check',
@@ -108,13 +124,7 @@ customElements.define('word-count', WordCount, { extends: "tr" });
                     xhr.setRequestHeader("X-CSRFToken", csrftoken);
                 }
             },
-            data: {
-                start: startDateStr,
-                end: endDateStr,
-                uid: uid$.value,
-                kind: kind$.value[0],
-                part: part$.value
-            },
+            data: requestData,
             xhrFields: {
                 withCredentials: true
             }
@@ -133,6 +143,16 @@ customElements.define('word-count', WordCount, { extends: "tr" });
     part$.addEventListener('change', queryForConflicts);
     kind$.onchange = queryForConflicts;
     desc$.onchange = queryForConflicts;
+    
+    // Add listeners for periodic entry fields
+    const createPeriodicCheckbox = document.getElementById('create_periodic');
+    const periodicEndInput = document.getElementById('periodic_end');
+    if (createPeriodicCheckbox) {
+        createPeriodicCheckbox.addEventListener('change', queryForConflicts);
+    }
+    if (periodicEndInput) {
+        periodicEndInput.addEventListener('change', queryForConflicts);
+    }
 })(jQuery);
 
 // Custom Date Range Picker
@@ -316,5 +336,26 @@ customElements.define('word-count', WordCount, { extends: "tr" });
         // Initialize calendar display
         updatePickerCalendar();
         attachPickerEvents();
+        
+        // Initialize periodic entry functionality
+        const createPeriodicCheckbox = document.getElementById('create_periodic');
+        const periodicEndContainer = document.getElementById('periodic_end_container');
+        const periodicEndInput = document.getElementById('periodic_end');
+        
+        if (createPeriodicCheckbox && periodicEndContainer && periodicEndInput) {
+            // Set default end date to end of current year
+            const endOfYear = new Date(today.getFullYear(), 11, 31); // December 31
+            const endOfYearStr = formatDateISO(endOfYear);
+            periodicEndInput.value = endOfYearStr;
+            
+            // Toggle visibility based on checkbox
+            createPeriodicCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    periodicEndContainer.style.display = 'block';
+                } else {
+                    periodicEndContainer.style.display = 'none';
+                }
+            });
+        }
     });
 })();

@@ -1,23 +1,12 @@
-"""
-Django settings for wamytmsite project
-for development.
-"""
-
-import os
 from . import *
 
 print("wamytmsite.settings.homeoffice")
-
-TIME_ZONE = 'Europe/Berlin'
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '82021938-3cf7-41ac-a314-9af12725f985'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = ['*']
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases

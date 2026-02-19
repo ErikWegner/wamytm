@@ -1,5 +1,5 @@
 {% extends 'wamytmapp/base.html' %}
-{% load bootstrap4 %}
+{% load django_bootstrap5 %}
 {% load get_value_from_dict %}
 {% load get_partial_symbol %}
 {% load get_description_tooltip %}
@@ -8,7 +8,7 @@
 {% block content %}
 {% get_current_language as LANGUAGE_CODE %}
 
-<h2 class="ml-2 row hide-embedded">{% trans "Week view" context "IndexTemplate" %}</h2>
+<h2 class="ms-2 row hide-embedded">{% trans "Week view" context "IndexTemplate" %}</h2>
 <div class="row align-items-center mb-3">
     <div class="col-md-3">
         <button type="button" onclick="go_week(-1);" class="btn btn-secondary d-inline" role="button">
@@ -35,7 +35,7 @@
                     {% if not users %}
                     <div class="dropdown hierarchy-select" id="id_orgunit">
                         <button type="button" class="btn btn-secondary dropdown-toggle" id="example-three-button"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                         <div class="dropdown-menu" aria-labelledby="example-three-button">
                             <div class="hs-searchbox">
                                 <input type="text" class="form-control" autocomplete="off">
@@ -65,7 +65,7 @@
                 </div>
                 <div class="col-md-2">
                     <button type="button" id="goToDate" class="btn btn-secondary d-inline">{% trans "Go" context "IndexTemplateFilters" %}</button>
-                    <span id="undoContainer" class="ml-1"></span>
+                    <span id="undoContainer" class="ms-1"></span>
                 </div>
             </div>
         </form>
@@ -255,7 +255,7 @@
                     var btn2 = document.createElement('button');
                     btn2.type = 'button';
                     btn2.id = 'undoTypeChangeBtn';
-                    btn2.className = 'btn btn-warning d-inline ml-1';
+                    btn2.className = 'btn btn-warning d-inline ms-1';
                     btn2.setAttribute('role', 'button');
                     btn2.setAttribute('title', '{% trans "Undo last type change" %}');
                     btn2.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/></svg>';
@@ -267,7 +267,7 @@
                     var btn3 = document.createElement('button');
                     btn3.type = 'button';
                     btn3.id = 'undoAddEntryBtn';
-                    btn3.className = 'btn btn-warning d-inline ml-1';
+                    btn3.className = 'btn btn-warning d-inline ms-1';
                     btn3.setAttribute('role', 'button');
                     btn3.setAttribute('title', '{% trans "Undo last add" %}');
                     btn3.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/></svg>';

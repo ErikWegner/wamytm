@@ -1,17 +1,8 @@
-"""
-Django settings for wamytmsite project
-for development.
-"""
-
-import os
 from . import *
 import oracledb
 oracledb.init_oracle_client()
 
 print("wamytmsite.settings.dev")
-
-TIME_ZONE = 'Europe/Berlin'
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '82021938-3cf7-41ac-a314-9af12725f985'
@@ -19,11 +10,7 @@ SECRET_KEY = '82021938-3cf7-41ac-a314-9af12725f985'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-
 # Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
 DATABASES = {
 #  Oracle
 	'default': {
@@ -114,10 +101,6 @@ LOGGING = {
         'level': 'WARNING',
     },
 }
-# LOCALE_PATHS = [
-#     os.path.join(BASE_DIR, "locale"),
-#     os.path.join(BASE_DIR, "wamytmapp/locale"), 
-# ]
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

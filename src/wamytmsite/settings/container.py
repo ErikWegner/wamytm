@@ -1,27 +1,14 @@
-"""
-Django settings for wamytmsite project
-for running inside a container.
-
-Required settings are available as environment variables.
-"""
-
-import os
-
 from . import *
 import oracledb
 oracledb.init_oracle_client()
 
 print("wamytmsite.settings.container")
 
-TIME_ZONE = 'Europe/Berlin'
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'WAMYTM_DEBUG' in os.environ and os.environ['WAMYTM_DEBUG'].upper() in ['TRUE', '1']
-
-ALLOWED_HOSTS = ['*']
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
@@ -132,10 +119,6 @@ LOGGING = {
         'level': 'WARNING',
     },
 }
-# LOCALE_PATHS = [
-#     os.path.join(BASE_DIR, "locale"),
-#     os.path.join(BASE_DIR, "wamytmapp/locale"), 
-# ]
 
 if 'WAMYTM_TRUST_X_FORWARDED_PROTO' in os.environ and os.environ['WAMYTM_TRUST_X_FORWARDED_PROTO'].upper() in ['TRUE', '1']:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

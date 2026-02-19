@@ -3,21 +3,46 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5>🌵</h5>
-                </div>
-                <div class="card-body">
-                   <ul class="list-unstyled">
-                        <li><Strong>Neuer Eintrag:</Strong>neues Kalenderelement</li>
-                        <li><Strong>Startseit:</Strong>Erweitern von Einträgen</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+<style>
+    .card-max {
+        max-width: 800px;
+        width: 100%;
+    }
+</style>
+<div class="card my-3 card-max mx-auto">
+    <div class="card-header">
+        <h5>🌵</h5>
+    </div>
+    <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-body-secondary">Startseit</h6>
+        <ul class="list-unstyled">
+            <li>Typ ändern von Einträgen</li>
+            <li>Erweitern von Einträgen</li>
+        </ul>
+        <h6 class="card-subtitle mb-2 text-body-secondary">Neuer Eintrag</h6>
+        <ul class="list-unstyled">
+            <li>periodische Einträge</li>
+        </ul>
+        <h6 class="card-subtitle mb-2 text-body-secondary">Allgemeines</h6>
+        <ul class="list-unstyled">
+            <li>Bootstrap4 -> Bootstrap 5.3</li>
+        </ul>
+    </div>
+</div>
+<div class="card my-3 card-max mx-auto">
+    <div class="card-header">
+        <h5>🦄</h5>
+    </div>
+    <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-body-secondary">Neuer Eintrag</h6>
+        <ul class="list-unstyled">
+            <li>neues Kalenderelement</li>
+        </ul>
+        <h6 class="card-subtitle mb-2 text-body-secondary">Allgemeines</h6>
+        <ul class="list-unstyled">
+            <li>Dark-mode</li>
+            <li>Sprachumschalter</li>
+        </ul>
     </div>
 </div>
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends 'wamytmapp/base.html' %}
 {% load i18n %}
 {% load static %}
-{% load bootstrap4 %}
+{% load django_bootstrap5 %}
 
 {% block content %}
 
@@ -58,6 +58,25 @@
             {% bootstrap_field form.kind %}
             {% bootstrap_field form.part_of_day %}
             {% bootstrap_field form.description %}
+            
+            <!-- Periodic Entry Checkbox -->
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="create_periodic" name="create_periodic">
+                    <label class="form-check-label" for="create_periodic">
+                        {% trans "Periodischen Eintrag erstellen" context "AddTimeRangeForm" %}
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Periodic End Date (hidden by default) -->
+            <div class="form-group" id="periodic_end_container" style="display: none;">
+                <label for="periodic_end">{% trans "Wiederholung bis" context "AddTimeRangeForm" %}</label>
+                <input type="date" class="form-control" id="periodic_end" name="periodic_end" value="">
+                <small class="form-text text-muted">
+                    {% trans "Enddatum für wöchentliche Wiederholung" context "AddTimeRangeForm" %}
+                </small>
+            </div>
         </div>
     </div>
     <div class="row" style="display: none;" id="overlappingcontainer">

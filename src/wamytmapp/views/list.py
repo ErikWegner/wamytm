@@ -154,16 +154,65 @@ def conflict_check(request):
         if not form.is_valid():
             return JsonResponse(form.errors, status=400)
         
-        responseData = TimeRange.objects.overlapResolution(
-            form.cleaned_data['start'],
-            form.cleaned_data['end'],
-            form.cleaned_data['uid'],
-            form.cleaned_data['kind'],
-            form.cleaned_data['part']
+        periodic_end = form.cleaned_data.get('periodic_end')
+        
+        if periodic_end:
+            # Handle periodic entries - check all weekly occurrences
+            responseData = _check_periodic_conflicts(
+                form.cleaned_data['start'],
+                form.cleaned_data['end'],
+                periodic_end,
+                form.cleaned_data['uid'],
+                form.cleaned_data['kind'],
+                form.cleaned_data['part']
             )
+        else:
+            # Single entry check (existing logic)
+            responseData = TimeRange.objects.overlapResolution(
+                form.cleaned_data['start'],
+                form.cleaned_data['end'],
+                form.cleaned_data['uid'],
+                form.cleaned_data['kind'],
+                form.cleaned_data['part']
+            )
+        
         responseData['org_id'] = OMS.objects.getORG_ID(form.cleaned_data['uid']).m2o_org_id
         return JsonResponse(responseData)
     return HttpResponseBadRequest()
+
+
+def _check_periodic_conflicts(start_date, end_date, periodic_end, userid, kind, part):
+    """Check for conflicts across all weekly periodic entries."""
+    all_mods = []
+    seen_ids = set()  # To avoid duplicate entries
+    
+    # Calculate the duration of one entry
+    entry_duration = (end_date - start_date).days
+    current_start = start_date
+    
+    while current_start <= periodic_end:
+        current_end = current_start + datetime.timedelta(days=entry_duration)
+        
+        # Get overlaps for this specific occurrence
+        result = TimeRange.objects.overlapResolution(
+            current_start,
+            current_end,
+            userid,
+            kind,
+            part
+        )
+        
+        # Add unique overlapping items
+        for mod in result.get('mods', []):
+            item_id = mod['item']['id']
+            if item_id not in seen_ids:
+                seen_ids.add(item_id)
+                all_mods.append(mod)
+        
+        # Move to next week
+        current_start += datetime.timedelta(weeks=1)
+    
+    return {'mods': all_mods}
 
 class TeamFeed(ICalFeed):
     product_id = '-//example.com//Example//EN'

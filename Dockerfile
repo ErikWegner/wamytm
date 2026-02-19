@@ -1,7 +1,7 @@
 FROM python:3.14-bookworm
 
 # Oracle Instant Client variables
-ARG INSTANTCLIENT_VERSION=23.26.0.0.0
+ARG INSTANTCLIENT_VERSION=23.26.1.0.0
 ARG INSTANTCLIENT_MAJOR=23_26
 ARG INSTANTCLIENT_URL=https://download.oracle.com/otn_software/linux/instantclient/2380000
 ARG INSTANTCLIENT_FILE=instantclient-basiclite-linux.x64-${INSTANTCLIENT_VERSION}.zip
@@ -31,7 +31,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pipenv install  --system --deploy
 
 COPY src/ .
-COPY gunicorn.conf.py .
+COPY gunicorn*.conf.py .
+
 # Konfiguration kopieren
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 

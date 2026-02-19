@@ -1,24 +1,10 @@
-"""wamytmsite URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/2.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-import os
 from django.contrib import admin
 from django.urls import include, path, re_path
 from django.shortcuts import redirect
 from django.http import HttpResponse
-
+from health_check.views import HealthCheckView
+import os
+    
 from wamytmapp.admin import korporator_admin
 
 urlpatterns = [
@@ -30,15 +16,12 @@ urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     re_path(r'^$', lambda _: redirect('cal/', permanent=False)),
     re_path(r'^status/up$', lambda _: HttpResponse('ok')),
-    re_path(r'^status/ht/', include('health_check.urls'))
+    path('status/ht/', HealthCheckView.as_view(
+        checks=[
+            "health_check.Cache",
+            "health_check.Database"
+        ])),
 ]
-
-# Bedingte Einbindung der sigapp URLs
-if os.getenv('ENABLE_SIGAPP', 'false').lower() == 'true':
-    print("Adding sigapp URLs")
-    urlpatterns += [
-        path('sig/', include('sigapp.urls')),
-    ]
 
 # Bedingte Einbindung der imap_app URLs
 if os.getenv('ENABLE_IMAPAPP', 'false').lower() == 'true':

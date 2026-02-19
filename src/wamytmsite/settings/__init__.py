@@ -11,9 +11,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 INSTALLED_APPS = [
     'wamytmapp.apps.WamytmappConfig',
-    'health_check',                             # required
-    'health_check.db',                          # stock Django health checkers
-    'bootstrap4',
+    'health_check',                            # required
+    'django_bootstrap5',
     'oauth2_provider',
     'social_django',
     'rest_framework_social_oauth2',
@@ -26,6 +25,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'simple_history',
     'django_prometheus',
+    
 ]
 
 # Database Routers
@@ -157,12 +157,12 @@ LOCALE_PATHS = [
     os.path.join(os.path.dirname(BASE_DIR), 'locale'),
 ]
 
+ALLOWED_HOSTS = ['*']
+
 TIME_ZONE = 'Europe/Berlin'
 
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 

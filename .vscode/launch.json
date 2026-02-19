@@ -5,38 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "All tests",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/src",
-            "program": "${workspaceFolder}/src/manage.py",
-            "args": [
-                "test"
-            ],
-            "django": true,
-            "env": {
-                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.test"
-            },
-            "justMyCode": false
-        },
-        {
-            "name": "Test selection",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/src",
-            "program": "${workspaceFolder}/src/manage.py",
-            "args": [
-                "test",
-                "-k",
-                "ConflictResolverTests"
-            ],
-            "django": true,
-            "env": {
-                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.test"
-            }
-        },
-        {
-            "name": "Python: Django devDaten",
+            "name": "Django Server",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}/src",
@@ -48,44 +17,9 @@
             ],
             "env": {
                 "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.dev",
-                "DEBUG": "TRUE"
+                "DEBUG": "1"
             },
-            "django": true,
-            "justMyCode": false
-        },
-        {
-            "name": "Python: Django HomeOffice",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/src",
-            "program": "${workspaceFolder}/src/manage.py",
-            "args": [
-                "runserver",
-                "0.0.0.0:8000",
-                "--noreload"
-            ],
-            "env": {
-                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.homeoffice",
-                "DEBUG": "TRUE"
-            },
-            "django": true,
-            "justMyCode": false
-        },
-        {
-            "name": "Python: Django prodDaten",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/src",
-            "program": "${workspaceFolder}/src/manage.py",
-            "args": [
-                "runserver",
-                "0.0.0.0:8000",
-                "--noreload"
-            ],
-            "env": {
-                "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.migrate2proddb",
-                "DEBUG": "TRUE"
-            },
+            "envFile": "${workspaceFolder}/${input:envFile}",
             "django": true,
             "justMyCode": false
         },
@@ -102,8 +36,22 @@
                 "DJANGO_SETTINGS_MODULE": "wamytmsite.settings.dev",
                 "DEBUG": "TRUE"
             },
+            "envFile": "${workspaceFolder}/${input:envFile}",
             "django": true,
             "justMyCode": false
+        }
+    ],
+    "inputs": [
+        {
+            "id": "envFile",
+            "type": "pickString",
+            "description": "Wähle die Env-Datei für die Konfiguration",
+            "options": [
+                ".env_dev",
+                ".env_test",
+                ".env_prod"
+            ],
+            "default": ".env_dev"
         }
     ]
 }
