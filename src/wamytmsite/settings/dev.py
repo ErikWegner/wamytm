@@ -14,34 +14,23 @@ DEBUG = True
 DATABASES = {
 #  Oracle
 	'default': {
-		'ENGINE':   os.environ['WAMYTM_DEV_DB_ENGINE'],
-        'NAME':     os.environ['WAMYTM_DEV_DB_NAME'],
-        'USER':     os.environ['WAMYTM_DEV_DB_USER'],
-        'PASSWORD': os.environ['WAMYTM_DEV_DB_PW'],
-        'HOST':     os.environ['WAMYTM_DEV_DB_HOST'],
-        'PORT':     os.environ['WAMYTM_DEV_DB_PORT'],
+		'ENGINE':   os.environ['DATABASE_ENGINE'],
+        'NAME':     os.environ['DATABASE_NAME'],
+        'USER':     os.environ['DATABASE_USER'],
+        'PASSWORD': os.environ['DATABASE_PASSWORD'],
+        'HOST':     os.environ['DATABASE_HOST'],
+        'PORT':     os.environ['DATABASE_PORT'],
         # Database connection settings for better stability
         'CONN_MAX_AGE': 0,  # Don't reuse connections
         'CONN_HEALTH_CHECKS': True,  # Enable health checks
 	},
-    'sigapp': {
-        'ENGINE':   os.environ['WAMYTM_DEV_DB_ENGINE'],
-        'NAME':     os.environ['WAMYTM_DEV_DB_NAME'],
-        'USER':     os.environ['WAMYTM_DEV_DB_USER'],
-        'PASSWORD': os.environ['WAMYTM_DEV_DB_PW'],
-        'HOST':     os.environ['WAMYTM_DEV_DB_HOST'],
-        'PORT':     os.environ['WAMYTM_DEV_DB_PORT'],
-        # Database connection settings for better stability
-        'CONN_MAX_AGE': 0,  # Don't reuse connections
-        'CONN_HEALTH_CHECKS': True,  # Enable health checks 
-        },
     'imap_app': {
-        'ENGINE':   os.environ['WAMYTM_DEV_DB_ENGINE'],
-        'NAME':     os.environ['WAMYTM_DEV_DB_NAME'],
-        'USER':     os.environ['WAMYTM_DEV_DB_USER'],
-        'PASSWORD': os.environ['WAMYTM_DEV_DB_PW'],
-        'HOST':     os.environ['WAMYTM_DEV_DB_HOST'],
-        'PORT':     os.environ['WAMYTM_DEV_DB_PORT'],
+        'ENGINE':   os.environ['DATABASE_ENGINE'],
+        'NAME':     os.environ['DATABASE_NAME'],
+        'USER':     os.environ['DATABASE_USER'],
+        'PASSWORD': os.environ['DATABASE_PASSWORD'],
+        'HOST':     os.environ['DATABASE_HOST'],
+        'PORT':     os.environ['DATABASE_PORT'],
         # Database connection settings for better stability
         'CONN_MAX_AGE': 0,  # Don't reuse connections
         'CONN_HEALTH_CHECKS': True,  # Enable health checks 

@@ -33,7 +33,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY src/ .
 COPY gunicorn*.conf.py .
 
-# Konfiguration kopieren
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 
@@ -47,7 +46,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 
 EXPOSE 8000
 
-ENV DJANGO_SETTINGS_MODULE=wamytmsite.settings.container \
-    WAMYTM_DATABASE_PORT=""
+ENV DJANGO_SETTINGS_MODULE=wamytmsite.settings.container
+
 CMD [ "gunicorn", "--config", "gunicorn.conf.py", "wamytmsite.wsgi" ]
 #CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

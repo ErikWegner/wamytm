@@ -27,10 +27,6 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': str(db_file),
     },
-    'sigapp': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': str(db_file),
-    },
     'imap_app': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': str(db_file),
